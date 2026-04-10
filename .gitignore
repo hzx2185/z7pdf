@@ -1,0 +1,35 @@
+.DS_Store
+
+# Dependencies
+node_modules/
+
+# Runtime data and local uploads
+data/
+*.log
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+pnpm-debug.log*
+
+# Environment files and certificates
+.env
+.env.*
+!.env.example
+*.pem
+*.key
+*.crt
+*.p12
+*.pfx
+
+# Editor / local tooling
+.vscode/
+.aider.chat.history.md
+.aider.input.history
+.codeartsdoer/
+
+# Generated samples and test outputs
+sample-*.pdf
+*-test.pdf
+*-test.zip
+visual-edit-*.pdf
+workbench-*.pdf

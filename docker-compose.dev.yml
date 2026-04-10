@@ -1,0 +1,11 @@
+services:
+  z7pdf:
+    command: npm run dev
+    volumes:
+      - ./data:/app/data
+      - ./server.js:/app/server.js
+      - ./db.js:/app/db.js
+      - ./public:/app/public
+      - ./utils:/app/utils
+      - ./middleware:/app/middleware
+      - ./routes:/app/routes

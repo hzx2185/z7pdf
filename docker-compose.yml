@@ -1,0 +1,16 @@
+services:
+  z7pdf:
+    image: ${Z7PDF_IMAGE:-z7pdf:latest}
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: ${Z7PDF_CONTAINER_NAME:-z7pdf}
+    ports:
+      - "${Z7PDF_PORT:-39010}:39010"
+    environment:
+      PORT: "39010"
+      HOST: "0.0.0.0"
+      TZ: ${TZ:-Asia/Shanghai}
+    volumes:
+      - ./data:/app/data
+    restart: unless-stopped

@@ -1,0 +1,9 @@
+.DS_Store
+node_modules
+npm-debug.log
+data/
+sample-*.pdf
+*-test.pdf
+*-test.zip
+visual-edit-*.pdf
+workbench-*.pdf

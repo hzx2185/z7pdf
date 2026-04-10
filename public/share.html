@@ -1,0 +1,41 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>文件分享 - Z7 PDF</title>
+    <link rel="stylesheet" href="/styles.css" />
+  </head>
+  <body>
+    <main class="layout">
+      <section class="hero hero-account">
+        <div>
+          <p class="eyebrow">SHARED FILE</p>
+          <h1>分享文件</h1>
+          <p class="intro">这里可以查看分享文件信息，并按访问控制完成验证后下载。</p>
+        </div>
+        <div class="hero-card account-card">
+          <p>访问说明</p>
+          <div id="shareHint" class="helper-text">正在读取分享信息...</div>
+        </div>
+      </section>
+
+      <section class="panel">
+        <div id="shareMeta" class="stack-actions"></div>
+        <form id="shareAccessForm" class="auth-card hidden">
+          <label class="field">
+            <span>访问密码</span>
+            <input id="sharePassword" type="password" autocomplete="current-password" />
+          </label>
+          <button type="submit">验证后下载</button>
+        </form>
+        <div class="stack-actions">
+          <a id="shareDownloadLink" class="secondary-button hidden" href="#">下载文件</a>
+        </div>
+        <p id="shareResult" class="result" aria-live="polite"></p>
+      </section>
+    </main>
+
+    <script type="module" src="/share.js"></script>
+  </body>
+</html>

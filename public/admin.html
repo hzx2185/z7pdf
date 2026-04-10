@@ -1,0 +1,411 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Z7 PDF 后台管理</title>
+    <link rel="icon" href="data:," />
+    <link rel="stylesheet" href="/styles.css" />
+  </head>
+  <body>
+    <!-- 顶部导航 -->
+    <header class="site-header">
+      <div class="header-container">
+        <a href="/" class="brand">Z7 PDF</a>
+        <nav class="main-nav" id="mainNav">
+          <a href="#overview" class="nav-link" data-page="overview">概览</a>
+          <a href="#settings" class="nav-link" data-page="settings">配置</a>
+          <a href="#members" class="nav-link" data-page="members">会员</a>
+          <a href="#plans" class="nav-link" data-page="plans">套餐</a>
+          <a href="#redeem" class="nav-link" data-page="redeem">兑换码</a>
+          <a href="#orders" class="nav-link" data-page="orders">订单</a>
+          <a href="#subscriptions" class="nav-link" data-page="subscriptions">订阅</a>
+        </nav>
+        <div class="header-actions">
+          <a href="/" class="btn btn-outline">返回工作台</a>
+        </div>
+      </div>
+    </header>
+
+    <!-- 主内容区 -->
+    <main class="admin-main">
+      <!-- 概览统计 -->
+      <section id="overview" class="page-section active">
+        <div class="admin-overview">
+          <div class="overview-hero">
+            <h1>后台管理</h1>
+            <p>统一维护站点配置、会员套餐、订单订阅和邮箱发信参数</p>
+          </div>
+          <div id="overviewCards" class="stats-grid"></div>
+        </div>
+      </section>
+
+      <!-- 数据库配置 -->
+      <section id="settings" class="page-section">
+        <div class="section-container">
+          <div class="section-header">
+            <span class="kicker">系统配置</span>
+            <h2>数据库配置</h2>
+            <p class="section-desc">修改后会立即写入数据库</p>
+          </div>
+          
+          <form id="settingsForm" class="settings-form">
+            <div class="card">
+              <div class="card-header">
+                <h3>基础设置</h3>
+              </div>
+              <div class="form-grid">
+                <label class="field">
+                  <span>站点名称</span>
+                  <input type="text" id="settingAppName" />
+                </label>
+                <label class="field">
+                  <span>支付提示文案</span>
+                  <input type="text" id="settingPaymentNotice" />
+                </label>
+                <div class="field-row">
+                  <label class="field">
+                    <span>默认会员套餐</span>
+                    <select id="settingPlan"></select>
+                  </label>
+                  <label class="field">
+                    <span>游客默认套餐</span>
+                    <select id="settingGuestPlan"></select>
+                  </label>
+                </div>
+                <div class="field-row">
+                  <label class="field">
+                    <span>空间配额（MB）</span>
+                    <input type="number" id="settingQuota" min="1" />
+                  </label>
+                  <label class="field">
+                    <span>游客每日免费次数</span>
+                    <input type="number" id="settingGuestDailyExports" min="0" />
+                  </label>
+                </div>
+                <label class="checkbox">
+                  <input type="checkbox" id="settingAllowRegistration" />
+                  <span>允许新用户注册</span>
+                </label>
+              </div>
+            </div>
+
+            <div class="card">
+              <div class="card-header">
+                <h3>邮箱发信配置 (SMTP)</h3>
+              </div>
+              <div class="form-grid">
+                <div class="field-row">
+                  <label class="field">
+                    <span>SMTP 服务器</span>
+                    <input type="text" id="settingSmtpHost" placeholder="smtp.example.com" />
+                  </label>
+                  <label class="field">
+                    <span>SMTP 端口</span>
+                    <input type="number" id="settingSmtpPort" min="1" placeholder="465" />
+                  </label>
+                </div>
+                <div class="field-row">
+                  <label class="field">
+                    <span>SMTP 用户名</span>
+                    <input type="text" id="settingSmtpUser" placeholder="no-reply@example.com" />
+                  </label>
+                  <label class="field">
+                    <span>SMTP 密码</span>
+                    <input
+                      type="password"
+                      id="settingSmtpPass"
+                      placeholder="邮箱授权码"
+                      autocomplete="new-password"
+                    />
+                  </label>
+                </div>
+                <div class="field-row">
+                  <label class="field">
+                    <span>发件邮箱</span>
+                    <input type="email" id="settingSmtpFromEmail" placeholder="no-reply@example.com" />
+                  </label>
+                  <label class="field">
+                    <span>发件人名称</span>
+                    <input type="text" id="settingSmtpFromName" placeholder="Z7 PDF" />
+                  </label>
+                </div>
+                <label class="checkbox">
+                  <input type="checkbox" id="settingSmtpSecure" />
+                  <span>使用 SSL / TLS</span>
+                </label>
+              </div>
+            </div>
+
+            <div class="card">
+              <div class="card-header">
+                <h3>支付宝支付配置 (Alipay)</h3>
+              </div>
+              <div class="form-grid">
+                <label class="field">
+                  <span>支付宝 AppID</span>
+                  <input type="text" id="settingAlipayAppId" placeholder="2021XXXXXXXXXXXX" />
+                </label>
+                <label class="field">
+                  <span>网关地址 (Gateway)</span>
+                  <input type="text" id="settingAlipayGateway" placeholder="https://openapi.alipay.com/gateway.do" />
+                </label>
+                <label class="field">
+                  <span>应用私钥 (App Private Key)</span>
+                  <textarea id="settingAlipayPrivateKey" rows="4" placeholder="MIIEpAIBAAKCAQEA..."></textarea>
+                </label>
+                <label class="field">
+                  <span>支付宝公钥 (Alipay Public Key)</span>
+                  <textarea id="settingAlipayPublicKey" rows="4" placeholder="MIIBIjANBgkqhkiG9w0BAQEFAAOCAQ8AMIIBCgKCAQEA..."></textarea>
+                </label>
+              </div>
+            </div>
+
+            <button type="submit" class="btn btn-primary btn-lg">保存配置</button>
+            <p id="adminResult" class="result-message" aria-live="polite"></p>
+          </form>
+        </div>
+      </section>
+
+      <!-- 会员列表 -->
+      <section id="members" class="page-section">
+        <div class="section-container">
+          <div class="section-header">
+            <span class="kicker">会员管理</span>
+            <h2>会员列表</h2>
+            <p class="section-desc">管理会员角色和套餐</p>
+          </div>
+
+          <div class="card">
+            <div class="filter-bar">
+              <label class="field">
+                <span>搜索</span>
+                <input type="search" id="memberSearch" placeholder="按邮箱或套餐搜索" />
+              </label>
+              <label class="field compact">
+                <span>角色</span>
+                <select id="memberRoleFilter">
+                  <option value="">全部</option>
+                  <option value="member">会员</option>
+                  <option value="admin">管理员</option>
+                </select>
+              </label>
+              <p id="memberFilterSummary" class="filter-summary">0 / 0</p>
+            </div>
+            <div class="table-wrapper">
+              <table class="data-table">
+                <thead>
+                  <tr>
+                    <th>ID</th>
+                    <th>邮箱</th>
+                    <th>角色</th>
+                    <th>套餐</th>
+                    <th>空间</th>
+                    <th>注册时间</th>
+                    <th>操作</th>
+                  </tr>
+                </thead>
+                <tbody id="usersTableBody"></tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- 套餐权益 -->
+      <section id="plans" class="page-section">
+        <div class="section-container">
+          <div class="section-header">
+            <span class="kicker">套餐管理</span>
+            <h2>套餐权益</h2>
+            <p class="section-desc">管理价格、空间和功能权限</p>
+          </div>
+
+          <div class="card">
+            <div class="filter-bar">
+              <label class="field">
+                <span>搜索</span>
+                <input type="search" id="planSearch" placeholder="按名称搜索" />
+              </label>
+              <label class="field compact">
+                <span>状态</span>
+                <select id="planStatusFilter">
+                  <option value="">全部</option>
+                  <option value="active">已启用</option>
+                  <option value="inactive">已停用</option>
+                </select>
+              </label>
+              <p id="planFilterSummary" class="filter-summary">0 / 0</p>
+            </div>
+            <div id="plansList" class="plan-admin-grid"></div>
+          </div>
+        </div>
+      </section>
+
+      <!-- 兑换码管理 -->
+      <section id="redeem" class="page-section">
+        <div class="section-container">
+          <div class="section-header">
+            <span class="kicker">兑换码</span>
+            <h2>兑换码管理</h2>
+            <p class="section-desc">生成和管理会员兑换码</p>
+          </div>
+
+          <div class="card">
+            <div class="card-header">
+              <h3>生成兑换码</h3>
+            </div>
+            <form id="redeemCodeForm" class="form-inline">
+              <label class="field">
+                <span>选择套餐</span>
+                <select id="redeemPlanSelect" required>
+                  <option value="">请选择套餐</option>
+                </select>
+              </label>
+              <label class="field">
+                <span>天数</span>
+                <input type="number" id="redeemDuration" value="30" min="1" required />
+              </label>
+              <label class="field">
+                <span>生成数量</span>
+                <input type="number" id="redeemCount" value="1" min="1" max="100" required />
+              </label>
+              <label class="field">
+                <span>有效期至</span>
+                <input type="date" id="redeemExpiresAt" />
+              </label>
+              <button type="submit" class="btn btn-primary">生成</button>
+            </form>
+            <div id="redeemCodesResult" class="result-message"></div>
+            <div id="redeemCodesList" class="code-list"></div>
+          </div>
+        </div>
+      </section>
+
+      <!-- 订阅订单 -->
+      <section id="orders" class="page-section">
+        <div class="section-container">
+          <div class="section-header">
+            <span class="kicker">订单管理</span>
+            <h2>订阅订单</h2>
+            <p class="section-desc">查看和管理订单</p>
+          </div>
+
+          <div class="card">
+            <div class="filter-bar">
+              <label class="field">
+                <span>搜索</span>
+                <input type="search" id="orderSearch" placeholder="按会员或套餐搜索" />
+              </label>
+              <label class="field compact">
+                <span>状态</span>
+                <select id="orderStatusFilter">
+                  <option value="">全部</option>
+                  <option value="pending">待审核</option>
+                  <option value="paid">已支付</option>
+                  <option value="cancelled">已取消</option>
+                </select>
+              </label>
+              <p id="orderFilterSummary" class="filter-summary">0 / 0</p>
+            </div>
+            <div class="table-wrapper">
+              <table class="data-table">
+                <thead>
+                  <tr>
+                    <th>ID</th>
+                    <th>会员</th>
+                    <th>套餐</th>
+                    <th>金额</th>
+                    <th>状态</th>
+                    <th>备注</th>
+                    <th>操作</th>
+                  </tr>
+                </thead>
+                <tbody id="ordersTableBody"></tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- 有效订阅 -->
+      <section id="subscriptions" class="page-section">
+        <div class="section-container">
+          <div class="section-header">
+            <span class="kicker">订阅管理</span>
+            <h2>有效订阅</h2>
+            <p class="section-desc">管理会员订阅状态</p>
+          </div>
+
+          <div class="card">
+            <div class="filter-bar">
+              <label class="field">
+                <span>搜索</span>
+                <input type="search" id="subscriptionSearch" placeholder="按邮箱或套餐搜索" />
+              </label>
+              <label class="field compact">
+                <span>状态</span>
+                <select id="subscriptionStatusFilter">
+                  <option value="">全部</option>
+                  <option value="active">生效中</option>
+                  <option value="expired">已过期</option>
+                </select>
+              </label>
+              <p id="subscriptionFilterSummary" class="filter-summary">0 / 0</p>
+            </div>
+            <div class="table-wrapper">
+              <table class="data-table">
+                <thead>
+                  <tr>
+                    <th>ID</th>
+                    <th>会员</th>
+                    <th>套餐</th>
+                    <th>状态</th>
+                    <th>开始</th>
+                    <th>结束</th>
+                    <th>操作</th>
+                  </tr>
+                </thead>
+                <tbody id="subscriptionsTableBody"></tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+      </section>
+    </main>
+
+    <script>
+      // 页面导航逻辑
+      document.querySelectorAll('.nav-link[data-page]').forEach(link => {
+        link.addEventListener('click', (e) => {
+          e.preventDefault();
+          const page = link.dataset.page;
+          showPage(page);
+          history.pushState(null, '', '#' + page);
+        });
+      });
+
+      function showPage(pageName) {
+        document.querySelectorAll('.nav-link').forEach(link => {
+          link.classList.toggle('active', link.dataset.page === pageName);
+        });
+        document.querySelectorAll('.page-section').forEach(section => {
+          section.classList.toggle('active', section.id === pageName);
+        });
+      }
+
+      function handleHash() {
+        const hash = window.location.hash.slice(1);
+        if (hash) {
+          showPage(hash);
+        } else {
+          showPage('overview');
+        }
+      }
+
+      window.addEventListener('hashchange', handleHash);
+      handleHash();
+    </script>
+    <script type="module" src="/admin.js"></script>
+  </body>
+</html>
