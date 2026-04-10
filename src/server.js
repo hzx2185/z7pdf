@@ -30,7 +30,7 @@ app.use(express.urlencoded({ extended: true, limit: '2mb' }));
 app.use(express.static('public', { maxAge: '1d' }));
 app.use(
   '/vendor/pdfjs',
-  express.static(path.join(__dirname, 'node_modules', 'pdfjs-dist', 'build'), { maxAge: '7d' })
+  express.static(path.join(__dirname, '..', 'node_modules', 'pdfjs-dist', 'build'), { maxAge: '7d' })
 );
 app.use(authenticateSession);
 

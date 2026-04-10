@@ -2,7 +2,10 @@ const { DatabaseSync } = require("node:sqlite");
 const path = require("path");
 const fsSync = require("fs");
 
-const DATA_DIR = path.join(__dirname, "data");
+const PROJECT_ROOT = path.resolve(__dirname, "..");
+const DATA_DIR = process.env.DATA_DIR
+  ? path.resolve(process.env.DATA_DIR)
+  : path.join(PROJECT_ROOT, "data");
 const STORAGE_DIR = path.join(DATA_DIR, "storage");
 const DB_PATH = path.join(DATA_DIR, "app.db");
 

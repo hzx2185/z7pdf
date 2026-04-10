@@ -21,18 +21,14 @@ ENV NODE_ENV=production \
 
 FROM base AS deps
 COPY package.json package-lock.json ./
-RUN npm ci --omit=dev && npm cache clean --force
+RUN --mount=type=cache,target=/root/.npm \
+  npm ci --omit=dev --no-audit --no-fund
 
 FROM base AS runtime
 COPY --from=deps /app/node_modules ./node_modules
 COPY package.json package-lock.json ./
 COPY public ./public
-COPY server.js ./server.js
-COPY db.js ./db.js
-COPY utils ./utils
-COPY services ./services
-COPY middleware ./middleware
-COPY routes ./routes
+COPY src ./src
 
 RUN mkdir -p /app/data /tmp/z7pdf \
   && chown -R node:node /app /tmp/z7pdf

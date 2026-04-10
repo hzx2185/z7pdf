@@ -52,10 +52,10 @@
 - `Dockerfile` 使用 `base / deps / runtime` 多阶段结构，区分系统依赖、Node 依赖和最终运行层。
 - `.dockerignore` 会过滤 `data/`、`.git/`、本地工具历史和日志，避免把无关文件打进镜像上下文。
 - `docker-compose.yml` 负责生产运行。
-- `docker-compose.dev.yml` 只覆盖开发态命令与源码挂载。
 - 容器默认以非 root 的 `node` 用户运行，并带 `/health` 健康检查。
+- 当前 `docker-compose.yml` 只包含 `PORT`、`HOST`、`TZ` 三个非敏感环境变量，不包含账号、密码、Token 或 SMTP 凭据。
 
-详细说明见 [docs/docker.md](docs/docker.md)。
+详细说明见 [DOCKER.md](DOCKER.md)。
 
 ## 快速开始
 
@@ -79,16 +79,6 @@ docker run -d \
 ```bash
 docker compose up -d --build
 ```
-
-#### 开发模式（修改代码后自动生效）
-```bash
-docker compose -f docker-compose.yml -f docker-compose.dev.yml up -d --build
-```
-
-开发模式特点：
-- ✅ 修改 `server.js`、`db.js` 自动重启
-- ✅ 修改 `public/`、`routes/`、`services/`、`middleware/`、`utils/` 立即生效
-- ✅ 无需频繁重建镜像
 
 数据持久化：`./data` 挂载到容器 `/app/data`，包含 SQLite 数据库和用户文件。
 
@@ -159,18 +149,17 @@ environment:
 
 ```text
 z7pdf/
-├── server.js           # 主服务入口（仅作路由挂载与初始化）
-├── db.js               # 底层 SQLite 数据库 DAO 与表结构定义
-├── routes/             # 路由控制层（按业务领域：auth, workspace, share 等）
-├── services/           # 核心服务层（业务逻辑与通用能力封装）
-├── middleware/         # Express 拦截与校验中间件
-├── utils/              # 通用工具函数库
 ├── package.json        # 依赖配置
 ├── Dockerfile          # Docker 镜像构建
 ├── docker-compose.yml  # Docker Compose 配置
-├── docker-compose.dev.yml # 开发态 Docker Compose 覆盖配置
-├── docs/
-│   └── docker.md       # Docker 架构与镜像构建说明
+├── DOCKER.md           # Docker 镜像与 Compose 说明
+├── src/                # 后端源码
+│   ├── server.js       # 主服务入口（仅作路由挂载与初始化）
+│   ├── db.js           # SQLite 数据库 DAO 与表结构定义
+│   ├── routes/         # 路由控制层（按业务领域：auth, workspace, share 等）
+│   ├── services/       # 核心服务层（业务逻辑与通用能力封装）
+│   ├── middleware/     # Express 拦截与校验中间件
+│   └── utils/          # 通用工具函数库
 ├── public/             # 前端静态文件
 │   ├── index.html      # 主页
 │   ├── admin.html      # 管理后台
@@ -311,11 +300,12 @@ MIT
 **架构升级**
 - 后端代码全面模块化重构，剔除了数千行的单体巨型路由（`all.js` 退场）
 - 引入清晰的分层架构（`routes` 路由控制层、`services` 核心业务逻辑层、`middleware` 中间件、`utils` 工具库）
-- `server.js` 极简提纯，仅负责服务启动、挂载及初始化副作用模块
+- 后端入口与数据库层统一迁移到 `src/`，目录结构更清晰
 - 修复未登录游客模式下“上传直接编辑”点击失效的问题
 - 工作台右侧编辑区新增点击 / 拖拽上传 PDF 提示与直接导入能力
 - 精简主工具栏，移除低频的“保留”“删空白”按钮，并将“插入”移动到删除操作旁边
-- Dockerfile 升级为标准多阶段镜像结构，开发态 compose 补齐服务层热更新挂载
+- Dockerfile 升级为标准多阶段镜像结构，镜像构建链路更清晰
+- 移除 `docker-compose.dev.yml`，统一回到标准镜像构建和生产 compose 运行方式
 
 ### v1.0.0 (2025-04-05)
 

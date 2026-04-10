@@ -5,7 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Z7 PDF - 在线PDF编辑工具</title>
     <link rel="icon" href="data:," />
-    <link rel="stylesheet" href="/styles.css?v=0407" />
+    <link rel="stylesheet" href="/styles.css?v=0411" />
     <script src="https://unpkg.com/pdf-lib/dist/pdf-lib.min.js"></script>
   </head>
   <body>
@@ -1289,35 +1289,35 @@
 
     <!-- 图片转PDF模态框 -->
     <div id="imageToPdfModal" class="modal hidden">
-      <div class="modal-dialog" style="max-width: 600px; max-height: 90vh; display: flex; flex-direction: column;">
-        <div class="modal-header" style="flex-shrink: 0;">
+      <div class="modal-dialog image-pdf-dialog">
+        <div class="modal-header image-pdf-header">
           <h3>图片转PDF</h3>
           <button type="button" class="close-btn" id="imageToPdfCloseBtn">✕</button>
         </div>
-        <div class="modal-body" style="flex: 1; overflow-y: auto; min-height: 0;">
+        <div class="modal-body image-pdf-body">
           <!-- 图片上传区域 -->
-          <div class="upload-area" id="imageUploadArea" style="margin-bottom: 1rem;">
-            <label class="file-input file-input-primary" style="width: 100%;">
+          <div class="upload-area image-pdf-upload" id="imageUploadArea">
+            <label class="file-input file-input-primary image-pdf-upload-input">
               <input type="file" id="imageToPdfInput" accept="image/png,image/jpeg,image/jpg,image/webp" multiple />
-              <div style="text-align: center; padding: 1.5rem;">
-                <div style="font-size: 1.5rem; margin-bottom: 0.5rem;">📷</div>
-                <div>点击或拖拽图片到此处</div>
-                <div style="font-size: 0.875rem; color: #64748b; margin-top: 0.5rem;">支持 PNG、JPG、WebP 格式</div>
+              <div class="image-pdf-upload-copy">
+                <div class="image-pdf-upload-icon">📷</div>
+                <div class="image-pdf-upload-title">点击或拖拽图片到此处</div>
+                <div class="image-pdf-upload-help">支持 PNG、JPG、JPEG、WebP 格式</div>
               </div>
             </label>
           </div>
 
           <!-- 图片预览区域 -->
-          <div id="imagePreviewArea" class="hidden" style="margin-bottom: 1rem;">
-            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.5rem;">
+          <div id="imagePreviewArea" class="image-pdf-preview hidden">
+            <div class="image-pdf-preview-head">
               <span id="imageCountLabel">已选择 0 张图片</span>
               <button type="button" id="clearImagesBtn" class="btn btn-xs btn-danger-soft">清空</button>
             </div>
-            <div id="imagePreviewGrid" style="display: grid; grid-template-columns: repeat(auto-fill, minmax(80px, 1fr)); gap: 0.5rem; max-height: 150px; overflow-y: auto; padding: 0.25rem;"></div>
+            <div id="imagePreviewGrid" class="image-pdf-preview-grid"></div>
           </div>
 
           <!-- 配置选项 -->
-          <div class="form-grid">
+          <div class="form-grid image-pdf-grid">
             <label class="field">
               <span>每页图片数</span>
               <select id="imageLayout">
@@ -1360,7 +1360,7 @@
             </label>
           </div>
         </div>
-        <div class="modal-footer" style="flex-shrink: 0;">
+        <div class="modal-footer image-pdf-footer">
           <button type="button" id="imageToPdfCancelBtn" class="btn btn-secondary">取消</button>
           <button type="button" id="imageToPdfConvertBtn" class="btn btn-primary">转换为PDF</button>
         </div>
@@ -1404,7 +1404,7 @@
     <button id="workspaceBatchRenameApplyBtn" type="button" class="hidden"></button>
     <div id="workspaceBatchRenameHint" class="hidden"></div>
 
-    <script type="module" src="/editor.js?v=0407"></script>
+    <script type="module" src="/editor.js?v=0410"></script>
     <script type="module" src="/workspace.js?v=0407"></script>
     <script>
       // 移动端菜单切换
@@ -1471,9 +1471,9 @@
         imageCountLabel.textContent = `已选择 ${selectedImages.length} 张图片`;
 
         imagePreviewGrid.innerHTML = selectedImages.map((file, index) => `
-          <div style="position: relative; aspect-ratio: 1; overflow: hidden; border-radius: 4px; background: #f1f5f9;">
-            <img src="${URL.createObjectURL(file)}" style="width: 100%; height: 100%; object-fit: cover;" />
-            <button type="button" onclick="removeImage(${index})" style="position: absolute; top: 2px; right: 2px; width: 20px; height: 20px; border-radius: 50%; background: rgba(239, 68, 68, 0.9); color: white; border: none; cursor: pointer; font-size: 12px;">✕</button>
+          <div class="image-pdf-preview-item">
+            <img src="${URL.createObjectURL(file)}" alt="待转换图片 ${index + 1}" />
+            <button type="button" class="image-pdf-preview-remove" onclick="removeImage(${index})" aria-label="移除第 ${index + 1} 张图片">✕</button>
           </div>
         `).join('');
       }

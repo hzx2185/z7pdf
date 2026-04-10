@@ -2,10 +2,10 @@
   "name": "z7pdf-editor",
   "version": "1.0.0",
   "description": "A local PDF editor for merge, compress, resize, and rotate operations.",
-  "main": "server.js",
+  "main": "src/server.js",
   "scripts": {
-    "start": "node server.js",
-    "dev": "node --watch-path=server.js --watch-path=db.js --watch-path=public --watch-path=routes --watch-path=services --watch-path=middleware --watch-path=utils server.js"
+    "start": "node src/server.js",
+    "dev": "node --watch-path=src --watch-path=public src/server.js"
   },
   "dependencies": {
     "@napi-rs/canvas": "^0.1.53",

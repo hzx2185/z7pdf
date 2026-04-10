@@ -2311,25 +2311,32 @@ async function saveEditedPdfOnline() {
     }
 
     const name = data.file?.originalName || suggestedSaveName();
-    const newWorkspaceSource = overwriteTarget
-      ? normalizeWorkspaceSource({
-        id: data.file?.id || overwriteTarget.id,
-        originalName: data.file?.originalName || name,
-        folderName: data.file?.folderName || String(controls.saveFolderName?.value || "").trim(),
-        kind: data.file?.kind || "pdf"
-      })
-      : null;
+    const savedWorkspaceSource =
+      data.file && String(data.file.kind || "pdf").trim() === "pdf"
+        ? normalizeWorkspaceSource({
+          id: data.file.id || overwriteTarget?.id,
+          originalName: data.file.originalName || name,
+          folderName: data.file.folderName || String(controls.saveFolderName?.value || "").trim(),
+          kind: data.file.kind || "pdf"
+        })
+        : null;
 
-    setEditorResult(`已保存并重新加载：${name}`);
+    setEditorResult(
+      overwriteTarget
+        ? `已覆盖保存并重新加载：${name}`
+        : savedWorkspaceSource
+          ? `已保存并绑定到工作区文件：${name}`
+          : `已保存：${name}`
+    );
 
-    if (newWorkspaceSource) {
-      state.workspaceSource = newWorkspaceSource;
-      const contentUrl = `/api/workspace/files/${newWorkspaceSource.id}/content`;
+    if (savedWorkspaceSource) {
+      state.workspaceSource = savedWorkspaceSource;
+      const contentUrl = `/api/workspace/files/${savedWorkspaceSource.id}/content`;
       const fileResponse = await fetch(contentUrl, { credentials: "same-origin" });
       if (fileResponse.ok) {
         const buffer = await fileResponse.arrayBuffer();
-        const file = new File([buffer], newWorkspaceSource.originalName, { type: "application/pdf" });
-        file.workspaceSource = newWorkspaceSource;
+        const file = new File([buffer], savedWorkspaceSource.originalName, { type: "application/pdf" });
+        file.workspaceSource = savedWorkspaceSource;
         closePreview();
         await loadEditor([file]);
       }
@@ -2343,7 +2350,7 @@ async function saveEditedPdfOnline() {
   }
 }
 
-editorFileInput.addEventListener("change", async (event) => {
+editorFileInput?.addEventListener("change", async (event) => {
   const input = event.target;
   const files = Array.from(input?.files || []);
   if (input instanceof HTMLInputElement) {
@@ -2406,12 +2413,12 @@ editorDropZone?.addEventListener("drop", async (event) => {
 window.addEventListener("dragend", resetEditorDropState);
 window.addEventListener("blur", resetEditorDropState);
 
-controls.selectAllBtn.addEventListener("click", () => {
+controls.selectAllBtn?.addEventListener("click", () => {
   const previousSelection = new Set(state.selected);
   state.selected = new Set(state.pages.map((_, index) => index));
   refreshSelectionCards(previousSelection);
 });
-controls.clearSelectionBtn.addEventListener("click", () => {
+controls.clearSelectionBtn?.addEventListener("click", () => {
   const previousSelection = new Set(state.selected);
   state.selected.clear();
   state.lastSelectedIndex = null;
@@ -2447,8 +2454,8 @@ document.getElementById("globalRedoBtn")?.addEventListener("click", () => {
 });
 // 已移除重复的旧绑逻辑
 controls.insertBlankBtn?.addEventListener("click", insertBlankPage);
-previewCloseBtn.addEventListener("click", closePreview);
-previewModal.addEventListener("click", (event) => {
+previewCloseBtn?.addEventListener("click", closePreview);
+previewModal?.addEventListener("click", (event) => {
   if (event.target === previewModal || event.target === previewBody) closePreview();
 });
 
@@ -2493,7 +2500,7 @@ document.getElementById("previewDeletePage")?.addEventListener("click", (e) => {
   deletePreviewPage();
 });
 
-previewBody.addEventListener("mousedown", (e) => {
+previewBody?.addEventListener("mousedown", (e) => {
   if (!immersivePreviewState.imgRef || e.button !== 0 || e.target !== immersivePreviewState.imgRef) return;
   e.preventDefault();
   immersivePreviewState.isDragging = true;
@@ -2509,7 +2516,7 @@ window.addEventListener("mousemove", (e) => {
 window.addEventListener("mouseup", () => {
   immersivePreviewState.isDragging = false;
 });
-previewBody.addEventListener("wheel", (e) => {
+previewBody?.addEventListener("wheel", (e) => {
   if (!immersivePreviewState.imgRef || previewModal.classList.contains("hidden")) return;
   e.preventDefault();
 
@@ -2536,27 +2543,27 @@ previewBody.addEventListener("wheel", (e) => {
   updateImmersiveTransform();
 }, { passive: false });
 
-controls.rotateLeftBtn.addEventListener("click", () => {
+controls.rotateLeftBtn?.addEventListener("click", () => {
   pushHistory();
   forSelectedPages((page) => {
     page.rotation = (page.rotation + 270) % 360;
   });
 });
-controls.rotateRightBtn.addEventListener("click", () => {
+controls.rotateRightBtn?.addEventListener("click", () => {
   pushHistory();
   forSelectedPages((page) => {
     page.rotation = (page.rotation + 90) % 360;
   });
 });
-controls.deleteBtn.addEventListener("click", () => {
+controls.deleteBtn?.addEventListener("click", () => {
   pushHistory();
   forSelectedPages((page) => {
     page.deleted = true;
   });
 });
 
-controls.moveUpBtn.addEventListener("click", () => moveSelection("up"));
-controls.moveDownBtn.addEventListener("click", () => moveSelection("down"));
+controls.moveUpBtn?.addEventListener("click", () => moveSelection("up"));
+controls.moveDownBtn?.addEventListener("click", () => moveSelection("down"));
 // 旧逻辑工具按钮清理
 
 controls.toolUndo?.addEventListener("click", () => {
@@ -2654,7 +2661,7 @@ controls.previewBtn?.addEventListener("click", openPreview);
 controls.printBtn?.addEventListener("click", printDocument);
 controls.applySplitBtn?.addEventListener("click", applySplit);
 
-controls.exportMode.addEventListener("change", updateSplitFieldState);
+controls.exportMode?.addEventListener("change", updateSplitFieldState);
 
 // 导出为图片选项显示/隐藏
 controls.toImagesEnabled?.addEventListener("change", () => {
@@ -2676,7 +2683,7 @@ controls.toImagesFormat?.addEventListener("change", () => {
   }
 });
 
-controls.exportBtn.addEventListener("click", exportEditedPdf);
+controls.exportBtn?.addEventListener("click", exportEditedPdf);
 controls.exportBtn2?.addEventListener("click", exportEditedPdf);
 controls.saveOnlineBtn?.addEventListener("click", saveEditedPdfOnline);
 controls.saveOnlineBtn2?.addEventListener("click", saveEditedPdfOnline);
