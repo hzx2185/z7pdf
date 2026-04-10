@@ -5205,6 +5205,113 @@ body.workbench-open .workbench-container {
   flex-shrink: 0;
 }
 
+#imageToPdfModal .image-pdf-dialog {
+  max-width: min(680px, calc(100vw - 28px));
+  max-height: min(82vh, 640px);
+  padding: 18px 18px 16px;
+  gap: 12px;
+  border-radius: 22px;
+}
+
+#imageToPdfModal .image-pdf-header {
+  align-items: center;
+}
+
+#imageToPdfModal .image-pdf-header h3 {
+  font-size: 18px;
+}
+
+#imageToPdfModal .image-pdf-body {
+  display: grid;
+  grid-template-columns: minmax(0, 220px) minmax(0, 1fr);
+  gap: 12px 14px;
+  align-content: start;
+  padding-right: 2px;
+}
+
+#imageToPdfModal .image-pdf-upload {
+  grid-column: 1;
+  padding: 8px;
+  border-radius: 16px;
+}
+
+#imageToPdfModal .image-pdf-upload-copy {
+  min-height: 112px;
+  padding: 12px 10px;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+}
+
+#imageToPdfModal .image-pdf-upload-icon {
+  font-size: 22px;
+  margin-bottom: 6px;
+}
+
+#imageToPdfModal .image-pdf-upload-title {
+  font-size: 14px;
+}
+
+#imageToPdfModal .image-pdf-upload-help {
+  margin-top: 4px;
+}
+
+#imageToPdfModal .image-pdf-preview {
+  grid-column: 1;
+  padding: 8px 10px;
+  gap: 6px;
+}
+
+#imageToPdfModal .image-pdf-preview-grid {
+  grid-template-columns: repeat(auto-fill, minmax(60px, 1fr));
+  max-height: 102px;
+  gap: 6px;
+}
+
+#imageToPdfModal .image-pdf-preview-item {
+  border-radius: 8px;
+}
+
+#imageToPdfModal .image-pdf-preview-remove {
+  top: 3px;
+  right: 3px;
+  width: 20px;
+  height: 20px;
+}
+
+#imageToPdfModal .image-pdf-grid {
+  grid-column: 2;
+  grid-row: 1 / span 2;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 8px 10px;
+  align-content: start;
+}
+
+#imageToPdfModal .image-pdf-grid .field {
+  gap: 4px;
+}
+
+#imageToPdfModal .image-pdf-grid .field span {
+  font-size: 12px;
+}
+
+#imageToPdfModal .image-pdf-grid input,
+#imageToPdfModal .image-pdf-grid select {
+  padding: 10px 12px;
+  border-radius: 12px;
+}
+
+#imageToPdfModal .image-pdf-footer {
+  gap: 8px;
+}
+
+#imageToPdfModal .image-pdf-footer .btn {
+  width: auto;
+  min-height: 40px;
+  padding: 9px 16px;
+  border-radius: 14px;
+}
+
 #sharePasswordRow.hidden {
   display: none;
 }
@@ -5886,6 +5993,37 @@ body.workbench-open .workbench-container {
   }
 
   .image-pdf-footer .btn {
+    width: 100%;
+  }
+
+  #imageToPdfModal .image-pdf-dialog {
+    max-width: calc(100vw - 20px);
+    max-height: calc(100vh - 20px);
+    padding: 16px;
+    gap: 10px;
+  }
+
+  #imageToPdfModal .image-pdf-body {
+    grid-template-columns: 1fr;
+    gap: 10px;
+    padding-right: 0;
+  }
+
+  #imageToPdfModal .image-pdf-grid {
+    grid-column: auto;
+    grid-row: auto;
+    grid-template-columns: 1fr;
+  }
+
+  #imageToPdfModal .image-pdf-preview-grid {
+    max-height: 96px;
+  }
+
+  #imageToPdfModal .image-pdf-footer {
+    flex-direction: column-reverse;
+  }
+
+  #imageToPdfModal .image-pdf-footer .btn {
     width: 100%;
   }
 
