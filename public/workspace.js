@@ -906,7 +906,7 @@ function renderPublicPlans() {
 
   const getActionButton = (plan) => {
     if (plan.isGuest || plan.code === activeCode) return "";
-    return '<button class="btn btn-sm btn-primary subscribe-btn" data-plan="' + plan.code + '">订阅</button>';
+    return '<button class="btn btn-sm btn-primary subscribe-btn plan-redeem-btn" data-plan="' + plan.code + '">兑换会员</button>';
   };
 
   const supportChip = (value) => value
@@ -1514,12 +1514,7 @@ function renderPlans() {
       <span class="plan-card-detail">压缩 ${plan.allowCompression ? "支持" : "不支持"} / 拆分 ${plan.allowSplit ? "支持" : "不支持"} / 加密 ${plan.allowSecurity ? "支持" : "不支持"}</span>
     `;
     if (!isCurrent) {
-      if (plan.priceCents > 0) {
-        card.appendChild(createActionButton("购买订阅", "btn btn-primary btn-sm", async () => {
-          await checkoutPlan(plan.code);
-        }));
-      }
-      card.appendChild(createActionButton("立即兑换", "btn btn-link btn-sm", async () => {
+      card.appendChild(createActionButton("兑换会员", "btn btn-primary btn-sm", async () => {
         window.showRedeemForm?.();
       }));
     }
@@ -1535,11 +1530,6 @@ function renderPlans() {
       <span>${formatPlanLabel(order.planCode)} / ${formatMoney(order.amountCents)} / ${formatPaymentMethod(order.paymentMethod)}</span>
       <span>状态：${formatOrderStatus(order.status)}</span>
     `;
-    if (order.status === "pending") {
-      item.appendChild(createActionButton("去支付", "btn btn-primary btn-xs", async () => {
-        await mockPayOrder(order.id);
-      }));
-    }
     elements.workspaceOrders.appendChild(item);
   });
 }
@@ -2165,8 +2155,8 @@ window.addEventListener("load", async () => {
 
   // 全局事件委托：套餐兑换按钮
   document.addEventListener('click', async (e) => {
-    if (e.target.classList.contains('subscribe-btn')) {
-      window.showRedeemForm?.();
+    if (e.target.classList.contains('plan-redeem-btn')) {
+      window.showRedeemForm?.("请先登录会员账号，再使用兑换码兑换会员。");
     }
   });
 
@@ -2439,21 +2429,30 @@ window.showChangeEmailForm = function() {
 
 // 显示兑换表单
 window.showRedeemForm = function() {
+  if (!appState.user) {
+    openPasswordAuth("请先登录会员账号，再使用兑换码兑换会员。");
+    return;
+  }
+
   const authPanel = document.getElementById("authPanel");
   const loginSection = document.getElementById("authLoginSection");
   const changePasswordSection = document.getElementById("authChangePasswordSection");
   const changeEmailSection = document.getElementById("authChangeEmailSection");
   const redeemSection = document.getElementById("authRedeemSection");
   const authPanelTitle = document.getElementById("authPanelTitle");
+  const redeemResult = document.getElementById("redeemResult");
+  const redeemCodeInput = document.getElementById("redeemCodeInput");
   
   if (loginSection) loginSection.classList.add("hidden");
   if (changePasswordSection) changePasswordSection.classList.add("hidden");
   if (changeEmailSection) changeEmailSection.classList.add("hidden");
   if (redeemSection) redeemSection.classList.remove("hidden");
   if (authPanelTitle) authPanelTitle.textContent = "兑换会员";
+  if (redeemResult) redeemResult.textContent = "";
   
   appState.authPanelVisible = true;
   if (authPanel) authPanel.classList.remove("hidden");
+  window.setTimeout(() => redeemCodeInput?.focus(), 120);
 };
 
 // 绑定修改密码和修改邮箱按钮事件
@@ -2474,38 +2473,6 @@ window.addEventListener("keydown", (event) => {
     toggleAuthPanel(false);
   }
 });
-async function checkoutPlan(planCode) {
-  try {
-    const data = await requestJson("/api/workspace/checkout", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ planCode, paymentMethod: "mock" })
-    });
-    setResult(elements.workspaceResult, `订单 #${data.order.id} 已创建。`);
-    await mockPayOrder(data.order.id);
-  } catch (error) {
-    setResult(elements.workspaceResult, error.message || "下单失败", true);
-  }
-}
-
-async function mockPayOrder(orderId) {
-  if (!window.confirm("正在跳转模拟支付网关...\n\n点击“确定”模拟扫码支付成功，点击“取消”放弃支付。")) {
-    await refreshWorkspace();
-    return;
-  }
-  try {
-    const res = await requestJson("/api/payments/mock-webhook", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ orderId })
-    });
-    setResult(elements.workspaceResult, res.message || "支付成功！");
-    await loadAccount();
-    await refreshWorkspace();
-  } catch (error) {
-    setResult(elements.workspaceResult, error.message || "支付处理失败", true);
-  }
-}
 
 // 分享模态框事件绑定
 elements.shareForm?.addEventListener("submit", handleShareSubmit);
