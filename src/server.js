@@ -77,6 +77,22 @@ const PORT = process.env.PORT || 39010;
 const HOST = process.env.HOST || '0.0.0.0';
 const { bootstrap } = require('./services/bootstrap-service');
 
+function logAdminBootstrapBanner(admin) {
+  const banner = '='.repeat(72);
+  const displayHost = HOST === '0.0.0.0' ? '127.0.0.1' : HOST;
+
+  console.log('');
+  console.log(banner);
+  console.log('Z7 PDF 首次管理员初始化完成');
+  console.log('请立即保存以下后台登录信息:');
+  console.log(`后台地址: http://${displayHost}:${PORT}/admin.html`);
+  console.log(`管理员邮箱: ${admin.email}`);
+  console.log(`管理员密码: ${admin.password}`);
+  console.log(admin.generated ? '密码来源: 系统首次启动自动生成。' : '密码来源: ADMIN_PASSWORD 环境变量。');
+  console.log('重要提示: 登录后台后请立即修改管理员密码。');
+  console.log(banner);
+}
+
 async function startServer() {
   let bootstrapResult = null;
 
@@ -96,16 +112,7 @@ async function startServer() {
     }
 
     if (bootstrapResult?.admin?.created) {
-      console.log('');
-      console.log('[首次管理员初始化]');
-      console.log(`邮箱: ${bootstrapResult.admin.email}`);
-      console.log(`密码: ${bootstrapResult.admin.password}`);
-      console.log(
-        bootstrapResult.admin.generated
-          ? '密码来源: 首次启动自动生成，已写入数据库。'
-          : '密码来源: 使用 ADMIN_PASSWORD，已写入数据库。'
-      );
-      console.log('请登录后台后立即修改管理员密码。');
+      logAdminBootstrapBanner(bootstrapResult.admin);
     }
   });
 }
