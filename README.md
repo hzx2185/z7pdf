@@ -53,6 +53,8 @@
 - `.dockerignore` 会过滤 `data/`、`.git/`、本地工具历史和日志，避免把无关文件打进镜像上下文。
 - `docker-compose.yml` 负责生产运行。
 - 容器默认以非 root 的 `node` 用户运行，并带 `/health` 健康检查。
+- 默认使用宿主机目录 `./data` 持久化 `/app/data`，便于直接备份和迁移。
+- 容器启动时会自动尝试修正 `./data` 的目录权限，然后再降权到 `node` 用户运行。
 - 当前 `docker-compose.yml` 只包含 `PORT`、`HOST`、`TZ` 三个非敏感环境变量，不包含账号、密码、Token 或 SMTP 凭据。
 
 详细说明见 [DOCKER.md](DOCKER.md)。
@@ -80,7 +82,7 @@ docker run -d \
 docker compose up -d --build
 ```
 
-数据持久化：`./data` 挂载到容器 `/app/data`，包含 SQLite 数据库和用户文件。
+数据持久化：默认使用宿主机目录 `./data` 挂载到容器 `/app/data`，包含 SQLite 数据库和用户文件。
 
 启动后访问：
 - 主页：http://127.0.0.1:39010
@@ -92,6 +94,8 @@ docker compose up -d --build
 ```bash
 docker compose down
 ```
+
+注意：`docker compose down` 不会删除 `./data` 目录。容器启动时会自动尝试修正该目录权限；如果你的宿主机策略不允许，手动执行 `sudo chown -R 1000:1000 data` 即可。
 
 ### 本地 Node.js 运行
 
@@ -153,6 +157,7 @@ z7pdf/
 ├── Dockerfile          # Docker 镜像构建
 ├── docker-compose.yml  # Docker Compose 配置
 ├── DOCKER.md           # Docker 镜像与 Compose 说明
+├── docker/             # Docker 入口脚本
 ├── src/                # 后端源码
 │   ├── server.js       # 主服务入口（仅作路由挂载与初始化）
 │   ├── db.js           # SQLite 数据库 DAO 与表结构定义
@@ -168,7 +173,7 @@ z7pdf/
 │   ├── workspace.js    # 工作区与账户逻辑
 │   ├── admin.js        # 后台逻辑
 │   └── styles.css      # 样式
-└── data/               # 数据目录（持久化）
+└── data/               # 数据目录（默认绑定到容器 /app/data）
     ├── app.db          # SQLite 数据库文件
     └── storage/        # 用户文件存储
 ```
@@ -306,6 +311,7 @@ MIT
 - 精简主工具栏，移除低频的“保留”“删空白”按钮，并将“插入”移动到删除操作旁边
 - Dockerfile 升级为标准多阶段镜像结构，镜像构建链路更清晰
 - 移除 `docker-compose.dev.yml`，统一回到标准镜像构建和生产 compose 运行方式
+- 保留宿主机目录映射，并在容器启动时自动尝试修正 `./data` 权限
 
 ### v1.0.0 (2025-04-05)
 

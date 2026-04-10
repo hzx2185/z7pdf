@@ -6,6 +6,7 @@ WORKDIR /app
 
 RUN apt-get update \
   && apt-get install -y --no-install-recommends \
+    gosu \
     ghostscript \
     qpdf \
     ocrmypdf \
@@ -28,14 +29,15 @@ FROM base AS runtime
 COPY --from=deps --chown=node:node /app/node_modules ./node_modules
 COPY --chown=node:node public ./public
 COPY --chown=node:node src ./src
+COPY docker/entrypoint.sh /usr/local/bin/z7pdf-entrypoint.sh
 
 RUN install -d -o node -g node /app/data /tmp/z7pdf
-
-USER node
+RUN chmod +x /usr/local/bin/z7pdf-entrypoint.sh
 
 EXPOSE 39010
 
 HEALTHCHECK --interval=30s --timeout=5s --start-period=20s --retries=3 \
   CMD node -e "const http=require('node:http');const req=http.get('http://127.0.0.1:'+(process.env.PORT||39010)+'/health',res=>process.exit(res.statusCode===200?0:1));req.on('error',()=>process.exit(1));"
 
+ENTRYPOINT ["/usr/local/bin/z7pdf-entrypoint.sh"]
 CMD ["node", "src/server.js"]
