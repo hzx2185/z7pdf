@@ -209,10 +209,8 @@ const controls = {
   rotateLeftBtn: document.querySelector("#rotateLeftBtn"),
   rotateRightBtn: document.querySelector("#rotateRightBtn"),
   deleteBtn: document.querySelector("#deleteBtn"),
-  restoreBtn: document.querySelector("#restoreBtn"),
   moveUpBtn: document.querySelector("#moveUpBtn"),
   moveDownBtn: document.querySelector("#moveDownBtn"),
-  reverseBtn: document.querySelector("#reverseBtn"),
   exportBtn: document.querySelector("#exportEditorBtn"),
   saveOnlineBtn: document.querySelector("#saveOnlineBtn"),
   exportBtn2: document.querySelector("#exportEditorBtn2"),
@@ -2559,13 +2557,6 @@ controls.deleteBtn.addEventListener("click", () => {
 
 controls.moveUpBtn.addEventListener("click", () => moveSelection("up"));
 controls.moveDownBtn.addEventListener("click", () => moveSelection("down"));
-controls.reverseBtn?.addEventListener("click", () => {
-  pushHistory();
-  const selectionKeys = tagSelectionKeys();
-  state.pages.reverse();
-  renumberSelection(selectionKeys);
-  renderThumbs();
-});
 // 旧逻辑工具按钮清理
 
 controls.toolUndo?.addEventListener("click", () => {

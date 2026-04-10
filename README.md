@@ -46,9 +46,34 @@
 | 加密与解密 | 密码加密和去密码 |
 | OCR 文字识别 | 基于 Tesseract 与 OCRmyPDF，支持图片 PDF 转双层可搜索 PDF |
 
+## Docker 架构
+
+项目现在采用标准的 Docker 分层方式：
+- `Dockerfile` 使用 `base / deps / runtime` 多阶段结构，区分系统依赖、Node 依赖和最终运行层。
+- `.dockerignore` 会过滤 `data/`、`.git/`、本地工具历史和日志，避免把无关文件打进镜像上下文。
+- `docker-compose.yml` 负责生产运行。
+- `docker-compose.dev.yml` 只覆盖开发态命令与源码挂载。
+- 容器默认以非 root 的 `node` 用户运行，并带 `/health` 健康检查。
+
+详细说明见 [docs/docker.md](docs/docker.md)。
+
 ## 快速开始
 
-### Docker Compose（推荐）
+### Docker（推荐）
+
+#### 构建标准镜像
+```bash
+docker build -t z7pdf:latest .
+```
+
+#### 直接运行镜像
+```bash
+docker run -d \
+  --name z7pdf \
+  -p 39010:39010 \
+  -v "$(pwd)/data:/app/data" \
+  z7pdf:latest
+```
 
 #### 生产模式
 ```bash
@@ -57,17 +82,13 @@ docker compose up -d --build
 
 #### 开发模式（修改代码后自动生效）
 ```bash
-./dev.sh
-```
-或
-```bash
-docker compose -f docker-compose.yml -f docker-compose.dev.yml up -d
+docker compose -f docker-compose.yml -f docker-compose.dev.yml up -d --build
 ```
 
 开发模式特点：
-- ✅ 修改 `server.js` 自动重启
-- ✅ 修改 `public/` 下文件立即生效
-- ✅ 无需重新构建镜像
+- ✅ 修改 `server.js`、`db.js` 自动重启
+- ✅ 修改 `public/`、`routes/`、`services/`、`middleware/`、`utils/` 立即生效
+- ✅ 无需频繁重建镜像
 
 数据持久化：`./data` 挂载到容器 `/app/data`，包含 SQLite 数据库和用户文件。
 
@@ -147,6 +168,9 @@ z7pdf/
 ├── package.json        # 依赖配置
 ├── Dockerfile          # Docker 镜像构建
 ├── docker-compose.yml  # Docker Compose 配置
+├── docker-compose.dev.yml # 开发态 Docker Compose 覆盖配置
+├── docs/
+│   └── docker.md       # Docker 架构与镜像构建说明
 ├── public/             # 前端静态文件
 │   ├── index.html      # 主页
 │   ├── admin.html      # 管理后台
@@ -291,6 +315,7 @@ MIT
 - 修复未登录游客模式下“上传直接编辑”点击失效的问题
 - 工作台右侧编辑区新增点击 / 拖拽上传 PDF 提示与直接导入能力
 - 精简主工具栏，移除低频的“保留”“删空白”按钮，并将“插入”移动到删除操作旁边
+- Dockerfile 升级为标准多阶段镜像结构，开发态 compose 补齐服务层热更新挂载
 
 ### v1.0.0 (2025-04-05)
 
