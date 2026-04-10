@@ -197,6 +197,7 @@ const stmts = {
     ON CONFLICT(key) DO UPDATE SET value = excluded.value, updated_at = excluded.updated_at
   `),
   getSetting: db.prepare(`SELECT value FROM settings WHERE key = ?`),
+  deleteSetting: db.prepare(`DELETE FROM settings WHERE key = ?`),
   listSettings: db.prepare(`SELECT key, value FROM settings ORDER BY key`),
   findUserByEmail: db.prepare(`
     SELECT id, email, password_hash, role, plan, created_at FROM users WHERE email = ?

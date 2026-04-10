@@ -49,10 +49,6 @@ router.get('/api/public-config', async (req, res) => {
     workspaceQuotaMb: Number(getSettingValue('workspace_quota_mb', '512')),
     ocrAvailable: await isOcrAvailable(),
     smtpConfigured: isSmtpConfigured(),
-    paymentNotice: getSettingValue(
-      'payment_notice',
-      '演示版支付：会员下单后等待管理员审核并激活订阅。'
-    ),
     plans: stmts.listPlans.all().map(formatPlan).filter((plan) => plan.active)
   });
 });
@@ -66,11 +62,7 @@ router.get('/api/auth/me', async (req, res) => {
     entitlements,
     guestEntitlements: req.user ? null : getEffectivePlanForGuest(),
     guestUsage: req.user ? null : getGuestUsageInfo(req.guestId),
-    smtpConfigured: isSmtpConfigured(),
-    paymentNotice: getSettingValue(
-      'payment_notice',
-      '演示版支付：会员下单后等待管理员审核并激活订阅。'
-    )
+    smtpConfigured: isSmtpConfigured()
   });
 });
 

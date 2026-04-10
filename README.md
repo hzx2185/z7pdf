@@ -30,7 +30,7 @@
 ### 后台管理
 - 查看会员、文件、分享和订单概览
 - 配置站点名称、默认套餐、注册开关、空间配额
-- 配置支付提示、SMTP 发信参数
+- 配置 SMTP 发信参数
 - 直接调整会员角色和套餐
 
 ### PDF 处理功能
@@ -89,6 +89,12 @@ docker compose up -d --build
 - 管理后台：http://127.0.0.1:39010/admin.html
 - 分享页面：http://127.0.0.1:39010/share.html?token=...
 
+首次初始化说明：
+- 如果数据库里还没有管理员账号，系统会自动创建一个管理员。
+- 管理员邮箱默认是 `admin@z7pdf.local`，可用 `ADMIN_EMAIL` 覆盖。
+- 如果未设置 `ADMIN_PASSWORD`，系统会在首次启动时生成随机密码、写入数据库，并打印到启动日志。
+- 如果使用 `docker compose up -d --build` 后台启动，可通过 `docker compose logs --tail=50 z7pdf` 查看这组初始账号信息。
+
 停止服务：
 
 ```bash
@@ -108,14 +114,14 @@ npm start
 >
 > 如需启用 OCR，还需要安装 `ocrmypdf`、`unpaper`、`tesseract-ocr`、`tesseract-ocr-eng`、`tesseract-ocr-chi-sim`。
 
-## 默认账号
+## 管理员初始化
 
-```
-邮箱：admin@z7pdf.local
-密码：admin123456
-```
+首次启动且数据库中不存在该邮箱时：
+- 默认邮箱为 `admin@z7pdf.local`
+- 如果设置了 `ADMIN_PASSWORD`，会按该密码创建管理员
+- 如果没有设置 `ADMIN_PASSWORD`，系统会自动生成随机密码并打印到启动日志
 
-首次启动时会自动创建该管理员账号，仅适合本地开发演示。生产环境请务必通过环境变量覆盖默认密码。
+管理员账号只会在首次写库时自动创建一次。后续重启不会重复生成，也不会覆盖你已存在的管理员密码。
 
 可通过环境变量覆盖：
 

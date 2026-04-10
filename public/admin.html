@@ -59,10 +59,6 @@
                   <span>站点名称</span>
                   <input type="text" id="settingAppName" />
                 </label>
-                <label class="field">
-                  <span>支付提示文案</span>
-                  <input type="text" id="settingPaymentNotice" />
-                </label>
                 <div class="field-row">
                   <label class="field">
                     <span>默认会员套餐</span>
@@ -133,30 +129,6 @@
                 <label class="checkbox">
                   <input type="checkbox" id="settingSmtpSecure" />
                   <span>使用 SSL / TLS</span>
-                </label>
-              </div>
-            </div>
-
-            <div class="card">
-              <div class="card-header">
-                <h3>支付宝支付配置 (Alipay)</h3>
-              </div>
-              <div class="form-grid">
-                <label class="field">
-                  <span>支付宝 AppID</span>
-                  <input type="text" id="settingAlipayAppId" placeholder="2021XXXXXXXXXXXX" />
-                </label>
-                <label class="field">
-                  <span>网关地址 (Gateway)</span>
-                  <input type="text" id="settingAlipayGateway" placeholder="https://openapi.alipay.com/gateway.do" />
-                </label>
-                <label class="field">
-                  <span>应用私钥 (App Private Key)</span>
-                  <textarea id="settingAlipayPrivateKey" rows="4" placeholder="MIIEpAIBAAKCAQEA..."></textarea>
-                </label>
-                <label class="field">
-                  <span>支付宝公钥 (Alipay Public Key)</span>
-                  <textarea id="settingAlipayPublicKey" rows="4" placeholder="MIIBIjANBgkqhkiG9w0BAQEFAAOCAQ8AMIIBCgKCAQEA..."></textarea>
                 </label>
               </div>
             </div>
@@ -406,6 +378,6 @@
       window.addEventListener('hashchange', handleHash);
       handleHash();
     </script>
-    <script type="module" src="/admin.js"></script>
+    <script type="module" src="/admin.js?v=0414"></script>
   </body>
 </html>

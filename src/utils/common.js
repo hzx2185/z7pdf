@@ -33,7 +33,6 @@ function ensureDefaultSettings() {
     guest_plan: "member",
     guest_daily_exports: "1",
     workspace_quota_mb: "512",
-    payment_notice: "演示版支付：会员下单后等待管理员审核并激活订阅。",
     smtp_host: "",
     smtp_port: "465",
     smtp_secure: "true",

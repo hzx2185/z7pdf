@@ -13,7 +13,6 @@ const elements = {
   settingQuota: document.querySelector("#settingQuota"),
   settingGuestDailyExports: document.querySelector("#settingGuestDailyExports"),
   settingAllowRegistration: document.querySelector("#settingAllowRegistration"),
-  settingPaymentNotice: document.querySelector("#settingPaymentNotice"),
   settingSmtpHost: document.querySelector("#settingSmtpHost"),
   settingSmtpPort: document.querySelector("#settingSmtpPort"),
   settingSmtpUser: document.querySelector("#settingSmtpUser"),
@@ -21,10 +20,6 @@ const elements = {
   settingSmtpFromEmail: document.querySelector("#settingSmtpFromEmail"),
   settingSmtpFromName: document.querySelector("#settingSmtpFromName"),
   settingSmtpSecure: document.querySelector("#settingSmtpSecure"),
-  settingAlipayAppId: document.querySelector("#settingAlipayAppId"),
-  settingAlipayGateway: document.querySelector("#settingAlipayGateway"),
-  settingAlipayPrivateKey: document.querySelector("#settingAlipayPrivateKey"),
-  settingAlipayPublicKey: document.querySelector("#settingAlipayPublicKey"),
   memberSearch: document.querySelector("#memberSearch"),
   memberRoleFilter: document.querySelector("#memberRoleFilter"),
   planSearch: document.querySelector("#planSearch"),
@@ -205,7 +200,6 @@ function renderOverview(data) {
   populatePlanSettingOptions(data.settings?.default_member_plan || "member", data.settings?.guest_plan || "member");
   elements.settingQuota.value = Number(data.settings?.workspace_quota_mb || 512);
   elements.settingGuestDailyExports.value = Number(data.settings?.guest_daily_exports || 1);
-  elements.settingPaymentNotice.value = data.settings?.payment_notice || "";
   elements.settingAllowRegistration.checked =
     String(data.settings?.allow_registration || "true").toLowerCase() === "true";
   elements.settingSmtpHost.value = data.settings?.smtp_host || "";
@@ -216,10 +210,6 @@ function renderOverview(data) {
   elements.settingSmtpFromName.value = data.settings?.smtp_from_name || "Z7 PDF 工作台";
   elements.settingSmtpSecure.checked =
     String(data.settings?.smtp_secure || "true").toLowerCase() === "true";
-  elements.settingAlipayAppId.value = data.settings?.alipay_appid || "";
-  elements.settingAlipayGateway.value = data.settings?.alipay_gateway || "https://openapi.alipay.com/gateway.do";
-  elements.settingAlipayPrivateKey.value = data.settings?.alipay_private_key || "";
-  elements.settingAlipayPublicKey.value = data.settings?.alipay_public_key || "";
 }
 
 function createRoleSelect(value) {
@@ -681,18 +671,13 @@ elements.settingsForm?.addEventListener("submit", async (event) => {
           workspace_quota_mb: String(elements.settingQuota.value || 512),
           guest_daily_exports: String(elements.settingGuestDailyExports.value || 0),
           allow_registration: elements.settingAllowRegistration.checked ? "true" : "false",
-          payment_notice: elements.settingPaymentNotice.value,
           smtp_host: elements.settingSmtpHost.value.trim(),
           smtp_port: String(elements.settingSmtpPort.value || 465),
           smtp_user: elements.settingSmtpUser.value.trim(),
           smtp_pass: elements.settingSmtpPass.value,
           smtp_from_email: elements.settingSmtpFromEmail.value.trim(),
           smtp_from_name: elements.settingSmtpFromName.value.trim(),
-          smtp_secure: elements.settingSmtpSecure.checked ? "true" : "false",
-          alipay_appid: elements.settingAlipayAppId.value.trim(),
-          alipay_gateway: elements.settingAlipayGateway.value.trim(),
-          alipay_private_key: elements.settingAlipayPrivateKey.value.trim(),
-          alipay_public_key: elements.settingAlipayPublicKey.value.trim()
+          smtp_secure: elements.settingSmtpSecure.checked ? "true" : "false"
         }
       })
     });

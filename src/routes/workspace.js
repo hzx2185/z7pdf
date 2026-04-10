@@ -5,7 +5,7 @@ const rateLimit = require('express-rate-limit');
 
 const { stmts, DATA_DIR, STORAGE_DIR } = require('../db');
 const { requireUser } = require('../middleware/auth');
-const { nowIso, getSettingValue } = require('../utils/common');
+const { nowIso } = require('../utils/common');
 const {
   formatPlan,
   formatSubscription,
@@ -53,11 +53,7 @@ router.get('/api/workspace/account', requireUser, async (req, res) => {
     entitlements: getEffectivePlanForUser(req.user.id),
     plans: stmts.listPlans.all().map(formatPlan).filter((plan) => plan.active),
     subscriptions: stmts.listSubscriptionsByUser.all(req.user.id).map(formatSubscription),
-    orders: stmts.listPaymentOrdersByUser.all(req.user.id, limit, offset).map(formatPaymentOrder),
-    paymentNotice: getSettingValue(
-      'payment_notice',
-      '演示版支付：会员下单后等待管理员审核并激活订阅。'
-    )
+    orders: stmts.listPaymentOrdersByUser.all(req.user.id, limit, offset).map(formatPaymentOrder)
   });
 });
 

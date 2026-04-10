@@ -152,7 +152,6 @@ const appState = {
   smtpConfigured: false,
   guestPlan: "member",
   guestDailyExports: 1,
-  paymentNotice: "",
   authPanelVisible: false,
   authView: "password",
   codeFlowExistingUser: null,
@@ -1565,7 +1564,6 @@ async function loadAccount() {
   appState.plans = data.plans || [];
   appState.orders = data.orders || [];
   appState.subscriptions = data.subscriptions || [];
-  appState.paymentNotice = data.paymentNotice || "";
   syncAuthAutocompleteFields();
   updateAuthView();
   renderPublicPlans();
@@ -1577,7 +1575,6 @@ async function syncSession() {
     const [config, me] = await Promise.all([requestJson("/api/public-config"), requestJson("/api/auth/me")]);
     appState.allowRegistration = Boolean(config.allowRegistration);
     appState.smtpConfigured = Boolean(config.smtpConfigured);
-    appState.paymentNotice = config.paymentNotice || "";
     appState.plans = config.plans || [];
     appState.guestPlan = config.guestPlan || "member";
     appState.guestDailyExports = Number(config.guestDailyExports || 0);

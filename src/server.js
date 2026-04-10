@@ -72,16 +72,44 @@ setInterval(() => {
 // 初始化数据库
 ensureDefaultSettings();
 
-// 启动副作用模块
-const { bootstrap } = require('./services/bootstrap-service');
-bootstrap().catch(err => console.error('Bootstrap failed:', err));
-
 // 启动服务器
 const PORT = process.env.PORT || 39010;
 const HOST = process.env.HOST || '0.0.0.0';
+const { bootstrap } = require('./services/bootstrap-service');
 
-app.listen(PORT, HOST, () => {
-  console.log(`Z7 PDF 工作台已启动: http://${HOST}:${PORT}`);
-  console.log(`数据目录: ${DATA_DIR}`);
-  console.log(`存储目录: ${STORAGE_DIR}`);
+async function startServer() {
+  let bootstrapResult = null;
+
+  try {
+    bootstrapResult = await bootstrap();
+  } catch (error) {
+    console.error('Bootstrap failed, continuing startup:', error);
+  }
+
+  app.listen(PORT, HOST, () => {
+    console.log(`Z7 PDF 工作台已启动: http://${HOST}:${PORT}`);
+    console.log(`数据目录: ${DATA_DIR}`);
+    console.log(`存储目录: ${STORAGE_DIR}`);
+
+    if (bootstrapResult?.removedSettingsCount) {
+      console.log(`已清理 ${bootstrapResult.removedSettingsCount} 个废弃配置项。`);
+    }
+
+    if (bootstrapResult?.admin?.created) {
+      console.log('');
+      console.log('[首次管理员初始化]');
+      console.log(`邮箱: ${bootstrapResult.admin.email}`);
+      console.log(`密码: ${bootstrapResult.admin.password}`);
+      console.log(
+        bootstrapResult.admin.generated
+          ? '密码来源: 首次启动自动生成，已写入数据库。'
+          : '密码来源: 使用 ADMIN_PASSWORD，已写入数据库。'
+      );
+      console.log('请登录后台后立即修改管理员密码。');
+    }
+  });
+}
+
+startServer().catch((error) => {
+  console.error('Server startup failed:', error);
 });

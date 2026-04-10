@@ -189,18 +189,13 @@ router.post('/api/admin/settings', requireAdmin, express.json({ limit: '1mb' }),
       'guest_plan',
       'guest_daily_exports',
       'workspace_quota_mb',
-      'payment_notice',
       'smtp_host',
       'smtp_port',
       'smtp_secure',
       'smtp_user',
       'smtp_pass',
       'smtp_from_email',
-      'smtp_from_name',
-      'alipay_appid',
-      'alipay_gateway',
-      'alipay_private_key',
-      'alipay_public_key'
+      'smtp_from_name'
     ]);
     const incoming =
       req.body.settings && typeof req.body.settings === 'object' ? req.body.settings : {};

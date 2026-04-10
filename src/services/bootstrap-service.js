@@ -1,5 +1,16 @@
+const crypto = require('crypto');
+
 const { stmts } = require('../db');
 const { nowIso, hashPassword } = require('../utils/common');
+
+const DEFAULT_ADMIN_EMAIL = "admin@z7pdf.local";
+const DEPRECATED_SETTING_KEYS = [
+  "payment_notice",
+  "alipay_appid",
+  "alipay_gateway",
+  "alipay_private_key",
+  "alipay_public_key"
+];
 
 function seedDefaultPlans() {
   const now = nowIso();
@@ -76,18 +87,55 @@ function seedDefaultPlans() {
   });
 }
 
-async function seedAdminUser() {
-  const email = process.env.ADMIN_EMAIL || "admin@z7pdf.local";
-  const password = process.env.ADMIN_PASSWORD || "admin123456";
-  const existing = stmts.findUserByEmail.get(email);
-  if (!existing) {
-    stmts.createUser.run(email, await hashPassword(password), "admin", "pro", nowIso());
+function cleanupDeprecatedSettings() {
+  return DEPRECATED_SETTING_KEYS.reduce(
+    (removedCount, key) => removedCount + Number(stmts.deleteSetting.run(key).changes || 0),
+    0
+  );
+}
+
+function generateAdminPassword(length = 16) {
+  const chars = 'ABCDEFGHJKLMNPQRSTUVWXYZabcdefghijkmnopqrstuvwxyz23456789';
+  let password = '';
+  for (let index = 0; index < length; index += 1) {
+    password += chars[crypto.randomInt(0, chars.length)];
   }
+  return password;
+}
+
+async function seedAdminUser() {
+  const email = String(process.env.ADMIN_EMAIL || DEFAULT_ADMIN_EMAIL).trim().toLowerCase() || DEFAULT_ADMIN_EMAIL;
+  const configuredPassword = String(process.env.ADMIN_PASSWORD || '');
+  const existing = stmts.findUserByEmail.get(email);
+  if (existing) {
+    return {
+      created: false,
+      email,
+      password: null,
+      generated: false
+    };
+  }
+
+  const generated = !configuredPassword;
+  const password = generated ? generateAdminPassword() : configuredPassword;
+
+  stmts.createUser.run(email, await hashPassword(password), "admin", "pro", nowIso());
+  return {
+    created: true,
+    email,
+    password,
+    generated
+  };
 }
 
 async function bootstrap() {
   seedDefaultPlans();
-  await seedAdminUser().catch(console.error);
+  const removedSettingsCount = cleanupDeprecatedSettings();
+  const admin = await seedAdminUser();
+  return {
+    admin,
+    removedSettingsCount
+  };
 }
 
 module.exports = {

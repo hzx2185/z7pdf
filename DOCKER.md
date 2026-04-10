@@ -59,6 +59,7 @@ docker run -d \
 - 宿主机目录：`./data`
 - 健康检查地址：`/health`
 - 启动时会自动尝试修正 `./data` 的写入权限
+- 首次启动如果数据库中还没有管理员账号，会自动写入管理员账号；未设置 `ADMIN_PASSWORD` 时会生成随机密码并输出到容器日志
 
 ## docker-compose.yml
 
@@ -100,6 +101,7 @@ docker compose down
 - 如果 `./data` 不存在，Docker 会在首次启动时创建。
 - 容器入口脚本会在启动时尝试对 `./data` 执行 `chown node:node`，然后再以 `node` 用户运行应用。
 - 在 Linux 宿主机上，这通常会让 `./data` 的属主变成 `1000:1000`。
+- 如果你使用 `docker compose up -d --build`，初始管理员随机密码不会直接显示在当前命令末尾，需要再执行 `docker compose logs --tail=50 z7pdf` 查看
 
 ## 环境变量与隐私
 
