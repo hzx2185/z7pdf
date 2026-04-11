@@ -433,7 +433,7 @@ const stmts = {
   getActiveSubscriptionForUser: db.prepare(`
     SELECT id, user_id, plan_code, status, period_start, period_end, payment_provider, external_ref, amount_cents, created_at, updated_at
     FROM subscriptions
-    WHERE user_id = ? AND status = 'active'
+    WHERE user_id = ? AND status = 'active' AND datetime(period_end) >= datetime('now')
     ORDER BY datetime(period_end) DESC, id DESC
     LIMIT 1
   `),
@@ -456,6 +456,9 @@ const stmts = {
   updateSubscriptionPeriod: db.prepare(`
     UPDATE subscriptions SET period_end = ?, updated_at = ? WHERE id = ?
   `),
+  updateSubscriptionPlan: db.prepare(`
+    UPDATE subscriptions SET plan_code = ?, updated_at = ? WHERE id = ?
+  `),
   expireSubscriptionsForUser: db.prepare(`
     UPDATE subscriptions
     SET status = 'expired', updated_at = ?
@@ -464,34 +467,6 @@ const stmts = {
   updateSubscriptionStatus: db.prepare(`
     UPDATE subscriptions
     SET status = ?, period_end = ?, updated_at = ?
-    WHERE id = ?
-  `),
-  createPaymentOrder: db.prepare(`
-    INSERT INTO payment_orders (
-      user_id, plan_code, billing_interval, amount_cents, payment_method, status, note, created_at, updated_at, paid_at
-    ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
-  `),
-  listPaymentOrders: db.prepare(`
-    SELECT id, user_id, plan_code, billing_interval, amount_cents, payment_method, status, note, created_at, updated_at, paid_at
-    FROM payment_orders
-    ORDER BY datetime(updated_at) DESC, id DESC
-    LIMIT ? OFFSET ?
-  `),
-  listPaymentOrdersByUser: db.prepare(`
-    SELECT id, user_id, plan_code, billing_interval, amount_cents, payment_method, status, note, created_at, updated_at, paid_at
-    FROM payment_orders
-    WHERE user_id = ?
-    ORDER BY datetime(updated_at) DESC, id DESC
-    LIMIT ? OFFSET ?
-  `),
-  getPaymentOrder: db.prepare(`
-    SELECT id, user_id, plan_code, billing_interval, amount_cents, payment_method, status, note, created_at, updated_at, paid_at
-    FROM payment_orders
-    WHERE id = ?
-  `),
-  updatePaymentOrder: db.prepare(`
-    UPDATE payment_orders
-    SET status = ?, note = ?, updated_at = ?, paid_at = ?
     WHERE id = ?
   `),
   createRedemptionCode: db.prepare(`
@@ -555,7 +530,11 @@ const stmts = {
     files: db.prepare(`SELECT COUNT(*) AS total FROM files WHERE deleted_at = ''`),
     storage: db.prepare(`SELECT COALESCE(SUM(size_bytes), 0) AS total FROM files WHERE deleted_at = ''`),
     shares: db.prepare(`SELECT COUNT(*) AS total FROM shares WHERE enabled = 1`),
-    pendingOrders: db.prepare(`SELECT COUNT(*) AS total FROM payment_orders WHERE status = 'pending'`)
+    activeMemberships: db.prepare(`
+      SELECT COUNT(*) AS total
+      FROM subscriptions
+      WHERE status = 'active' AND datetime(period_end) >= datetime('now')
+    `)
   }
 };
 

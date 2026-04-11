@@ -18,8 +18,7 @@
           <a href="#members" class="nav-link" data-page="members">会员</a>
           <a href="#plans" class="nav-link" data-page="plans">套餐</a>
           <a href="#redeem" class="nav-link" data-page="redeem">兑换码</a>
-          <a href="#orders" class="nav-link" data-page="orders">订单</a>
-          <a href="#subscriptions" class="nav-link" data-page="subscriptions">订阅</a>
+          <a href="#subscriptions" class="nav-link" data-page="subscriptions">有效期</a>
         </nav>
         <div class="header-actions">
           <a href="/" class="btn btn-outline">返回工作台</a>
@@ -34,7 +33,7 @@
         <div class="admin-overview">
           <div class="overview-hero">
             <h1>后台管理</h1>
-            <p>统一维护站点配置、会员套餐、订单订阅和邮箱发信参数</p>
+            <p>统一维护站点配置、会员套餐、兑换码和会员有效期</p>
           </div>
           <div id="overviewCards" class="stats-grid"></div>
         </div>
@@ -254,59 +253,13 @@
         </div>
       </section>
 
-      <!-- 订阅订单 -->
-      <section id="orders" class="page-section">
-        <div class="section-container">
-          <div class="section-header">
-            <span class="kicker">订单管理</span>
-            <h2>订阅订单</h2>
-            <p class="section-desc">查看和管理订单</p>
-          </div>
-
-          <div class="card">
-            <div class="filter-bar">
-              <label class="field">
-                <span>搜索</span>
-                <input type="search" id="orderSearch" placeholder="按会员或套餐搜索" />
-              </label>
-              <label class="field compact">
-                <span>状态</span>
-                <select id="orderStatusFilter">
-                  <option value="">全部</option>
-                  <option value="pending">待审核</option>
-                  <option value="paid">已支付</option>
-                  <option value="cancelled">已取消</option>
-                </select>
-              </label>
-              <p id="orderFilterSummary" class="filter-summary">0 / 0</p>
-            </div>
-            <div class="table-wrapper">
-              <table class="data-table">
-                <thead>
-                  <tr>
-                    <th>ID</th>
-                    <th>会员</th>
-                    <th>套餐</th>
-                    <th>金额</th>
-                    <th>状态</th>
-                    <th>备注</th>
-                    <th>操作</th>
-                  </tr>
-                </thead>
-                <tbody id="ordersTableBody"></tbody>
-              </table>
-            </div>
-          </div>
-        </div>
-      </section>
-
-      <!-- 有效订阅 -->
+      <!-- 会员有效期 -->
       <section id="subscriptions" class="page-section">
         <div class="section-container">
           <div class="section-header">
-            <span class="kicker">订阅管理</span>
-            <h2>有效订阅</h2>
-            <p class="section-desc">管理会员订阅状态</p>
+            <span class="kicker">会员有效期</span>
+            <h2>会员有效期</h2>
+            <p class="section-desc">管理会员当前套餐、生效状态和到期时间</p>
           </div>
 
           <div class="card">
@@ -378,6 +331,6 @@
       window.addEventListener('hashchange', handleHash);
       handleHash();
     </script>
-    <script type="module" src="/admin.js?v=0414"></script>
+    <script type="module" src="/admin.js?v=0415"></script>
   </body>
 </html>

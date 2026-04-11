@@ -36,11 +36,16 @@ function formatSubscription(row) {
     return null;
   }
 
+  const effectiveStatus =
+    row.status === 'active' && new Date(row.period_end || 0).getTime() < Date.now()
+      ? 'expired'
+      : row.status;
+
   return {
     id: row.id,
     userId: row.user_id,
     planCode: row.plan_code,
-    status: row.status,
+    status: effectiveStatus,
     periodStart: row.period_start,
     periodEnd: row.period_end,
     paymentProvider: row.payment_provider,
@@ -48,26 +53,6 @@ function formatSubscription(row) {
     amountCents: Number(row.amount_cents || 0),
     createdAt: row.created_at,
     updatedAt: row.updated_at
-  };
-}
-
-function formatPaymentOrder(row) {
-  if (!row) {
-    return null;
-  }
-
-  return {
-    id: row.id,
-    userId: row.user_id,
-    planCode: row.plan_code,
-    billingInterval: row.billing_interval,
-    amountCents: Number(row.amount_cents || 0),
-    paymentMethod: row.payment_method,
-    status: row.status,
-    note: row.note,
-    createdAt: row.created_at,
-    updatedAt: row.updated_at,
-    paidAt: row.paid_at
   };
 }
 
@@ -186,7 +171,6 @@ async function isOcrAvailable() {
 module.exports = {
   formatPlan,
   formatSubscription,
-  formatPaymentOrder,
   getPlanByCode,
   getEffectivePlanForUser,
   getGuestDailyExports,

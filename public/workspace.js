@@ -115,7 +115,6 @@ const elements = {
   workspaceMemberSummary: document.querySelector("#workspaceMemberSummary"),
   workspacePlanSummary: document.querySelector("#workspacePlanSummary"),
   workspacePlans: document.querySelector("#workspacePlans"),
-  workspaceOrders: document.querySelector("#workspaceOrders"),
   workspaceTabOverviewBtn: document.querySelector("#workspaceTabOverviewBtn"),
   workspaceTabSharesBtn: document.querySelector("#workspaceTabSharesBtn"),
   workspaceTabPlanBtn: document.querySelector("#workspaceTabPlanBtn"),
@@ -166,7 +165,6 @@ const appState = {
   folderTree: [],
   shares: [],
   plans: [],
-  orders: [],
   subscriptions: [],
   batchRenameOpen: false,
   selectedFileIds: new Set(),
@@ -213,31 +211,6 @@ function formatBillingInterval(interval) {
     yearly: "年"
   };
   return labels[value] || (interval || "周期");
-}
-
-function formatOrderStatus(status) {
-  const value = String(status || "").trim().toLowerCase();
-  const labels = {
-    pending: "待审核",
-    paid: "已支付",
-    cancelled: "已取消",
-    failed: "失败"
-  };
-  return labels[value] || (status || "未设置");
-}
-
-function formatPaymentMethod(method) {
-  const value = String(method || "").trim().toLowerCase();
-  const labels = {
-    manual: "人工处理",
-    offline: "线下支付",
-    bank: "银行转账",
-    alipay: "支付宝",
-    wechat: "微信支付",
-    paypal: "PayPal",
-    stripe: "Stripe"
-  };
-  return labels[value] || (method || "未设置");
 }
 
 function formatPlanLabel(planCode) {
@@ -1464,11 +1437,10 @@ function renderShares() {
 }
 
 function renderPlans() {
-  if (!elements.workspacePlans || !elements.workspaceOrders || !elements.workspacePlanSummary) {
+  if (!elements.workspacePlans || !elements.workspacePlanSummary) {
     return;
   }
   elements.workspacePlans.innerHTML = "";
-  elements.workspaceOrders.innerHTML = "";
 
   if (!appState.entitlements) {
     if (elements.workspaceMemberSummary) {
@@ -1480,7 +1452,6 @@ function renderPlans() {
   }
 
   if (elements.workspaceMemberSummary) {
-    const pendingCount = appState.orders.filter((order) => order.status === "pending").length;
     const usedBytes = Number(elements.workspaceUsage?.dataset.usedBytes || 0);
     const quotaBytes = Number(elements.workspaceUsage?.dataset.quotaBytes || 0);
     const subscriptionExpiresText = getSubscriptionExpiryText();
@@ -1490,14 +1461,19 @@ function renderPlans() {
         <div class="member-overview-row"><strong>文件：</strong>${appState.workspace.length}/${appState.entitlements.maxFiles}</div>
         <div class="member-overview-row"><strong>分享：</strong>${appState.shares.length}/${appState.entitlements.maxShareLinks}</div>
         <div class="member-overview-row"><strong>套餐：</strong>${appState.entitlements.name}</div>
-        <div class="member-overview-row"><strong>订单：</strong>${pendingCount} 个</div>
         <div class="member-overview-row member-overview-expiry"><strong>到期：</strong>${subscriptionExpiresText}</div>
       </div>
     `;
   }
 
-  elements.workspacePlanSummary.innerHTML = "";
-  elements.workspacePlanSummary.classList.add("hidden");
+  elements.workspacePlanSummary.innerHTML = `
+    <div class="member-overview-compact">
+      <div class="member-overview-row"><strong>当前套餐：</strong>${appState.entitlements.name}</div>
+      <div class="member-overview-row member-overview-expiry"><strong>会员到期：</strong>${getSubscriptionExpiryText()}</div>
+      <div class="member-overview-row"><strong>开通方式：</strong>使用兑换码开通或续期会员</div>
+    </div>
+  `;
+  elements.workspacePlanSummary.classList.remove("hidden");
 
   appState.plans.forEach((plan) => {
     const isCurrent = plan.code === appState.entitlements.code;
@@ -1518,18 +1494,6 @@ function renderPlans() {
       }));
     }
     elements.workspacePlans.appendChild(card);
-  });
-
-  // 只显示最近的3条订单
-  appState.orders.slice(0, 3).forEach((order) => {
-    const item = document.createElement("article");
-    item.className = "order-item";
-    item.innerHTML = `
-      <strong>订单 #${order.id}</strong>
-      <span>${formatPlanLabel(order.planCode)} / ${formatMoney(order.amountCents)} / ${formatPaymentMethod(order.paymentMethod)}</span>
-      <span>状态：${formatOrderStatus(order.status)}</span>
-    `;
-    elements.workspaceOrders.appendChild(item);
   });
 }
 
@@ -1562,7 +1526,6 @@ async function loadAccount() {
   const data = await requestJson("/api/workspace/account");
   appState.entitlements = data.entitlements || null;
   appState.plans = data.plans || [];
-  appState.orders = data.orders || [];
   appState.subscriptions = data.subscriptions || [];
   syncAuthAutocompleteFields();
   updateAuthView();

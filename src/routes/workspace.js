@@ -9,7 +9,6 @@ const { nowIso } = require('../utils/common');
 const {
   formatPlan,
   formatSubscription,
-  formatPaymentOrder,
   getEffectivePlanForUser,
   enforceFileCountLimit
 } = require('../services/plan-service');
@@ -44,16 +43,11 @@ const upload = multer({
 });
 
 router.get('/api/workspace/account', requireUser, async (req, res) => {
-  const page = Math.max(1, Number(req.query.page || 1));
-  const limit = Math.max(1, Number(req.query.limit || 50));
-  const offset = (page - 1) * limit;
-
   res.json({
     user: req.user,
     entitlements: getEffectivePlanForUser(req.user.id),
     plans: stmts.listPlans.all().map(formatPlan).filter((plan) => plan.active),
-    subscriptions: stmts.listSubscriptionsByUser.all(req.user.id).map(formatSubscription),
-    orders: stmts.listPaymentOrdersByUser.all(req.user.id, limit, offset).map(formatPaymentOrder)
+    subscriptions: stmts.listSubscriptionsByUser.all(req.user.id).map(formatSubscription)
   });
 });
 

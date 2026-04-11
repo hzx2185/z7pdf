@@ -10,7 +10,6 @@ const authRoutes = require('./routes/auth');
 const workspaceRoutes = require('./routes/workspace');
 const shareRoutes = require('./routes/share');
 const adminRoutes = require('./routes/admin');
-const paymentRoutes = require('./routes/payment');
 const toolsRoutes = require('./routes/tools');
 const visualRoutes = require('./routes/visual');
 
@@ -56,7 +55,6 @@ app.use(authRoutes);
 app.use(workspaceRoutes);
 app.use(shareRoutes);
 app.use(adminRoutes);
-app.use(paymentRoutes);
 app.use(toolsRoutes);
 app.use(visualRoutes);
 

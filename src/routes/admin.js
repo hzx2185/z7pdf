@@ -7,10 +7,9 @@ const { publicUser } = require('../services/session-service');
 const {
   formatPlan,
   formatSubscription,
-  formatPaymentOrder,
   getPlanByCode
 } = require('../services/plan-service');
-const { createRedemptionCodes, updatePaymentOrderStatus } = require('../services/billing-service');
+const { createRedemptionCodes } = require('../services/billing-service');
 
 const router = express.Router();
 
@@ -21,7 +20,7 @@ router.get('/api/admin/overview', requireAdmin, (_req, res) => {
       files: Number(stmts.stats.files.get().total || 0),
       storageBytes: Number(stmts.stats.storage.get().total || 0),
       shares: Number(stmts.stats.shares.get().total || 0),
-      pendingOrders: Number(stmts.stats.pendingOrders.get().total || 0)
+      activeMemberships: Number(stmts.stats.activeMemberships.get().total || 0)
     },
     settings: getSettingsObject()
   });
@@ -77,47 +76,6 @@ router.post('/api/admin/plans/:code', requireAdmin, express.json({ limit: '512kb
   }
 });
 
-router.get('/api/admin/orders', requireAdmin, (req, res) => {
-  const page = Math.max(1, Number(req.query.page || 1));
-  const limit = Math.max(1, Number(req.query.limit || 200));
-  const offset = (page - 1) * limit;
-
-  const orders = stmts.listPaymentOrders.all(limit, offset).map((row) => {
-    const user = stmts.findUserById.get(row.user_id);
-    return {
-      ...formatPaymentOrder(row),
-      userEmail: user?.email || ''
-    };
-  });
-
-  res.json({ orders, page, limit });
-});
-
-router.patch('/api/admin/orders/:id', requireAdmin, express.json({ limit: '512kb' }), async (req, res) => {
-  try {
-    const orderId = Number(req.params.id);
-    const order = stmts.getPaymentOrder.get(orderId);
-    if (!order) {
-      return res.status(404).json({ error: '订单不存在。' });
-    }
-
-    const nextStatus = String(req.body.status || order.status).trim();
-    if (!['pending', 'paid', 'cancelled', 'failed'].includes(nextStatus)) {
-      return res.status(400).json({ error: '订单状态仅支持 pending/paid/cancelled/failed。' });
-    }
-
-    const updatedOrder = updatePaymentOrderStatus(order, {
-      status: nextStatus,
-      note: String(req.body.note || order.note || '').trim(),
-      externalRef: `order:${orderId}`
-    });
-
-    return res.json({ order: formatPaymentOrder(updatedOrder) });
-  } catch (error) {
-    return res.status(400).json({ error: error.message || '订单更新失败。' });
-  }
-});
-
 router.get('/api/admin/subscriptions', requireAdmin, (_req, res) => {
   const subscriptions = stmts.listSubscriptions.all().map((row) => {
     const user = stmts.findUserById.get(row.user_id);
@@ -135,7 +93,7 @@ router.patch('/api/admin/subscriptions/:id', requireAdmin, express.json({ limit:
     const subscriptionId = Number(req.params.id);
     const target = stmts.listSubscriptions.all().find((row) => row.id === subscriptionId);
     if (!target) {
-      return res.status(404).json({ error: '订阅不存在。' });
+      return res.status(404).json({ error: '会员有效期记录不存在。' });
     }
 
     const status = String(req.body.status || target.status).trim();
@@ -148,7 +106,7 @@ router.patch('/api/admin/subscriptions/:id', requireAdmin, express.json({ limit:
       )
     });
   } catch (error) {
-    return res.status(400).json({ error: error.message || '订阅更新失败。' });
+    return res.status(400).json({ error: error.message || '会员有效期更新失败。' });
   }
 });
 
@@ -165,11 +123,18 @@ router.patch('/api/admin/users/:id', requireAdmin, express.json({ limit: '512kb'
     if (!['admin', 'member'].includes(role)) {
       return res.status(400).json({ error: '角色仅支持 admin 或 member。' });
     }
+    if (!getPlanByCode(plan)) {
+      return res.status(400).json({ error: '套餐不存在或已被删除。' });
+    }
     if (userId === req.user.id && role !== 'admin') {
       return res.status(400).json({ error: '不能把当前登录管理员降级为普通会员。' });
     }
 
     stmts.updateUserAdmin.run(role, plan, userId);
+    const activeSubscription = stmts.getActiveSubscriptionForUser.get(userId);
+    if (activeSubscription) {
+      stmts.updateSubscriptionPlan.run(plan, nowIso(), activeSubscription.id);
+    }
     return res.json({ user: publicUser(stmts.findUserById.get(userId)) });
   } catch (error) {
     return res.status(400).json({ error: error.message || '用户更新失败。' });

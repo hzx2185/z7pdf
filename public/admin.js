@@ -3,7 +3,6 @@ import { escapeHtml, requestJson, setResult as setElementResult } from "./common
 const elements = {
   overviewCards: document.querySelector("#overviewCards"),
   usersTableBody: document.querySelector("#usersTableBody"),
-  ordersTableBody: document.querySelector("#ordersTableBody"),
   subscriptionsTableBody: document.querySelector("#subscriptionsTableBody"),
   plansList: document.querySelector("#plansList"),
   settingsForm: document.querySelector("#settingsForm"),
@@ -24,12 +23,10 @@ const elements = {
   memberRoleFilter: document.querySelector("#memberRoleFilter"),
   planSearch: document.querySelector("#planSearch"),
   planStatusFilter: document.querySelector("#planStatusFilter"),
-  orderSearch: document.querySelector("#orderSearch"),
-  orderStatusFilter: document.querySelector("#orderStatusFilter"),
   subscriptionSearch: document.querySelector("#subscriptionSearch"),
   subscriptionStatusFilter: document.querySelector("#subscriptionStatusFilter"),
   adminResult: document.querySelector("#adminResult"),
-  navLinks: Array.from(document.querySelectorAll(".admin-nav-link")),
+  navLinks: Array.from(document.querySelectorAll(".nav-link[data-page]")),
   // 兑换码
   redeemPlanSelect: document.querySelector("#redeemPlanSelect"),
   redeemDuration: document.querySelector("#redeemDuration"),
@@ -43,7 +40,6 @@ const elements = {
 const state = {
   users: [],
   plans: [],
-  orders: [],
   subscriptions: []
 };
 
@@ -74,28 +70,11 @@ function formatStatusLabel(status) {
   const labels = {
     member: "会员",
     admin: "管理员",
-    pending: "待审核",
-    paid: "已支付",
     cancelled: "已取消",
-    failed: "失败",
     active: "生效中",
     expired: "已过期"
   };
   return labels[status] || status;
-}
-
-function formatPaymentMethod(method) {
-  const value = String(method || "").trim().toLowerCase();
-  const labels = {
-    manual: "人工处理",
-    offline: "线下支付",
-    bank: "银行转账",
-    alipay: "支付宝",
-    wechat: "微信支付",
-    paypal: "PayPal",
-    stripe: "Stripe"
-  };
-  return labels[value] || (method || "未设置");
 }
 
 function formatPlanLabel(planCode) {
@@ -181,7 +160,7 @@ function renderOverview(data) {
     { label: "文件数", value: Number(data.stats?.files || 0) },
     { label: "总占用", value: formatBytes(data.stats?.storageBytes || 0) },
     { label: "有效分享", value: Number(data.stats?.shares || 0) },
-    { label: "待审订单", value: Number(data.stats?.pendingOrders || 0) }
+    { label: "有效会员", value: Number(data.stats?.activeMemberships || 0) }
   ];
 
   elements.overviewCards.innerHTML = "";
@@ -224,6 +203,21 @@ function createRoleSelect(value) {
   return select;
 }
 
+function createPlanSelect(value) {
+  const select = document.createElement("select");
+  state.plans.forEach((plan) => {
+    const option = document.createElement("option");
+    option.value = plan.code;
+    option.textContent = `${plan.name} (${plan.code})`;
+    if (plan.code === value) option.selected = true;
+    select.appendChild(option);
+  });
+  if (!select.value && state.plans[0]) {
+    select.value = state.plans[0].code;
+  }
+  return select;
+}
+
 function renderUsers(users = []) {
   elements.usersTableBody.innerHTML = "";
   if (!users.length) {
@@ -234,10 +228,8 @@ function renderUsers(users = []) {
     const row = document.createElement("tr");
     const roleSelect = createRoleSelect(user.role);
     roleSelect.className = "admin-select";
-    const planInput = document.createElement("input");
-    planInput.type = "text";
-    planInput.value = user.plan;
-    planInput.className = "compact-input admin-input";
+    const planSelect = createPlanSelect(user.plan);
+    planSelect.className = "admin-select";
 
     const saveButton = document.createElement("button");
     saveButton.type = "button";
@@ -250,7 +242,7 @@ function renderUsers(users = []) {
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify({
             role: roleSelect.value,
-            plan: planInput.value
+            plan: planSelect.value
           })
         });
         setResult(`已更新用户：${user.email}`);
@@ -275,7 +267,7 @@ function renderUsers(users = []) {
       <td class="admin-cell-action"></td>
     `;
     row.querySelector(".admin-cell-role").appendChild(roleSelect);
-    row.querySelector(".admin-cell-plan").appendChild(planInput);
+    row.querySelector(".admin-cell-plan").appendChild(planSelect);
     row.querySelector(".admin-cell-action").appendChild(saveButton);
     elements.usersTableBody.appendChild(row);
   });
@@ -390,71 +382,10 @@ function renderPlans(plans = []) {
   });
 }
 
-function renderOrders(orders = []) {
-  elements.ordersTableBody.innerHTML = "";
-  if (!orders.length) {
-    renderEmptyRow(elements.ordersTableBody, 8, "当前没有订阅订单", "会员提交订阅后，订单会在这里等待审核和更新状态。");
-    return;
-  }
-  orders.forEach((order) => {
-    const row = document.createElement("tr");
-    const statusSelect = document.createElement("select");
-    ["pending", "paid", "cancelled", "failed"].forEach((status) => {
-      const option = document.createElement("option");
-      option.value = status;
-      option.textContent = formatStatusLabel(status);
-      option.selected = status === order.status;
-      statusSelect.appendChild(option);
-    });
-    const noteInput = document.createElement("input");
-    noteInput.type = "text";
-    noteInput.value = order.note || "";
-    noteInput.className = "compact-input";
-    const saveButton = document.createElement("button");
-    saveButton.type = "button";
-    saveButton.className = "ghost-button";
-    saveButton.textContent = "保存";
-    saveButton.addEventListener("click", async () => {
-      try {
-        await requestJson(`/api/admin/orders/${order.id}`, {
-          method: "PATCH",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({
-            status: statusSelect.value,
-            note: noteInput.value
-          })
-        });
-        setResult(`已更新订单 #${order.id}`);
-        await loadAdminData();
-      } catch (error) {
-        setResult(error.message || "订单更新失败", true);
-      }
-    });
-
-    row.innerHTML = `
-      <td>${order.id}</td>
-      <td><strong>${escapeHtml(order.userEmail || "")}</strong></td>
-      <td>${createBadge(formatPlanLabel(order.planCode), "neutral")}</td>
-      <td>${formatMoney(order.amountCents)}</td>
-      <td>${escapeHtml(formatPaymentMethod(order.paymentMethod))}</td>
-      <td class="admin-cell-role"></td>
-      <td class="admin-cell-plan"></td>
-      <td class="admin-cell-action"></td>
-    `;
-    statusSelect.className = "admin-select";
-    noteInput.classList.add("admin-input");
-    saveButton.classList.add("admin-action-button");
-    row.querySelector(".admin-cell-role").appendChild(statusSelect);
-    row.querySelector(".admin-cell-plan").appendChild(noteInput);
-    row.querySelector(".admin-cell-action").appendChild(saveButton);
-    elements.ordersTableBody.appendChild(row);
-  });
-}
-
 function renderSubscriptions(subscriptions = []) {
   elements.subscriptionsTableBody.innerHTML = "";
   if (!subscriptions.length) {
-    renderEmptyRow(elements.subscriptionsTableBody, 7, "当前没有有效订阅", "订单支付并激活后，对应订阅会出现在这里。");
+    renderEmptyRow(elements.subscriptionsTableBody, 7, "当前没有会员有效期记录", "会员兑换成功或后台手动调整后，会在这里显示当前状态和到期时间。");
     return;
   }
   subscriptions.forEach((subscription) => {
@@ -485,10 +416,10 @@ function renderSubscriptions(subscriptions = []) {
             periodEnd: endInput.value
           })
         });
-        setResult(`已更新订阅 #${subscription.id}`);
+        setResult(`已更新会员有效期 #${subscription.id}`);
         await loadAdminData();
       } catch (error) {
-        setResult(error.message || "订阅更新失败", true);
+        setResult(error.message || "会员有效期更新失败", true);
       }
     });
 
@@ -516,8 +447,6 @@ function applyFilters() {
   const memberRole = elements.memberRoleFilter?.value || "";
   const planKeyword = elements.planSearch?.value.trim().toLowerCase() || "";
   const planStatus = elements.planStatusFilter?.value || "";
-  const orderKeyword = elements.orderSearch?.value.trim().toLowerCase() || "";
-  const orderStatus = elements.orderStatusFilter?.value || "";
   const subscriptionKeyword = elements.subscriptionSearch?.value.trim().toLowerCase() || "";
   const subscriptionStatus = elements.subscriptionStatusFilter?.value || "";
 
@@ -541,16 +470,6 @@ function applyFilters() {
     return matchesKeyword && matchesStatus;
   });
 
-  const filteredOrders = state.orders.filter((order) => {
-    const matchesKeyword =
-      !orderKeyword ||
-      String(order.userEmail || "").toLowerCase().includes(orderKeyword) ||
-      String(order.planCode || "").toLowerCase().includes(orderKeyword) ||
-      String(order.note || "").toLowerCase().includes(orderKeyword);
-    const matchesStatus = !orderStatus || String(order.status || "") === orderStatus;
-    return matchesKeyword && matchesStatus;
-  });
-
   const filteredSubscriptions = state.subscriptions.filter((subscription) => {
     const matchesKeyword =
       !subscriptionKeyword ||
@@ -562,23 +481,20 @@ function applyFilters() {
 
   renderUsers(filteredUsers);
   renderPlans(filteredPlans);
-  renderOrders(filteredOrders);
   renderSubscriptions(filteredSubscriptions);
 }
 
 async function loadAdminData() {
   try {
-    const [overview, users, plans, orders, subscriptions, redeemCodes] = await Promise.all([
+    const [overview, users, plans, subscriptions, redeemCodes] = await Promise.all([
       requestJson("/api/admin/overview"),
       requestJson("/api/admin/users"),
       requestJson("/api/admin/plans"),
-      requestJson("/api/admin/orders"),
       requestJson("/api/admin/subscriptions"),
       requestJson("/api/admin/redeem-codes")
     ]);
     state.users = users.users || [];
     state.plans = plans.plans || [];
-    state.orders = orders.orders || [];
     state.subscriptions = subscriptions.subscriptions || [];
     state.redeemCodes = redeemCodes.codes || [];
     renderOverview(overview);
@@ -693,8 +609,6 @@ elements.settingsForm?.addEventListener("submit", async (event) => {
   elements.memberRoleFilter,
   elements.planSearch,
   elements.planStatusFilter,
-  elements.orderSearch,
-  elements.orderStatusFilter,
   elements.subscriptionSearch,
   elements.subscriptionStatusFilter
 ].forEach((control) => {
@@ -717,6 +631,7 @@ window.addEventListener("load", () => {
     try {
       const res = await requestJson("/api/admin/redeem-codes", {
         method: "POST",
+        headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
           planCode,
           durationDays,
