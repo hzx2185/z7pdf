@@ -138,7 +138,7 @@
             </details>
             <details class="faq-item">
               <summary>页面▾ 菜单</summary>
-              <p>可统一调整页面尺寸（A3/A4/A5/Letter/Legal）、方向、边距、背景色和缩放方式。适合把不同来源的 PDF 统一成同一版式后再导出。</p>
+              <p>可统一调整页面尺寸（A3/A4/A5/Letter/Legal）、方向、边距、背景色和缩放方式。适合把不同来源的 PDF 统一成同一版式后再导出。页面设置默认不启用，重新打开文件后也会恢复为未勾选状态，避免把上一份文件的版式参数误带到新文件。</p>
             </details>
             <details class="faq-item">
               <summary>水印▾ 菜单</summary>
@@ -177,7 +177,7 @@
               <p>
                 <strong>灰度</strong>：转换为灰度模式，适合打印归档<br>
                 <strong>反色</strong>：创建负片版本<br>
-                <strong>扫描</strong>：模拟扫描件效果<br>
+                <strong>扫描</strong>：模拟扫描件效果，并尽量保持原页面物理尺寸不变<br>
                 <strong>识别</strong>：对扫描件进行 OCR 文字识别，支持中英文<br>
                 <strong>归档</strong>：转换为 PDF/A 格式（1b/2b/3b）<br>
                 这些开关可以叠加使用，适合批量整理打印稿、扫描件和归档文件。
@@ -210,6 +210,22 @@
               <summary>页面双击预览、裁剪预览和缩略图状态分别是什么？</summary>
               <p>双击缩略图会进入预览页；裁剪模式下会在页面上显示保留框，并同步展示实时裁剪预览；缩略图卡片右侧说明会显示该页是否有“裁剪”“标注”等编辑状态，方便快速检查。</p>
             </details>
+            <details class="faq-item">
+              <summary>页面设置、扫描、压缩这些开关会自动记住吗？</summary>
+              <p>不会。页面设置、水印、印章、压缩、灰度、扫描、OCR、PDF/A、加密等会影响导出结果的选项，重新打开文件后会恢复为未启用状态。这样可以避免你在处理下一份文件时，误用上一份文件的导出参数。</p>
+            </details>
+            <details class="faq-item">
+              <summary>“在线保存”和“导出选中 / 导出当前页”有什么区别？</summary>
+              <p>“在线保存”会把当前工作台的编辑结果写回会员空间，并在保存后重新加载该文件，方便继续编辑；“导出选中 / 导出当前页”则是直接下载结果文件，不会覆盖空间中的原文件。两者都会应用当前已启用的页面设置、扫描、压缩、水印等参数。</p>
+            </details>
+            <details class="faq-item">
+              <summary>为什么预览和最终导出有时看起来不完全一样？</summary>
+              <p>工作台缩略图与全屏预览会尽量模拟最终导出效果，但页面尺寸统一、扫描、OCR、压缩等后处理最终仍以导出的真实 PDF 为准。检查 A4、横纵方向、边距或扫描效果时，建议以导出后的页面尺寸提示和下载文件为准。</p>
+            </details>
+            <details class="faq-item">
+              <summary>长票据、超长截图和方向自动识别怎么处理？</summary>
+              <p>系统会优先按页面可见内容判断方向，并在缩略图里尽量完整显示超长页面，减少因为长宽比过大导致的误判。若某些长页需要严格统一到 A4，建议启用“页面设置”，再配合“自动识别”与合适的缩放方式一起导出检查。</p>
+            </details>
           </div>
 
           <div class="section-header" style="margin-top: 32px;">
@@ -223,6 +239,10 @@
             <details class="faq-item">
               <summary>游客和会员有什么区别？</summary>
               <p>游客可直接使用基础功能（页面整理、旋转、压缩等），每日有 <span class="guestDailyExportsDisplay">3</span> 次免费导出额度。登录成为会员后，可享受更大的文件空间、更多分享链接、在线保存文件和历史记录等功能。</p>
+            </details>
+            <details class="faq-item">
+              <summary>重新打开文件后，为什么某些勾选项被取消了？</summary>
+              <p>这是为了避免误修改。像页面设置、扫描、压缩、加密、水印等都会直接影响导出结果，因此系统会在重新打开文件时将这些高风险开关重置为未启用，只保留已经保存到文件本身的页面编辑结果。</p>
             </details>
             <details class="faq-item">
               <summary>未登录可以看套餐和会员权益吗？</summary>
@@ -268,6 +288,10 @@
               <summary>导出失败或页面显示异常时怎么排查？</summary>
               <p>建议先刷新页面重新导入文件，再检查是否开启了水印、印章、加密、OCR 等附加功能且缺少必要参数。如果问题只发生在某个 PDF，通常与源文件结构、扫描页或字体嵌入方式有关，换一个样本对比会更容易定位。</p>
             </details>
+            <details class="faq-item">
+              <summary>上传大文件、扫描件或容器重建时为什么会更慢？</summary>
+              <p>首次启动、镜像重建、扫描、OCR、PDF/A 等后处理会额外消耗时间；大文件、多页扫描件和图片型 PDF 也会明显增加渲染与导出耗时。若你主要是调整页序、裁剪或简单标注，一般会比开启扫描、OCR、归档更快。</p>
+            </details>
           </div>
         </div>
       </section>
@@ -287,6 +311,14 @@
                 <span class="changelog-date">2026-04-14</span>
               </summary>
               <ul class="changelog-features">
+                <li>补充帮助中心与更新日志内容，完善近期工作台操作说明与常见问题</li>
+                <li>页面设置改为显式启用后才生效，重新打开文件时默认恢复为未启用，降低误导出风险</li>
+                <li>修复长票据、超长截图在页面方向自动识别与缩略图中的异常显示问题</li>
+                <li>修复旋转页面保存后缩略图状态标记丢失的问题</li>
+                <li>修复工作台全屏预览与页面修改结果不同步、部分横向页面显示异常的问题</li>
+                <li>修复扫描效果保存后导致页面尺寸异常、横向页比例扭曲的问题</li>
+                <li>新增上传进度显示，并隐藏 pdf.js 残留隐藏画布，解决工作台左下角黑色方块问题</li>
+                <li>移除前端导出调试日志，避免将导出配置和敏感字段输出到浏览器控制台</li>
                 <li>编辑器“插入”升级为明确下拉菜单，支持插入本地 PDF、空白页和左侧空间已选 PDF</li>
                 <li>新增编辑器内 <code>Ctrl/Cmd + V</code> 粘贴插入 PDF 文件能力</li>
                 <li>修复插入 PDF 后首屏与后续页面尺寸不一致的问题，改为按真实页面尺寸加载</li>
@@ -300,7 +332,7 @@
             <details class="changelog-item">
               <summary>
                 <span class="changelog-version">v1.1.0</span>
-                <span class="changelog-date">2026-04</span>
+                <span class="changelog-date">2026-04-10</span>
               </summary>
               <ul class="changelog-features">
                 <li>后端与前端结构模块化重构，编辑器、工作区、预览和文件处理逻辑全部拆分为独立 runtime 模块</li>
