@@ -237,12 +237,12 @@
 }
 
 .secondary-button {
-  background: linear-gradient(135deg, rgba(15, 108, 115, 0.14), rgba(15, 108, 115, 0.22));
+  background: linear-gradient(135deg, rgba(255, 255, 255, 0.94), rgba(247, 241, 235, 0.96));
   color: var(--accent-strong);
-  border: 1px solid rgba(15, 108, 115, 0.18);
+  border: 1px solid rgba(65, 49, 35, 0.12);
   box-shadow:
     inset 0 1px 0 rgba(255, 255, 255, 0.4),
-    0 10px 22px rgba(15, 108, 115, 0.08);
+    0 10px 22px rgba(57, 39, 24, 0.08);
 }
 
 .ghost-button:hover,
@@ -283,4 +283,3 @@
 .capability-panel {
   margin-top: 18px;
 }
-

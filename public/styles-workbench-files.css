@@ -154,8 +154,9 @@
   gap: 6px;
   margin-bottom: 8px;
   padding: 4px 6px;
-  background: rgba(15, 108, 115, 0.08);
+  background: rgba(255, 255, 255, 0.9);
   border-radius: 8px;
+  border: 1px solid rgba(65, 49, 35, 0.08);
 }
 
 .workspace-panel[data-panel="files"] .batch-actions .btn {

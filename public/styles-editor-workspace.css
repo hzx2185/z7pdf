@@ -173,7 +173,7 @@ body.preview-open #editorShell > .editor-info {
 .thumb-card.workspace-text-editing {
   z-index: 60;
   box-shadow:
-    0 0 0 3px rgba(15, 108, 115, 0.12),
+    0 0 0 3px rgba(15, 108, 115, 0.08),
     0 20px 50px rgba(46, 31, 20, 0.18);
   user-select: text;
   cursor: default;
@@ -187,7 +187,7 @@ body.preview-open #editorShell > .editor-info {
   min-height: calc(210px * var(--thumb-scale));
   padding: 10px;
   border-radius: calc(14px * var(--thumb-scale));
-  background: rgba(247, 242, 236, 0.92);
+  background: rgba(255, 255, 255, 0.96);
   overflow: hidden;
 }
 
@@ -362,8 +362,8 @@ body.preview-open #editorShell > .editor-info {
   max-width: min(260px, calc(100% - 28px));
   padding: 10px;
   border-radius: 16px;
-  background: rgba(255, 252, 248, 0.96);
-  border: 1px solid rgba(15, 108, 115, 0.22);
+  background: rgba(255, 255, 255, 0.98);
+  border: 1px solid rgba(65, 49, 35, 0.12);
   box-shadow:
     0 16px 34px rgba(46, 31, 20, 0.16),
     0 0 0 1px rgba(255, 255, 255, 0.7) inset;
@@ -386,7 +386,7 @@ body.preview-open #editorShell > .editor-info {
   width: 100%;
   height: auto;
   border-radius: 12px;
-  background: linear-gradient(180deg, rgba(252, 248, 242, 0.98), rgba(244, 236, 226, 0.98));
+  background: linear-gradient(180deg, rgba(255, 255, 255, 0.98), rgba(246, 240, 233, 0.98));
   border: 1px solid rgba(74, 52, 36, 0.08);
 }
 
