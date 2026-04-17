@@ -49,6 +49,58 @@ export async function requestJson(url, options = {}) {
   return data;
 }
 
+export async function requestJsonWithProgress(url, options = {}, onProgress = null) {
+  const {
+    method = "GET",
+    headers = {},
+    body = null
+  } = options;
+
+  return new Promise((resolve, reject) => {
+    const xhr = new XMLHttpRequest();
+    xhr.open(method, url, true);
+    xhr.withCredentials = true;
+
+    Object.entries(headers || {}).forEach(([key, value]) => {
+      if (value !== undefined && value !== null) {
+        xhr.setRequestHeader(key, value);
+      }
+    });
+
+    xhr.upload.onprogress = (event) => {
+      if (!event.lengthComputable || typeof onProgress !== "function") return;
+      onProgress({
+        loaded: event.loaded,
+        total: event.total,
+        percent: Math.max(0, Math.min(100, Math.round((event.loaded / event.total) * 100)))
+      });
+    };
+
+    xhr.onerror = () => {
+      reject(new Error("无法连接到服务器，请检查服务是否已启动。"));
+    };
+
+    xhr.onload = () => {
+      const data = (() => {
+        try {
+          return JSON.parse(xhr.responseText || "{}");
+        } catch (_error) {
+          return {};
+        }
+      })();
+
+      if (xhr.status < 200 || xhr.status >= 300) {
+        reject(new Error(data.error || "请求失败"));
+        return;
+      }
+
+      resolve(data);
+    };
+
+    xhr.send(body);
+  });
+}
+
 export function getFilenameFromDisposition(headerValue) {
   if (!headerValue) return "result.pdf";
   const extendedMatch = headerValue.match(/filename\*\s*=\s*([^;]+)/i);

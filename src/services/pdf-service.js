@@ -8,11 +8,14 @@ const {
   PDFDocument,
   degrees,
   PageSizes,
-  StandardFonts,
   rgb
 } = require('pdf-lib');
 
 const { sanitizeFilename, getDisplayFilename } = require('./workspace-service');
+const {
+  addMarksPdf: addMarksPdfWithDeps,
+  addMarksPdfBuffer: addMarksPdfBufferWithDeps
+} = require('./pdf-marks-service');
 
 const execFileAsync = promisify(execFile);
 
@@ -29,12 +32,6 @@ const COMPRESS_PRESET_MAP = {
   low: '/printer',
   medium: '/ebook',
   high: '/screen'
-};
-
-const WATERMARK_COLOR_MAP = {
-  orange: rgb(0.75, 0.35, 0.14),
-  slate: rgb(0.2, 0.29, 0.35),
-  red: rgb(0.75, 0.2, 0.2)
 };
 
 function stripPdfExtension(filename) {
@@ -161,19 +158,64 @@ function computeContainSize(srcWidth, srcHeight, targetWidth, targetHeight) {
   };
 }
 
+function computeKeepSize(srcWidth, srcHeight, targetWidth, targetHeight) {
+  const scale = Math.min(1, targetWidth / srcWidth, targetHeight / srcHeight);
+  return {
+    width: srcWidth * scale,
+    height: srcHeight * scale
+  };
+}
+
+function normalizePageRotation(rotation) {
+  return ((Number(rotation || 0) % 360) + 360) % 360;
+}
+
+function resolveVisiblePageBox(page) {
+  const cropBox = typeof page?.getCropBox === 'function' ? page.getCropBox() : null;
+  if (cropBox && cropBox.width > 0 && cropBox.height > 0) {
+    return {
+      left: cropBox.x,
+      bottom: cropBox.y,
+      right: cropBox.x + cropBox.width,
+      top: cropBox.y + cropBox.height,
+      width: cropBox.width,
+      height: cropBox.height
+    };
+  }
+
+  const width = Number(page?.getWidth?.() || 0);
+  const height = Number(page?.getHeight?.() || 0);
+  return {
+    left: 0,
+    bottom: 0,
+    right: width,
+    top: height,
+    width,
+    height
+  };
+}
+
+function resolvePageOrientation(baseWidth, baseHeight, orientation) {
+  if (orientation === 'landscape' || orientation === 'portrait') {
+    return orientation;
+  }
+  return baseWidth > baseHeight ? 'landscape' : 'portrait';
+}
+
 function computePageSize(baseWidth, baseHeight, pageSize, orientation) {
+  const resolvedOrientation = resolvePageOrientation(baseWidth, baseHeight, orientation);
   if (!pageSize) {
-    if (orientation === 'landscape' && baseWidth < baseHeight) {
+    if (resolvedOrientation === 'landscape' && baseWidth < baseHeight) {
       return [baseHeight, baseWidth];
     }
-    if (orientation === 'portrait' && baseWidth > baseHeight) {
+    if (resolvedOrientation === 'portrait' && baseWidth > baseHeight) {
       return [baseHeight, baseWidth];
     }
     return [baseWidth, baseHeight];
   }
 
   const [width, height] = pageSize;
-  if (orientation === 'landscape') {
+  if (resolvedOrientation === 'landscape') {
     return width >= height ? [width, height] : [height, width];
   }
   return width <= height ? [width, height] : [height, width];
@@ -188,227 +230,6 @@ function parseHexColor(input) {
   const hex = value.startsWith('#') ? value.slice(1) : value;
   const toUnit = (segment) => Number.parseInt(segment, 16) / 255;
   return rgb(toUnit(hex.slice(0, 2)), toUnit(hex.slice(2, 4)), toUnit(hex.slice(4, 6)));
-}
-
-function getWatermarkColor(input) {
-  return parseHexColor(input) || WATERMARK_COLOR_MAP[input] || WATERMARK_COLOR_MAP.orange;
-}
-
-function normalizePosition(position) {
-  return ['center', 'header', 'footer', 'tile'].includes(position) ? position : 'center';
-}
-
-function drawPageNumber(page, currentPage, totalPages, options, font) {
-  const width = page.getWidth();
-  const height = page.getHeight();
-  const size = Math.max(8, Number(options.pageNumberFontSize || options.fontSize || 12));
-  const margin = Math.max(12, Number(options.margin || 24));
-  const text = `${currentPage} / ${totalPages}`;
-  const textWidth = font.widthOfTextAtSize(text, size);
-
-  let x = margin;
-  if (options.align === 'center') {
-    x = (width - textWidth) / 2;
-  } else if (options.align === 'right') {
-    x = width - textWidth - margin;
-  }
-
-  const y = options.vertical === 'top' ? height - margin - size : margin;
-  page.drawText(text, {
-    x,
-    y,
-    size,
-    font,
-    color: rgb(0.22, 0.22, 0.24),
-    opacity: 0.78
-  });
-}
-
-function drawBatesNumber(page, currentPage, options, font) {
-  const width = page.getWidth();
-  const height = page.getHeight();
-  const size = Math.max(8, Number(options.batesFontSize || options.fontSize || 12));
-  const margin = Math.max(12, Number(options.batesMargin || options.margin || 24));
-  const prefix = String(options.batesPrefix || '').trim();
-  const start = Math.max(1, Number(options.batesStart || 1));
-  const digits = Math.min(12, Math.max(2, Number(options.batesDigits || 6)));
-  const text = `${prefix}${String(start + currentPage - 1).padStart(digits, '0')}`;
-  const textWidth = font.widthOfTextAtSize(text, size);
-
-  let x = margin;
-  if (options.batesAlign === 'center') {
-    x = (width - textWidth) / 2;
-  } else if (options.batesAlign === 'right') {
-    x = width - textWidth - margin;
-  }
-
-  const y = options.batesVertical === 'top' ? height - margin - size : margin;
-  page.drawText(text, {
-    x,
-    y,
-    size,
-    font,
-    color: rgb(0.22, 0.22, 0.24),
-    opacity: 0.88
-  });
-}
-
-function drawWatermark(page, text, options, font) {
-  const width = page.getWidth();
-  const height = page.getHeight();
-  const fontSize = Math.max(16, Number(options.fontSize || 36));
-  const opacity = Math.min(0.95, Math.max(0.05, Number(options.opacity || 0.18)));
-  const color = getWatermarkColor(options.color);
-  const position = normalizePosition(options.position);
-  const angle = Number(options.rotate || -30);
-  const textWidth = font.widthOfTextAtSize(text, fontSize);
-  const textHeight = font.heightAtSize(fontSize);
-
-  const draw = (x, y, rotate = angle) =>
-    page.drawText(text, {
-      x,
-      y,
-      size: fontSize,
-      font,
-      color,
-      opacity,
-      rotate: degrees(rotate)
-    });
-
-  if (position === 'tile') {
-    const stepX = Math.max(textWidth + 90, 170);
-    const stepY = Math.max(textHeight + 90, 130);
-
-    for (let y = 40; y < height + stepY; y += stepY) {
-      for (let x = -40; x < width + stepX; x += stepX) {
-        draw(x, y);
-      }
-    }
-    return;
-  }
-
-  if (position === 'header') {
-    draw((width - textWidth) / 2, height - textHeight - 36, 0);
-    return;
-  }
-
-  if (position === 'footer') {
-    draw((width - textWidth) / 2, 28, 0);
-    return;
-  }
-
-  draw((width - textWidth) / 2, (height - textHeight) / 2);
-}
-
-function parseWatermarkImageDataUrl(input) {
-  const value = String(input || '').trim();
-  const match = value.match(/^data:(image\/png|image\/jpeg);base64,([a-z0-9+/=\s]+)$/i);
-  if (!match) {
-    throw new Error('图片水印仅支持 PNG 或 JPG 格式。');
-  }
-
-  const mimeType = match[1].toLowerCase();
-  const bytes = Buffer.from(match[2].replace(/\s+/g, ''), 'base64');
-  if (!bytes.length) {
-    throw new Error('图片水印内容为空。');
-  }
-
-  return { mimeType, bytes };
-}
-
-function drawImageWatermark(page, image, options) {
-  const width = page.getWidth();
-  const height = page.getHeight();
-  const opacity = Math.min(0.95, Math.max(0.05, Number(options.opacity || 0.18)));
-  const position = normalizePosition(options.position);
-  const angle = Number(options.rotate || -30);
-  const scalePercent = Math.min(90, Math.max(8, Number(options.imageScale || 24)));
-  const maxWidth = width * (scalePercent / 100);
-  const imageWidth = image.width || 1;
-  const imageHeight = image.height || 1;
-  const ratio = imageHeight / imageWidth;
-  const drawWidth = maxWidth;
-  const drawHeight = drawWidth * ratio;
-
-  const draw = (x, y, rotate = angle) =>
-    page.drawImage(image, {
-      x,
-      y,
-      width: drawWidth,
-      height: drawHeight,
-      opacity,
-      rotate: degrees(rotate)
-    });
-
-  if (position === 'tile') {
-    const stepX = Math.max(drawWidth + 80, 150);
-    const stepY = Math.max(drawHeight + 80, 130);
-
-    for (let y = 30; y < height + stepY; y += stepY) {
-      for (let x = -30; x < width + stepX; x += stepX) {
-        draw(x, y);
-      }
-    }
-    return;
-  }
-
-  if (position === 'header') {
-    draw((width - drawWidth) / 2, height - drawHeight - 32, 0);
-    return;
-  }
-
-  if (position === 'footer') {
-    draw((width - drawWidth) / 2, 24, 0);
-    return;
-  }
-
-  draw((width - drawWidth) / 2, (height - drawHeight) / 2);
-}
-
-function normalizeStampPosition(position) {
-  return ['topLeft', 'topRight', 'bottomLeft', 'bottomRight', 'center'].includes(position)
-    ? position
-    : 'bottomRight';
-}
-
-function drawImageStamp(page, image, options) {
-  const width = page.getWidth();
-  const height = page.getHeight();
-  const opacity = Math.min(1, Math.max(0.1, Number(options.stampOpacity || 0.92)));
-  const position = normalizeStampPosition(options.stampPosition);
-  const angle = Number(options.stampRotate || -8);
-  const scalePercent = Math.min(50, Math.max(5, Number(options.stampScale || 18)));
-  const margin = Math.max(0, Number(options.stampMargin || 24));
-  const drawWidth = width * (scalePercent / 100);
-  const drawHeight = drawWidth * ((image.height || 1) / (image.width || 1));
-  let x = margin;
-  let y = margin;
-
-  if (position === 'topLeft') {
-    x = margin;
-    y = height - drawHeight - margin;
-  } else if (position === 'topRight') {
-    x = width - drawWidth - margin;
-    y = height - drawHeight - margin;
-  } else if (position === 'bottomLeft') {
-    x = margin;
-    y = margin;
-  } else if (position === 'bottomRight') {
-    x = width - drawWidth - margin;
-    y = margin;
-  } else {
-    x = (width - drawWidth) / 2;
-    y = (height - drawHeight) / 2;
-  }
-
-  page.drawImage(image, {
-    x,
-    y,
-    width: drawWidth,
-    height: drawHeight,
-    opacity,
-    rotate: degrees(angle)
-  });
 }
 
 async function mergePdfs(files) {
@@ -555,18 +376,23 @@ async function resizePdfBuffer(buffer, filename, options) {
   const src = await loadPdf(buffer, filename);
   const out = await PDFDocument.create();
   const pageSize = PAGE_SIZE_MAP[options.pageSize] || null;
-  const orientation = options.orientation || 'portrait';
+  const orientation = options.orientation || 'auto';
   const fitMode = options.fitMode || 'contain';
   const margin = Math.max(0, Number(options.margin || 0));
   const backgroundColor = parseHexColor(options.backgroundColor) || rgb(1, 1, 1);
   const srcPages = await out.copyPages(src, src.getPageIndices());
 
   for (const srcPage of srcPages) {
-    const originalWidth = srcPage.getWidth();
-    const originalHeight = srcPage.getHeight();
+    const visibleBox = resolveVisiblePageBox(srcPage);
+    const originalWidth = visibleBox.width;
+    const originalHeight = visibleBox.height;
+    const pageRotation = normalizePageRotation(srcPage.getRotation().angle);
+    const isQuarterTurn = pageRotation === 90 || pageRotation === 270;
+    const layoutWidth = isQuarterTurn ? originalHeight : originalWidth;
+    const layoutHeight = isQuarterTurn ? originalWidth : originalHeight;
     const [targetWidth, targetHeight] = computePageSize(
-      originalWidth,
-      originalHeight,
+      layoutWidth,
+      layoutHeight,
       pageSize,
       orientation
     );
@@ -578,7 +404,12 @@ async function resizePdfBuffer(buffer, filename, options) {
 
     let embeddedPage;
     try {
-      embeddedPage = await out.embedPage(srcPage);
+      embeddedPage = await out.embedPage(srcPage, {
+        left: visibleBox.left,
+        bottom: visibleBox.bottom,
+        right: visibleBox.right,
+        top: visibleBox.top
+      });
     } catch (_error) {
       out.addPage(srcPage);
       continue;
@@ -595,27 +426,57 @@ async function resizePdfBuffer(buffer, filename, options) {
 
     const availableWidth = Math.max(1, targetWidth - margin * 2);
     const availableHeight = Math.max(1, targetHeight - margin * 2);
-    let drawWidth = availableWidth;
-    let drawHeight = availableHeight;
+    let drawBoxWidth = availableWidth;
+    let drawBoxHeight = availableHeight;
 
     if (fitMode !== 'stretch') {
-      const fitted = computeContainSize(
-        originalWidth,
-        originalHeight,
-        availableWidth,
-        availableHeight
-      );
-      drawWidth = fitted.width;
-      drawHeight = fitted.height;
+      const fitted = fitMode === 'keep'
+        ? computeKeepSize(
+            layoutWidth,
+            layoutHeight,
+            availableWidth,
+            availableHeight
+          )
+        : computeContainSize(
+            layoutWidth,
+            layoutHeight,
+            availableWidth,
+            availableHeight
+          );
+      drawBoxWidth = fitted.width;
+      drawBoxHeight = fitted.height;
     }
 
-    const x = (targetWidth - drawWidth) / 2;
-    const y = (targetHeight - drawHeight) / 2;
+    const boxX = (targetWidth - drawBoxWidth) / 2;
+    const boxY = (targetHeight - drawBoxHeight) / 2;
+    let drawWidth = drawBoxWidth;
+    let drawHeight = drawBoxHeight;
+    let drawX = boxX;
+    let drawY = boxY;
+    let drawRotation = 0;
+
+    if (pageRotation === 90) {
+      drawWidth = drawBoxHeight;
+      drawHeight = drawBoxWidth;
+      drawX = boxX + drawBoxWidth;
+      drawRotation = 90;
+    } else if (pageRotation === 180) {
+      drawX = boxX + drawBoxWidth;
+      drawY = boxY + drawBoxHeight;
+      drawRotation = 180;
+    } else if (pageRotation === 270) {
+      drawWidth = drawBoxHeight;
+      drawHeight = drawBoxWidth;
+      drawY = boxY + drawBoxHeight;
+      drawRotation = 270;
+    }
+
     newPage.drawPage(embeddedPage, {
-      x,
-      y,
+      x: drawX,
+      y: drawY,
       width: drawWidth,
-      height: drawHeight
+      height: drawHeight,
+      rotate: degrees(drawRotation)
     });
   }
 
@@ -667,79 +528,17 @@ async function splitPdf(file, options) {
 }
 
 async function addMarksPdf(file, options) {
-  return addMarksPdfBuffer(file.buffer, file.originalname, options);
+  return addMarksPdfWithDeps(file, options, {
+    loadPdf,
+    parsePageSelection
+  });
 }
 
 async function addMarksPdfBuffer(buffer, filename, options) {
-  const src = await loadPdf(buffer, filename);
-  const totalPages = src.getPageCount();
-  const markMode = options.markMode || 'watermark';
-  const selection = new Set(parsePageSelection(options.selection || 'all', totalPages));
-  const includeWatermark =
-    options.watermarkEnabled === true ||
-    options.watermarkEnabled === 'true' ||
-    markMode === 'watermark' ||
-    markMode === 'both';
-  const includePageNumbers =
-    options.pageNumbersEnabled === true ||
-    options.pageNumbersEnabled === 'true' ||
-    markMode === 'pageNumber' ||
-    markMode === 'both';
-  const includeBates = options.batesEnabled === true || options.batesEnabled === 'true';
-  const includeStamp = options.stampEnabled === true || options.stampEnabled === 'true';
-  const needsTextWatermark =
-    includeWatermark && String(options.watermarkKind || 'text').trim() !== 'image';
-  const needsPageNumbers = includePageNumbers || includeBates;
-  const font =
-    needsTextWatermark || needsPageNumbers
-      ? await src.embedFont(StandardFonts.Helvetica)
-      : null;
-  let watermarkImage = null;
-  let stampImage = null;
-
-  if (includeWatermark) {
-    if (String(options.watermarkKind || 'text').trim() === 'image') {
-      const { mimeType, bytes } = parseWatermarkImageDataUrl(options.imageDataUrl || '');
-      watermarkImage =
-        mimeType === 'image/png' ? await src.embedPng(bytes) : await src.embedJpg(bytes);
-    } else if (!String(options.text || '').trim()) {
-      throw new Error('请填写水印文字。');
-    }
-  }
-
-  if (includeStamp) {
-    const { mimeType, bytes } = parseWatermarkImageDataUrl(options.stampImageDataUrl || '');
-    stampImage =
-      mimeType === 'image/png' ? await src.embedPng(bytes) : await src.embedJpg(bytes);
-  }
-
-  src.getPages().forEach((page, index) => {
-    if (!selection.has(index)) {
-      return;
-    }
-
-    if (includeWatermark) {
-      if (watermarkImage) {
-        drawImageWatermark(page, watermarkImage, options);
-      } else {
-        drawWatermark(page, String(options.text || '').trim(), options, font);
-      }
-    }
-
-    if (includePageNumbers) {
-      drawPageNumber(page, index + 1, totalPages, options, font);
-    }
-
-    if (includeBates) {
-      drawBatesNumber(page, index + 1, options, font);
-    }
-
-    if (includeStamp && stampImage) {
-      drawImageStamp(page, stampImage, options);
-    }
+  return addMarksPdfBufferWithDeps(buffer, filename, options, {
+    loadPdf,
+    parsePageSelection
   });
-
-  return src.save({ useObjectStreams: true, addDefaultPage: false });
 }
 
 async function compressPdf(file, level) {

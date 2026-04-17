@@ -31,6 +31,21 @@ const {
 
 const router = express.Router();
 
+function parseEditorPresetRows(rows = []) {
+  return rows
+    .map((row) => {
+      try {
+        return {
+          name: String(row.name || "").trim(),
+          config: JSON.parse(row.config_json || "{}")
+        };
+      } catch (_error) {
+        return null;
+      }
+    })
+    .filter((item) => item && item.name && item.config && typeof item.config === 'object');
+}
+
 const uploadLimiter = rateLimit({
   windowMs: 60 * 1000,
   max: 10,
@@ -47,7 +62,50 @@ router.get('/api/workspace/account', requireUser, async (req, res) => {
     user: req.user,
     entitlements: getEffectivePlanForUser(req.user.id),
     plans: stmts.listPlans.all().map(formatPlan).filter((plan) => plan.active),
-    subscriptions: stmts.listSubscriptionsByUser.all(req.user.id).map(formatSubscription)
+    subscriptions: stmts.listSubscriptionsByUser.all(req.user.id).map(formatSubscription),
+    editorPresets: parseEditorPresetRows(stmts.listEditorPresetsByUser.all(req.user.id))
+  });
+});
+
+router.get('/api/workspace/editor-presets', requireUser, async (req, res) => {
+  res.json({
+    presets: parseEditorPresetRows(stmts.listEditorPresetsByUser.all(req.user.id))
+  });
+});
+
+router.post('/api/workspace/editor-presets', requireUser, express.json({ limit: '256kb' }), async (req, res) => {
+  try {
+    const name = String(req.body.name || '').trim();
+    const config = req.body.config;
+    if (!name) {
+      return res.status(400).json({ error: '预设名称不能为空。' });
+    }
+    if (name.length > 30) {
+      return res.status(400).json({ error: '预设名称不能超过 30 个字符。' });
+    }
+    if (!config || typeof config !== 'object' || Array.isArray(config)) {
+      return res.status(400).json({ error: '预设配置格式不正确。' });
+    }
+    const now = nowIso();
+    stmts.upsertEditorPreset.run(req.user.id, name, JSON.stringify(config), now, now);
+    return res.json({
+      ok: true,
+      presets: parseEditorPresetRows(stmts.listEditorPresetsByUser.all(req.user.id))
+    });
+  } catch (error) {
+    return res.status(400).json({ error: error.message || '保存预设失败。' });
+  }
+});
+
+router.delete('/api/workspace/editor-presets/:name', requireUser, async (req, res) => {
+  const name = String(req.params.name || '').trim();
+  if (!name) {
+    return res.status(400).json({ error: '预设名称不能为空。' });
+  }
+  stmts.deleteEditorPresetForUser.run(req.user.id, name);
+  res.json({
+    ok: true,
+    presets: parseEditorPresetRows(stmts.listEditorPresetsByUser.all(req.user.id))
   });
 });
 

@@ -26,7 +26,14 @@ app.use(helmet({
 
 app.use(express.json({ limit: '2mb' }));
 app.use(express.urlencoded({ extended: true, limit: '2mb' }));
-app.use(express.static('public', { maxAge: '1d' }));
+app.use(express.static('public', {
+  maxAge: '1d',
+  setHeaders(res, filePath) {
+    if (/\.(?:html|js|css)$/i.test(filePath)) {
+      res.setHeader('Cache-Control', 'no-store');
+    }
+  }
+}));
 app.use(
   '/vendor/pdfjs',
   express.static(path.join(__dirname, '..', 'node_modules', 'pdfjs-dist', 'build'), { maxAge: '7d' })

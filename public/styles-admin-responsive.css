@@ -1,0 +1,424 @@
+/* 响应式 */
+@media (max-width: 1024px) {
+  .workbench-container,
+  .admin-panel {
+    grid-template-columns: 1fr;
+  }
+  
+  .sidebar,
+  .admin-sidebar .sidebar-card {
+    position: static;
+  }
+  
+  .grid-cards {
+    grid-template-columns: 1fr;
+  }
+}
+
+@media (max-width: 720px) {
+  .image-pdf-dialog {
+    max-width: calc(100vw - 24px);
+    max-height: calc(100vh - 24px);
+    padding: 18px;
+    gap: 14px;
+    border-radius: 22px;
+  }
+
+  .image-pdf-body {
+    gap: 12px;
+    padding-right: 0;
+  }
+
+  .image-pdf-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .image-pdf-preview-grid {
+    max-height: 112px;
+  }
+
+  .image-pdf-footer {
+    flex-direction: column-reverse;
+  }
+
+  .image-pdf-footer .btn {
+    width: 100%;
+  }
+
+  #imageToPdfModal .image-pdf-dialog {
+    max-width: calc(100vw - 20px);
+    max-height: calc(100vh - 20px);
+    padding: 16px;
+    gap: 10px;
+  }
+
+  #imageToPdfModal .image-pdf-body {
+    grid-template-columns: 1fr;
+    gap: 10px;
+    padding-right: 0;
+  }
+
+  #imageToPdfModal .image-pdf-grid {
+    grid-column: auto;
+    grid-row: auto;
+    grid-template-columns: 1fr;
+  }
+
+  #imageToPdfModal .image-pdf-preview-grid {
+    max-height: 96px;
+  }
+
+  #imageToPdfModal .image-pdf-footer {
+    flex-direction: column-reverse;
+  }
+
+  #imageToPdfModal .image-pdf-footer .btn {
+    width: 100%;
+  }
+
+  .header-container {
+    flex-wrap: wrap;
+  }
+  
+  .main-nav {
+    display: none;
+    width: 100%;
+    order: 3;
+    padding-top: 12px;
+  }
+  
+  .main-nav.active {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+  }
+  
+  .header-actions {
+    margin-left: auto;
+    display: flex;
+    gap: 8px;
+    flex-shrink: 0;
+  }
+  
+  .header-actions .btn {
+    padding: 6px 12px;
+    font-size: 12px;
+    white-space: nowrap;
+  }
+
+  .header-user {
+    width: auto;
+    margin-left: auto;
+  }
+
+  .header-user span {
+    max-width: 120px;
+  }
+
+  .upload-main-row {
+    grid-template-columns: 1fr;
+  }
+  
+  .pricing-cards {
+    grid-template-columns: 1fr;
+    gap: 16px;
+  }
+  
+  .pricing-card {
+    padding: 20px;
+  }
+  
+  .pricing-price {
+    font-size: 24px;
+  }
+  
+  .pricing-features li {
+    font-size: 13px;
+  }
+  
+  .table-wrap {
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+  }
+  
+  .compare-table {
+    min-width: 500px;
+  }
+  
+  .compare-table th,
+  .compare-table td {
+    padding: 10px 8px;
+    font-size: 12px;
+  }
+  
+  .compare-plan-head {
+    padding: 8px;
+  }
+  
+  .compare-plan-head strong {
+    font-size: 14px;
+  }
+  
+  .compare-price {
+    font-size: 16px;
+  }
+  
+  .subscribe-btn {
+    padding: 6px 10px;
+    font-size: 11px;
+  }
+  
+  .menu-toggle {
+    display: flex;
+  }
+  
+  .workbench-header {
+    flex-direction: column;
+    gap: 16px;
+    text-align: center;
+  }
+  
+  .toolbar {
+    justify-content: center;
+  }
+  
+  .faq-grid {
+    grid-template-columns: 1fr;
+  }
+  
+  .footer-container {
+    grid-template-columns: 1fr;
+    gap: 24px;
+  }
+  
+  .admin-hero {
+    grid-template-columns: 1fr;
+  }
+  
+  .filter-bar {
+    grid-template-columns: 1fr;
+  }
+  
+  .stats-grid {
+    grid-template-columns: 1fr;
+  }
+  
+  .field-row {
+    grid-template-columns: 1fr;
+  }
+}
+
+@media (max-width: 720px) {
+  .topbar {
+    padding: 10px 10px 0;
+  }
+
+  .topbar-inner {
+    display: grid;
+    grid-template-columns: 1fr auto;
+    align-items: center;
+  }
+
+  .topbar-menu {
+    display: inline-flex;
+    justify-content: center;
+    align-items: center;
+  }
+
+  .topbar-nav,
+  .topbar-actions {
+    display: none;
+    grid-column: 1 / -1;
+    flex-direction: column;
+    align-items: stretch;
+  }
+
+  .topbar-inner.menu-open .topbar-nav,
+  .topbar-inner.menu-open .topbar-actions {
+    display: flex;
+  }
+
+  .topbar-brand {
+    text-align: left;
+  }
+
+  .layout {
+    width: min(100% - 20px, 1120px);
+    padding-top: 28px;
+  }
+
+  .hero {
+    grid-template-columns: 1fr;
+  }
+
+  .hero-pills {
+    gap: 8px;
+  }
+
+  .hero-pill {
+    width: 100%;
+    justify-content: center;
+  }
+
+  .section-head {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+
+  .editor-intro,
+  .editor-main,
+  .auth-grid,
+  .workspace-layout,
+  .feature-grid,
+  .admin-shell,
+  .admin-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .admin-nav {
+    position: static;
+  }
+
+  .workspace-header,
+  .workspace-batch-bar,
+  .workspace-list-head,
+  .workspace-file,
+  .workspace-meta,
+  .account-status,
+  .workspace-toolbar,
+  .inline-action {
+    grid-template-columns: 1fr;
+    flex-direction: column;
+    align-items: flex-start;
+  }
+
+  .workspace-file {
+    grid-template-columns: 1fr;
+  }
+
+  .workspace-panel[data-panel="files"] .batch-actions {
+    flex-wrap: wrap;
+  }
+
+  .workspace-panel[data-panel="files"] .batch-rename-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .plan-admin-head {
+    flex-direction: column;
+  }
+
+  .admin-filter-bar {
+    grid-template-columns: 1fr;
+  }
+
+  .admin-cell-role,
+  .admin-cell-plan,
+  .admin-cell-action {
+    min-width: 120px;
+  }
+
+  .admin-table th,
+  .admin-table td {
+    padding: 12px 10px;
+    font-size: 13px;
+  }
+
+  .workspace-batch-actions {
+    width: 100%;
+    justify-content: flex-start;
+  }
+
+  .workspace-list-head {
+    display: none;
+  }
+
+  .editor-status {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+
+  .thumb-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .admin-nav {
+    position: static;
+  }
+
+  .panel {
+    padding: 18px;
+    border-radius: 20px;
+  }
+
+  .panel-wide {
+    grid-column: span 1;
+  }
+
+  .inline-fields {
+    grid-template-columns: 1fr;
+  }
+
+  .footer-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .faq-list {
+    grid-template-columns: 1fr;
+  }
+
+  .compare-table th,
+  .compare-table td {
+    padding: 12px 10px;
+    font-size: 13px;
+  }
+
+  .compare-table-plans th:first-child,
+  .compare-table-plans td:first-child {
+    width: 132px;
+  }
+
+  .compare-plan-head strong {
+    font-size: 16px;
+  }
+
+  .compare-head-desc,
+  .compare-sub {
+    font-size: 12px;
+  }
+}
+
+/* --- Print Support --- */
+@media print {
+  /* Hide everything except the print container */
+  body > *:not(#print-container) {
+    display: none !important;
+  }
+  
+  #print-container {
+    display: block !important;
+    position: static;
+    width: 100%;
+    background: white;
+  }
+
+  .print-page {
+    page-break-after: always;
+    break-after: page;
+    width: 100%;
+    height: auto;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+
+  .print-page img {
+    max-width: 100%;
+    max-height: 100%;
+    display: block;
+  }
+}
+
+#print-container {
+  display: none;
+}

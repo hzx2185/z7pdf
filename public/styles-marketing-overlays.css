@@ -1,0 +1,468 @@
+/* 弹窗通用样式 */
+.modal-dialog {
+  width: 100%;
+  max-width: 500px;
+  background: var(--panel-strong);
+  backdrop-filter: blur(24px);
+  border: 1px solid var(--line-strong);
+  border-radius: 28px;
+  padding: 32px;
+  box-shadow: 0 32px 80px rgba(30, 22, 16, 0.24);
+  animation: modal-pop 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
+}
+
+@keyframes modal-pop {
+  from { transform: scale(0.9) translateY(10px); opacity: 0; }
+  to { transform: scale(1) translateY(0); opacity: 1; }
+}
+
+.modal-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 24px;
+}
+
+.modal-header h3 {
+  margin: 0;
+  font-size: 20px;
+  color: var(--text);
+}
+
+.modal-form {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+}
+
+.modal-footer {
+  margin-top: 24px;
+  display: flex;
+  justify-content: flex-end;
+}
+
+.image-pdf-dialog {
+  max-width: min(620px, calc(100vw - 32px));
+  max-height: min(88vh, 760px);
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  padding: 24px;
+}
+
+.image-pdf-header {
+  margin-bottom: 0;
+  align-items: center;
+  gap: 12px;
+}
+
+.image-pdf-body {
+  flex: 1;
+  min-height: 0;
+  overflow-y: auto;
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+  padding-right: 4px;
+}
+
+.image-pdf-upload {
+  margin-bottom: 0;
+  padding: 10px;
+  border-radius: 18px;
+}
+
+.image-pdf-upload-input {
+  width: 100%;
+  min-width: 0;
+}
+
+.image-pdf-upload-copy {
+  padding: 16px 14px;
+  text-align: center;
+  border-radius: 14px;
+  border: 1px dashed rgba(15, 108, 115, 0.2);
+  background: rgba(255, 255, 255, 0.7);
+}
+
+.image-pdf-upload-icon {
+  font-size: 24px;
+  line-height: 1;
+  margin-bottom: 8px;
+}
+
+.image-pdf-upload-title {
+  font-weight: 700;
+  color: var(--text);
+}
+
+.image-pdf-upload-help {
+  margin-top: 6px;
+  font-size: 12px;
+  color: var(--muted);
+}
+
+.image-pdf-preview {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  padding: 10px 12px;
+  border-radius: 16px;
+  border: 1px solid rgba(65, 49, 35, 0.1);
+  background: rgba(255, 255, 255, 0.64);
+}
+
+.image-pdf-preview-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+}
+
+.image-pdf-preview-head span {
+  font-size: 13px;
+  font-weight: 700;
+}
+
+.image-pdf-preview-head .btn,
+.image-pdf-footer .btn {
+  width: auto;
+}
+
+.image-pdf-preview-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(72px, 1fr));
+  gap: 8px;
+  max-height: 128px;
+  overflow-y: auto;
+  padding-right: 2px;
+}
+
+.image-pdf-preview-item {
+  position: relative;
+  aspect-ratio: 1;
+  overflow: hidden;
+  border-radius: 10px;
+  background: #eef2f4;
+  border: 1px solid rgba(65, 49, 35, 0.08);
+}
+
+.image-pdf-preview-item img {
+  display: block;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.image-pdf-preview-remove {
+  position: absolute;
+  top: 4px;
+  right: 4px;
+  width: 22px;
+  height: 22px;
+  padding: 0;
+  border: none;
+  border-radius: 999px;
+  background: rgba(173, 46, 36, 0.9);
+  color: #fff;
+  font-size: 12px;
+  line-height: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-shadow: none;
+}
+
+.image-pdf-preview-remove:hover {
+  transform: none;
+  filter: none;
+  background: #ad2e24;
+}
+
+.image-pdf-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 10px 12px;
+}
+
+.image-pdf-grid .field {
+  gap: 6px;
+}
+
+.image-pdf-grid .field span {
+  font-size: 13px;
+}
+
+.image-pdf-footer {
+  margin-top: 0;
+  gap: 10px;
+  flex-shrink: 0;
+}
+
+#imageToPdfModal .image-pdf-dialog {
+  max-width: min(680px, calc(100vw - 28px));
+  max-height: min(82vh, 640px);
+  padding: 18px 18px 16px;
+  gap: 12px;
+  border-radius: 22px;
+}
+
+#imageToPdfModal .image-pdf-header {
+  align-items: center;
+}
+
+#imageToPdfModal .image-pdf-header h3 {
+  font-size: 18px;
+}
+
+#imageToPdfModal .image-pdf-body {
+  display: grid;
+  grid-template-columns: minmax(0, 220px) minmax(0, 1fr);
+  gap: 12px 14px;
+  align-content: start;
+  padding-right: 2px;
+}
+
+#imageToPdfModal .image-pdf-upload {
+  grid-column: 1;
+  padding: 8px;
+  border-radius: 16px;
+}
+
+#imageToPdfModal .image-pdf-upload-copy {
+  min-height: 112px;
+  padding: 12px 10px;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+}
+
+#imageToPdfModal .image-pdf-upload-icon {
+  font-size: 22px;
+  margin-bottom: 6px;
+}
+
+#imageToPdfModal .image-pdf-upload-title {
+  font-size: 14px;
+}
+
+#imageToPdfModal .image-pdf-upload-help {
+  margin-top: 4px;
+}
+
+#imageToPdfModal .image-pdf-preview {
+  grid-column: 1;
+  padding: 8px 10px;
+  gap: 6px;
+}
+
+#imageToPdfModal .image-pdf-preview-grid {
+  grid-template-columns: repeat(auto-fill, minmax(60px, 1fr));
+  max-height: 102px;
+  gap: 6px;
+}
+
+#imageToPdfModal .image-pdf-preview-item {
+  border-radius: 8px;
+}
+
+#imageToPdfModal .image-pdf-preview-remove {
+  top: 3px;
+  right: 3px;
+  width: 20px;
+  height: 20px;
+}
+
+#imageToPdfModal .image-pdf-grid {
+  grid-column: 2;
+  grid-row: 1 / span 2;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 8px 10px;
+  align-content: start;
+}
+
+#imageToPdfModal .image-pdf-grid .field {
+  gap: 4px;
+}
+
+#imageToPdfModal .image-pdf-grid .field span {
+  font-size: 12px;
+}
+
+#imageToPdfModal .image-pdf-grid input,
+#imageToPdfModal .image-pdf-grid select {
+  padding: 10px 12px;
+  border-radius: 12px;
+}
+
+#imageToPdfModal .image-pdf-footer {
+  gap: 8px;
+}
+
+#imageToPdfModal .image-pdf-footer .btn {
+  width: auto;
+  min-height: 40px;
+  padding: 9px 16px;
+  border-radius: 14px;
+}
+
+#sharePasswordRow.hidden {
+  display: none;
+}
+
+/* 页脚 */
+.site-footer {
+  padding: 32px 0;
+  border-top: 1px solid rgba(65, 49, 35, 0.1);
+  margin-top: 40px;
+}
+
+.footer-container {
+  max-width: 1400px;
+  margin: 0 auto;
+  display: grid;
+  grid-template-columns: 2fr 1fr 1fr;
+  gap: 40px;
+}
+
+.footer-brand .kicker {
+  display: block;
+  font-size: 11px;
+  letter-spacing: 0.15em;
+  color: var(--accent-dark);
+  margin-bottom: 8px;
+}
+
+.footer-brand h3 {
+  margin: 0 0 8px;
+}
+
+.footer-links {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.footer-links .kicker {
+  font-size: 11px;
+  letter-spacing: 0.12em;
+  color: var(--accent-dark);
+  margin-bottom: 4px;
+}
+
+.footer-links a {
+  color: var(--muted);
+  text-decoration: none;
+  font-weight: 600;
+}
+
+.footer-links a:hover {
+  color: var(--text);
+}
+
+/* 预览弹窗 */
+.preview-dialog {
+  width: 100%;
+  max-width: 900px;
+  max-height: 90vh;
+  background: rgba(255, 251, 245, 0.98);
+  border-radius: 24px;
+  padding: 24px;
+  overflow: auto;
+}
+
+.preview-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 16px;
+}
+
+.preview-header h3 {
+  margin: 0;
+}
+
+.preview-helper {
+  margin: -4px 0 12px;
+  padding: 10px 12px;
+  border-radius: 12px;
+  background: rgba(15, 108, 115, 0.08);
+  color: var(--muted);
+  font-size: 13px;
+  line-height: 1.5;
+}
+
+.preview-tools-container {
+  flex: 1;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  margin: 0 16px;
+}
+
+.preview-tools {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  background: rgba(255, 255, 255, 0.6);
+  padding: 6px 16px;
+  border-radius: 100px;
+  border: 1px solid rgba(65, 49, 35, 0.1);
+}
+
+.preview-nav, .preview-zoom {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.preview-page-indicator {
+  font-size: 13px;
+  font-weight: 700;
+  min-width: 50px;
+  text-align: center;
+  color: var(--accent-dark);
+}
+
+.preview-zoom-select {
+  height: 28px;
+  padding: 0 4px;
+  font-size: 12px;
+  font-weight: 600;
+  border-radius: 6px;
+  border: 1px solid rgba(65, 49, 35, 0.2);
+  background: white;
+  cursor: pointer;
+}
+
+.preview-tools-divider {
+  width: 1px;
+  height: 20px;
+  background: rgba(65, 49, 35, 0.1);
+  margin: 0 4px;
+}
+
+.preview-content {
+  display: block;
+  overflow: auto;
+  text-align: center;
+  background: rgba(0, 0, 0, 0.03);
+  border-radius: 16px;
+  padding: 40px;
+  min-height: 500px;
+}
+
+.preview-stage {
+  position: relative;
+  display: inline-block;
+  line-height: 0;
+  transform-origin: top center;
+  transition: transform 0.2s cubic-bezier(0.17, 0.84, 0.44, 1);
+  box-shadow: 0 10px 30px rgba(0,0,0,0.1);
+  margin-bottom: 40px;
+}
+
+.preview-canvas {
+  background: white;
+}
+

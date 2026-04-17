@@ -5,21 +5,21 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Z7 PDF - 在线PDF编辑工具</title>
     <link rel="icon" href="data:," />
-    <link rel="stylesheet" href="/styles.css?v=0412" />
+    <link rel="stylesheet" href="/styles.css?v=0423" />
     <script src="https://unpkg.com/pdf-lib/dist/pdf-lib.min.js"></script>
   </head>
   <body>
     <!-- 顶部导航 -->
     <header class="site-header">
       <div class="header-container">
-        <a href="#home" class="brand">Z7 PDF</a>
+        <a href="#home" class="brand" id="appTitle">Z7 PDF</a>
         <nav class="main-nav" id="mainNav">
           <a href="#home" class="nav-link" data-page="home">首页</a>
           <a href="#features" class="nav-link active" data-page="features">功能介绍</a>
           <a href="#pricing" class="nav-link" data-page="pricing">会员套餐</a>
           <a href="#help" class="nav-link" data-page="help">帮助中心</a>
           <a href="#changelog" class="nav-link" data-page="changelog">更新日志</a>
-          <a href="#workbench" class="nav-link" data-page="workbench">工作台</a>
+          <a href="#workbench" class="nav-link" id="memberCenterNav" data-page="workbench">工作台</a>
         </nav>
         <div class="header-actions" id="headerActions">
           <button id="showLoginBtn" type="button" class="btn btn-outline">登录</button>
@@ -42,6 +42,7 @@
 
     <!-- 主内容区 -->
     <main id="mainContent" class="main-content">
+      <!-- Marketing Pages -->
       <!-- 功能介绍 (默认显示) -->
       <section id="features" class="page-section active">
         <!-- 欢迎区域 -->
@@ -112,8 +113,8 @@
           </div>
           <div id="publicPlans" class="pricing-cards"></div>
           <div class="guest-info">
-            <h3>游客试用</h3>
-            <p>未注册用户可每日免费使用 <strong id="guestDailyExports" class="guestDailyExportsDisplay">3</strong> 次基础功能</p>
+            <h3 id="guestPolicyTitle">游客试用</h3>
+            <p id="guestPolicyHint">未注册用户可每日免费使用 <strong id="guestDailyExports" class="guestDailyExportsDisplay">3</strong> 次基础功能</p>
           </div>
         </div>
       </section>
@@ -133,23 +134,23 @@
           <div class="faq-grid">
             <details class="faq-item">
               <summary>文件▾ 菜单</summary>
-              <p>导出 PDF 文件时可设置：文件名、保存目录、导出模式（单个文件或每 N 页拆分为 ZIP）。</p>
+              <p>导出 PDF 时可设置文件名、保存目录、导出模式。游客默认下载到本地；会员可继续保存到个人空间，并在下次重新打开继续编辑。</p>
             </details>
             <details class="faq-item">
               <summary>页面▾ 菜单</summary>
-              <p>调整页面尺寸（支持 A3/A4/A5/Letter/Legal），设置页面方向（纵向/横向）、边距、背景色、缩放模式。</p>
+              <p>可统一调整页面尺寸（A3/A4/A5/Letter/Legal）、方向、边距、背景色和缩放方式。适合把不同来源的 PDF 统一成同一版式后再导出。</p>
             </details>
             <details class="faq-item">
               <summary>水印▾ 菜单</summary>
-              <p>添加文字或图片水印，支持位置（居中/页眉/页脚/平铺）、颜色、透明度、旋转角度设置。</p>
+              <p>支持文字水印和图片水印两种模式。文字模式可设置内容、颜色、透明度、旋转角度；图片模式支持 PNG、JPG，并可设置缩放比例和位置。</p>
             </details>
             <details class="faq-item">
               <summary>印章▾ 菜单</summary>
-              <p>添加电子印章图标，可设置位置和大小。</p>
+              <p>用于在页面四角或中间叠加印章图片。支持透明度、边距、缩放和旋转，适合盖章、签章或标识“已审核”“机密”等状态。</p>
             </details>
             <details class="faq-item">
               <summary>页码▾ 菜单</summary>
-              <p>添加页码，设置起始页码、位置、对齐方式；支持添加 Bates 编号（含前缀、位数等）。</p>
+              <p>支持普通页码与 Bates 编号。可设置顶部/底部、左中右对齐、字号和边距；Bates 编号支持前缀、起始值和位数控制。</p>
             </details>
             <details class="faq-item">
               <summary>压缩▾ 菜单</summary>
@@ -161,11 +162,11 @@
             </details>
             <details class="faq-item">
               <summary>元数据▾ 菜单</summary>
-              <p>编辑 PDF 文档信息，包括标题、作者、主题、关键词。</p>
+              <p>编辑 PDF 文档信息，包括标题、作者、主题、关键词。上传已有文档时，会自动尝试读取首个 PDF 的现有元数据，方便直接修改后导出。</p>
             </details>
             <details class="faq-item">
               <summary>书签▾ 菜单</summary>
-              <p>管理 PDF 书签，支持新增、编辑、删除书签，导出时自动写入 PDF。</p>
+              <p>支持一级书签的读取、编辑、删除和新增。导出时会按最终页序重新写入书签，适合整理合同汇编、教材、资料包等长文档。</p>
             </details>
             <details class="faq-item">
               <summary>页眉页脚▾ 菜单</summary>
@@ -178,7 +179,8 @@
                 <strong>反色</strong>：创建负片版本<br>
                 <strong>扫描</strong>：模拟扫描件效果<br>
                 <strong>识别</strong>：对扫描件进行 OCR 文字识别，支持中英文<br>
-                <strong>归档</strong>：转换为 PDF/A 格式（1b/2b/3b）
+                <strong>归档</strong>：转换为 PDF/A 格式（1b/2b/3b）<br>
+                这些开关可以叠加使用，适合批量整理打印稿、扫描件和归档文件。
               </p>
             </details>
             <details class="faq-item">
@@ -186,19 +188,27 @@
               <p>
                 <strong>全选/清空</strong>：选中或取消选中所有页面<br>
                 <strong>预览</strong>：全屏查看当前页效果<br>
-                <strong>插入</strong>：在当前选中页后插入一页空白页<br>
+                <strong>插入</strong>：可插入本地 PDF、空白页，或插入左侧工作区已选 PDF<br>
                 <strong>前移/后移</strong>：调整页面顺序<br>
                 <strong>左转/右转</strong>：旋转页面 90°<br>
-                <strong>标注</strong>：直接进入当前页的画笔标注模式<br>
+                <strong>画线/矩形/箭头/文本</strong>：直接进入当前页的可视标注模式，支持即时预览<br>
                 <strong>裁剪</strong>：进入当前页的裁剪模式，框出保留区域即可<br>
                 <strong>分割▾</strong>：将选中页面按横向或纵向切割成多份（2~10份）<br>
-                <strong>恢复</strong>：撤销对当前选中页面内容（如标注、裁剪、分割）的修改，恢复到原图<br>
+                <strong>撤销/重做</strong>：回退或恢复最近一次页面级编辑动作<br>
                 <strong>删除</strong>：删除选中的页面
               </p>
             </details>
             <details class="faq-item">
               <summary>标注与裁剪怎么用？</summary>
-              <p><strong>1.</strong> 先在页面缩略图区选中一页，再点击工具栏的“标注”或“裁剪”。<br><strong>2.</strong> 在弹窗里拖动画线即可标注；切到“裁剪”后拖出矩形框，框内区域会被保留。<br><strong>3.</strong> 已有裁剪框时，可直接在框内按住拖动，微调位置，不必清空重画。<br><strong>4.</strong> 点“撤销”可回退上一步；点“清除”会清空当前页全部标注和裁剪。<br><strong>5.</strong> 支持 <code>Ctrl/Cmd+Z</code> 撤销，按 <code>Esc</code> 关闭弹窗。完成后直接导出或保存到空间即可生效。</p>
+              <p><strong>1.</strong> 先在页面缩略图区选中一页，再点击工具栏的“画线”“矩形”“箭头”“文本”或“裁剪”。<br><strong>2.</strong> 画线、矩形、箭头都支持直接拖动创建；文本工具单击页面后输入内容即可插入文本框。<br><strong>3.</strong> 点已有标注可选中；矩形和文本框支持拖动移动、拖角点缩放，箭头支持拖动移动和端点调整，文本框双击可改内容。<br><strong>4.</strong> 切到“裁剪”后拖出保留区域；已有裁剪框时，可直接在框内按住拖动微调位置。<br><strong>5.</strong> 点“撤销”可回退上一步，按 <code>Delete</code> 可删除当前选中标注，点“清除”会清空当前页全部标注和裁剪。</p>
+            </details>
+            <details class="faq-item">
+              <summary>支持拖拽、粘贴和多文件插入吗？</summary>
+              <p>支持。你可以直接把 PDF 拖到编辑区导入，也可以在编辑器已打开文档时用 <code>Ctrl/Cmd + V</code> 粘贴 PDF 文件插入；通过“插入”菜单还可以把本地 PDF、空白页或左侧空间已选 PDF 追加到当前选中页后。</p>
+            </details>
+            <details class="faq-item">
+              <summary>页面双击预览、裁剪预览和缩略图状态分别是什么？</summary>
+              <p>双击缩略图会进入预览页；裁剪模式下会在页面上显示保留框，并同步展示实时裁剪预览；缩略图卡片右侧说明会显示该页是否有“裁剪”“标注”等编辑状态，方便快速检查。</p>
             </details>
           </div>
 
@@ -215,8 +225,16 @@
               <p>游客可直接使用基础功能（页面整理、旋转、压缩等），每日有 <span class="guestDailyExportsDisplay">3</span> 次免费导出额度。登录成为会员后，可享受更大的文件空间、更多分享链接、在线保存文件和历史记录等功能。</p>
             </details>
             <details class="faq-item">
+              <summary>未登录可以看套餐和会员权益吗？</summary>
+              <p>可以。未登录状态下进入“会员中心”，也能直接查看套餐对比和游客试用能力说明；只有在线保存、分享管理、空间文件等会员专属操作需要登录后使用。</p>
+            </details>
+            <details class="faq-item">
               <summary>编辑后的文件会自动保存在服务器吗？</summary>
               <p>游客导出默认只下载不保存；会员点击"保存到空间"后，文件才会进入个人空间，支持下次继续打开编辑。</p>
+            </details>
+            <details class="faq-item">
+              <summary>左侧“我的文件”和编辑区是什么关系？</summary>
+              <p>左侧“我的文件”是会员空间中的已保存文件列表，点击文件可重新打开编辑。编辑区是当前正在处理的工作台文档；通过“插入”菜单可以把空间中已选 PDF 插入到当前文档里，而不是覆盖当前编辑内容。</p>
             </details>
             <details class="faq-item">
               <summary>如何分享我的 PDF 文件？</summary>
@@ -231,6 +249,10 @@
               <p>游客单文件最大 50MB，会员根据套餐不同，单文件最大可达 100-200MB。会员还有个人空间大小和文件数量限制。</p>
             </details>
             <details class="faq-item">
+              <summary>为什么有时会提示填写水印文字或上传图片？</summary>
+              <p>当你开启了文字水印却没填写内容，或开启了图片水印/图片印章却没有选择图片时，系统会在导出前拦截并提示。关闭对应功能开关，或补全配置后再导出即可。</p>
+            </details>
+            <details class="faq-item">
               <summary>页码格式有哪些？</summary>
               <p>支持多种页码格式：<code>1</code>（普通数字）、<code>1/10</code>（当前页/总页数）、<code>Page X of Y</code>（完整英文格式）。</p>
             </details>
@@ -241,6 +263,10 @@
             <details class="faq-item">
               <summary>管理员如何配置站点？</summary>
               <p>管理员可进入后台管理页面（/admin.html），配置站点名称、默认套餐、注册开关、空间配额和 SMTP 发信参数。</p>
+            </details>
+            <details class="faq-item">
+              <summary>导出失败或页面显示异常时怎么排查？</summary>
+              <p>建议先刷新页面重新导入文件，再检查是否开启了水印、印章、加密、OCR 等附加功能且缺少必要参数。如果问题只发生在某个 PDF，通常与源文件结构、扫描页或字体嵌入方式有关，换一个样本对比会更容易定位。</p>
             </details>
           </div>
         </div>
@@ -255,18 +281,34 @@
             <p class="section-desc">最新版本改进与修复</p>
           </div>
           <div class="changelog-list">
+            <details class="changelog-item" open>
+              <summary>
+                <span class="changelog-version">v1.2.0</span>
+                <span class="changelog-date">2026-04-14</span>
+              </summary>
+              <ul class="changelog-features">
+                <li>编辑器“插入”升级为明确下拉菜单，支持插入本地 PDF、空白页和左侧空间已选 PDF</li>
+                <li>新增编辑器内 <code>Ctrl/Cmd + V</code> 粘贴插入 PDF 文件能力</li>
+                <li>修复插入 PDF 后首屏与后续页面尺寸不一致的问题，改为按真实页面尺寸加载</li>
+                <li>修复裁剪实时预览比例与页面不一致的问题，裁剪结果预览更接近最终导出效果</li>
+                <li>修复编辑态下双击缩略图无法进入预览页的问题</li>
+                <li>优化工具栏与编辑浮层层级，解决选中页遮挡下拉菜单的问题</li>
+                <li>补齐导出前校验，文字水印和图片水印/印章的提示更准确</li>
+                <li>未登录状态下的会员中心现在可直接查看套餐内容和游客试用说明</li>
+              </ul>
+            </details>
             <details class="changelog-item">
               <summary>
                 <span class="changelog-version">v1.1.0</span>
-                <span class="changelog-date">2025-04-07</span>
+                <span class="changelog-date">2026-04</span>
               </summary>
               <ul class="changelog-features">
-                <li>优化工具栏布局，按钮分类更清晰</li>
-                <li>新增裁剪和标注功能，支持预览模式编辑</li>
-                <li>保存后自动重新加载文件，实时查看编辑效果</li>
-                <li>优化提示信息显示，成功/失败状态更明确</li>
-                <li>缩略图显示编辑状态指示器（裁剪/标注）</li>
-                <li>修复多项交互和显示问题</li>
+                <li>后端与前端结构模块化重构，编辑器、工作区、预览和文件处理逻辑全部拆分为独立 runtime 模块</li>
+                <li>工作台支持点击上传、拖拽导入和更清晰的空状态提示</li>
+                <li>工具栏重新编组，常用页面操作、标注、裁剪、导出入口更集中</li>
+                <li>新增页面级标注、裁剪、缩略图状态提示和预览联动能力</li>
+                <li>在线保存后自动回载文件，可继续在同一工作台中编辑</li>
+                <li>会员空间、分享、套餐、管理员入口与主站首页体验统一整理</li>
               </ul>
             </details>
             <details class="changelog-item">
@@ -343,1348 +385,32 @@
         </div>
       </section>
 
-      <!-- 工作台 (登录后显示) -->
-      <section id="workbench" class="page-section">
-        <div class="workbench-container">
-          <!-- 左侧边栏 -->
-          <aside class="sidebar" id="sidebar">
-            <button type="button" class="sidebar-toggle" id="sidebarToggle" title="展开/折叠侧边栏">
-              <span>&#9776;</span>
-            </button>
-            <!-- 会员+文件统一卡片 -->
-            <div class="card workspace-card" id="workspaceCard">
-              <!-- 标签切换 -->
-              <div class="workspace-tabs">
-                <button type="button" class="tab-btn active" data-workspace-tab="files">我的文件</button>
-                <button type="button" class="tab-btn" data-workspace-tab="member">会员中心</button>
-              </div>
-              <!-- 会员中心面板 -->
-              <div class="workspace-panel hidden" data-panel="member">
-                <p id="accountHint" class="hint">登录后可在线保存文件到个人空间</p>
-                <div class="auth-buttons">
-                  <button id="showLoginBtn2" type="button" class="btn btn-sm">登录</button>
-                  <button id="showRegisterBtn2" type="button" class="btn btn-sm">注册</button>
-                </div>
-                <button id="logoutBtn2" type="button" class="btn btn-sm btn-danger hidden">退出</button>
-                
-                <!-- 会员信息面板 -->
-                <div id="memberInfoPanel" class="member-panel hidden">
-                  <span id="workspaceUsage" class="hidden">已用 0 MB / 0 MB</span>
-                  <div class="member-summary-block account-toolbar">
-                    <span id="currentUserLabel" class="user-status">未登录</span>
-                    <div class="account-actions">
-                      <a id="adminLink" href="/admin.html" class="btn btn-xs admin-link hidden">后台管理</a>
-                      <button type="button" class="btn btn-xs" id="showChangePasswordBtn">修改密码</button>
-                      <button type="button" class="btn btn-xs" id="showChangeEmailBtn">修改邮箱</button>
-                      <button type="button" class="btn btn-xs btn-primary" id="showRedeemBtn">兑换会员</button>
-                    </div>
-                  </div>
-                  <div class="member-content-block">
-                    <div class="panel-tabs">
-                      <button type="button" class="tab-btn active" data-tab="overview">概览</button>
-                      <button type="button" class="tab-btn" data-tab="shares">分享</button>
-                      <button type="button" class="tab-btn" data-tab="plan">套餐</button>
-                    </div>
-                    <div id="workspaceTabOverview" class="tab-content">
-                      <div id="workspaceMemberSummary" class="loading-text">正在加载...</div>
-                    </div>
-                    <div id="workspaceTabShares" class="tab-content hidden">
-                      <div id="workspaceSharesEmpty" class="empty-text">还没有分享链接</div>
-                      <div id="workspaceShares" class="share-list"></div>
-                    </div>
-                    <div id="workspaceTabPlan" class="tab-content hidden">
-                      <div id="workspacePlanSummary" class="loading-text">正在加载...</div>
-                      <div id="workspacePlans" class="plan-list"></div>
-                    </div>
-                  </div>
-                </div>
-              </div>
-              
-              <!-- 文件管理面板 -->
-              <div class="workspace-panel hidden" data-panel="files">
-                <!-- 上传区域放顶部 -->
-                <div class="upload-actions-row">
-                  <button type="button" class="btn btn-sm" id="guestEditUploadTrigger2">上传直接编辑</button>
-                  <button type="button" id="exportEditorBtn2" class="btn btn-sm">下载到本地</button>
-                  <button type="button" class="btn btn-sm hidden" id="memberWorkspaceUploadTrigger2">在线上传</button>
-                  <button type="button" id="saveOnlineBtn2" class="btn btn-sm hidden">在线保存</button>
-                </div>
-                
-                <input type="file" id="editorFileInput" accept="application/pdf" multiple class="hidden" />
-                <input type="file" id="workspaceUploadInput" accept="application/pdf" multiple class="hidden" />
-                
-                <div class="card-header">
-                  <div class="view-toggle">
-                    <button type="button" class="btn btn-xs active" id="workspaceViewActiveBtn">文件</button>
-                    <button type="button" class="btn btn-xs" id="workspaceViewTrashBtn">回收站</button>
-                  </div>
-                  <select id="workspaceFolderFilter">
-                    <option value="">全部目录</option>
-                  </select>
-                </div>
-                <div class="search-bar">
-                  <input type="search" id="workspaceSearchInput" placeholder="搜索文件..." />
-                </div>
-                <!-- 批量操作栏 -->
-                <div class="batch-actions" id="workspaceBatchBar">
-                  <label class="batch-select-all">
-                    <input type="checkbox" id="workspaceSelectAllVisibleBtn" />
-                  </label>
-                  <button type="button" class="btn btn-xs" id="workspaceBatchRenameToggleBtn">命名</button>
-                  <button type="button" class="btn btn-xs" id="workspaceMergeSelectedBtn">合并</button>
-                  <button type="button" class="btn btn-xs" id="workspaceDownloadSelectedBtn">下载</button>
-                  <button type="button" class="btn btn-xs" id="workspaceShareSelectedBtn">分享</button>
-                  <button type="button" class="btn btn-xs btn-danger-soft" id="workspaceTrashSelectedBtn">删除</button>
-                </div>
-                <div class="batch-rename-panel hidden" id="workspaceBatchRenamePanel">
-                  <div class="batch-rename-grid">
-                    <label class="field">
-                      <span>前缀</span>
-                      <input type="text" id="workspaceBatchPrefixInput" placeholder="例如：客户A-" />
-                    </label>
-                    <label class="field">
-                      <span>后缀</span>
-                      <input type="text" id="workspaceBatchSuffixInput" placeholder="例如：-终稿" />
-                    </label>
-                    <label class="field">
-                      <span>查找</span>
-                      <input type="text" id="workspaceBatchFindInput" placeholder="原关键词" />
-                    </label>
-                    <label class="field">
-                      <span>替换为</span>
-                      <input type="text" id="workspaceBatchReplaceInput" placeholder="新关键词" />
-                    </label>
-                    <label class="field batch-rename-folder-field">
-                      <span>批量改目录</span>
-                      <input type="text" id="workspaceBatchFolderInput" placeholder="例如：项目A/归档/终稿" />
-                    </label>
-                    <label class="check batch-rename-sequence">
-                      <input type="checkbox" id="workspaceBatchSequenceEnabled" />
-                      <span>追加序号</span>
-                    </label>
-                    <label class="field batch-sequence-start-field">
-                      <span>起始序号</span>
-                      <input type="number" id="workspaceBatchSequenceStart" min="1" step="1" value="1" />
-                    </label>
-                  </div>
-                  <div class="batch-rename-actions">
-                    <p class="helper-text" id="workspaceBatchRenameHint">对当前选中文件生效，保留原扩展名。</p>
-                    <button type="button" class="btn btn-xs" id="workspaceBatchRenameResetBtn">清空规则</button>
-                    <button type="button" class="btn btn-primary btn-xs" id="workspaceBatchRenameApplyBtn">应用到选中文件</button>
-                  </div>
-                </div>
-                <div id="workspaceFolderTree" class="folder-tree"></div>
-                <div id="workspaceFilesEmpty" class="empty-state">还没有文件</div>
-                <div id="workspaceFiles" class="file-list"></div>
-                <div class="pagination-bar" id="workspacePagination">
-                  <div class="pagination-controls">
-                    <select id="workspacePageSelect" class="page-select-dropdown">
-                      <option value="1">1 / 1</option>
-                    </select>
-                  </div>
-                </div>
-              </div>
-            </div>
-          </aside>
-
-          <!-- 中间工作区 -->
-          <div class="workbench-main">
-            <div class="editor-fixed-wrapper">
-            <div class="workspace-sticky-header">
-              <!-- 工具菜单栏 -->
-              <div class="toolbar">
-              <div class="toolbar-item">
-                <button type="button" class="toolbar-btn" data-menu="file">
-                  文件 <span class="arrow">▾</span>
-                </button>
-                <div class="dropdown" id="menuFile">
-                  <div class="dropdown-section">
-                    <label class="field">
-                      <span>文件名</span>
-                      <input type="text" id="saveName" placeholder="例如：合同终稿.pdf" />
-                    </label>
-                    <label class="field">
-                      <span>保存到目录</span>
-                      <input type="text" id="saveFolderName" placeholder="例如：终稿" />
-                    </label>
-                    <label class="field">
-                      <span>导出模式</span>
-                      <select id="exportMode">
-                        <option value="single">单个文件</option>
-                        <option value="splitEvery">每 N 页拆分</option>
-                      </select>
-                    </label>
-                    <label class="field" id="splitEveryField">
-                      <span>拆分页数</span>
-                      <input type="number" id="splitEvery" min="1" value="1" />
-                    </label>
-                    <label class="checkbox">
-                      <input type="checkbox" id="toImagesEnabled" />
-                      <span>导出为图片 (ZIP 包)</span>
-                    </label>
-                    <div id="toImagesOptions" class="hidden" style="margin-left: 1.5rem; margin-top: 0.5rem;">
-                      <label class="field">
-                        <span>图片格式</span>
-                        <select id="toImagesFormat">
-                          <option value="jpg">JPEG</option>
-                          <option value="png">PNG</option>
-                          <option value="webp">WebP</option>
-                        </select>
-                      </label>
-                      <label class="field">
-                        <span>分辨率 (DPI)</span>
-                        <select id="toImagesDpi">
-                          <option value="72">72 (低)</option>
-                          <option value="150">150 (中)</option>
-                          <option value="200" selected>200 (标准)</option>
-                          <option value="300">300 (高)</option>
-                          <option value="600">600 (印刷级)</option>
-                        </select>
-                      </label>
-                      <label class="field" id="toImagesQualityField">
-                        <span>质量</span>
-                        <select id="toImagesQuality">
-                          <option value="60">60% (小文件)</option>
-                          <option value="75">75% (平衡)</option>
-                          <option value="85" selected>85% (高质量)</option>
-                          <option value="95">95% (最佳)</option>
-                        </select>
-                      </label>
-                    </div>
-                  </div>
-                  <div class="dropdown-actions">
-                    <button type="button" id="saveOnlineBtn" class="btn btn-primary">在线保存</button>
-                    <button type="button" id="exportEditorBtn" class="btn btn-secondary">下载</button>
-                  </div>
-                </div>
-              </div>
-              <button type="button" class="toolbar-btn toolbar-btn-compact" id="imageToPdfBtn">图片转PDF</button>
-
-              <div class="toolbar-item">
-                <button type="button" class="toolbar-btn" data-menu="page">
-                  页面 <span class="arrow">▾</span>
-                </button>
-                <div class="dropdown" id="menuPage">
-                  <label class="field">
-                    <span>目标尺寸</span>
-                    <select id="resizePageSize">
-                      <option value="keep" selected>保持原尺寸</option>
-                      <option value="A3">A3</option>
-                      <option value="A4">A4</option>
-                      <option value="A5">A5</option>
-                      <option value="Letter">Letter（美式信纸）</option>
-                      <option value="Legal">Legal（美式长页）</option>
-                    </select>
-                  </label>
-                  <div class="field-row">
-                    <label class="field">
-                      <span>方向</span>
-                      <select id="resizeOrientation">
-                        <option value="portrait" selected>纵向</option>
-                        <option value="landscape">横向</option>
-                      </select>
-                    </label>
-                    <label class="field">
-                      <span>边距</span>
-                      <input type="number" id="resizeMargin" min="0" value="0" />
-                    </label>
-                  </div>
-                  <label class="field">
-                    <span>背景色</span>
-                    <input type="color" id="resizeBackgroundColor" value="#ffffff" />
-                  </label>
-                  <label class="field">
-                    <span>缩放</span>
-                    <select id="resizeFitMode">
-                      <option value="contain">按比例适配</option>
-                      <option value="stretch">拉伸填满</option>
-                      <option value="keep" selected>保持布局</option>
-                    </select>
-                  </label>
-                </div>
-              </div>
-
-              <div class="toolbar-item">
-                <button type="button" class="toolbar-btn" data-menu="watermark">
-                  水印 <span class="arrow">▾</span>
-                </button>
-                <div class="dropdown" id="menuWatermark">
-                  <label class="checkbox">
-                    <input type="checkbox" id="watermarkEnabled" />
-                    <span>添加水印</span>
-                  </label>
-                  <label class="field">
-                    <span>类型</span>
-                    <select id="watermarkKind">
-                      <option value="text" selected>文字水印</option>
-                      <option value="image">图片水印</option>
-                    </select>
-                  </label>
-                  <label class="field">
-                    <span>文字</span>
-                    <input type="text" id="watermarkText" value="CONFIDENTIAL" />
-                  </label>
-                  <label class="field">
-                    <span>图片</span>
-                    <input type="file" id="watermarkImageInput" accept="image/png,image/jpeg" />
-                  </label>
-                  <p class="dropdown-hint" id="watermarkImageName">未选择图片水印。支持 PNG、JPG。</p>
-                  <div class="field-row">
-                    <label class="field">
-                      <span>位置</span>
-                      <select id="watermarkPosition">
-                        <option value="center" selected>居中</option>
-                        <option value="header">页眉</option>
-                        <option value="footer">页脚</option>
-                        <option value="tile">平铺</option>
-                      </select>
-                    </label>
-                    <label class="field">
-                      <span>颜色</span>
-                      <select id="watermarkColor">
-                        <option value="orange" selected>橙色</option>
-                        <option value="slate">蓝灰</option>
-                        <option value="red">红色</option>
-                      </select>
-                    </label>
-                  </div>
-                  <div class="field-row">
-                    <label class="field">
-                      <span>透明度</span>
-                      <input type="number" id="watermarkOpacity" min="0.05" max="0.95" step="0.05" value="0.18" />
-                    </label>
-                    <label class="field">
-                      <span>字号</span>
-                      <input type="number" id="watermarkFontSize" min="10" value="36" />
-                    </label>
-                  </div>
-                  <label class="field">
-                    <span>图片宽度 (%)</span>
-                    <input type="number" id="watermarkImageScale" min="5" max="90" step="5" value="24" />
-                  </label>
-                  <label class="field">
-                    <span>旋转角度</span>
-                    <input type="number" id="watermarkRotate" value="-30" />
-                  </label>
-                </div>
-              </div>
-
-              <div class="toolbar-item">
-                <button type="button" class="toolbar-btn" data-menu="stamp">
-                  印章 <span class="arrow">▾</span>
-                </button>
-                <div class="dropdown" id="menuStamp">
-                  <label class="checkbox">
-                    <input type="checkbox" id="stampEnabled" />
-                    <span>添加图片印章</span>
-                  </label>
-                  <label class="field">
-                    <span>图片</span>
-                    <input type="file" id="stampImageInput" accept="image/png,image/jpeg" />
-                  </label>
-                  <p class="dropdown-hint" id="stampImageName">未选择印章图片。支持 PNG、JPG。</p>
-                  <div class="field-row">
-                    <label class="field">
-                      <span>位置</span>
-                      <select id="stampPosition">
-                        <option value="topLeft">左上</option>
-                        <option value="topRight">右上</option>
-                        <option value="bottomLeft">左下</option>
-                        <option value="bottomRight" selected>右下</option>
-                        <option value="center">居中</option>
-                      </select>
-                    </label>
-                    <label class="field">
-                      <span>透明度</span>
-                      <input type="number" id="stampOpacity" min="0.1" max="1" step="0.05" value="0.92" />
-                    </label>
-                  </div>
-                  <div class="field-row">
-                    <label class="field">
-                      <span>图片宽度 (%)</span>
-                      <input type="number" id="stampScale" min="5" max="50" step="5" value="18" />
-                    </label>
-                    <label class="field">
-                      <span>边距</span>
-                      <input type="number" id="stampMargin" min="0" value="24" />
-                    </label>
-                  </div>
-                  <label class="field">
-                    <span>旋转角度</span>
-                    <input type="number" id="stampRotate" value="-8" />
-                  </label>
-                </div>
-              </div>
-
-              <div class="toolbar-item">
-                <button type="button" class="toolbar-btn" data-menu="pagenum">
-                  页码 <span class="arrow">▾</span>
-                </button>
-                <div class="dropdown" id="menuPagenum">
-                  <label class="checkbox">
-                    <input type="checkbox" id="pageNumbersEnabled" />
-                    <span>添加页码</span>
-                  </label>
-                  <div class="field-row">
-                    <label class="field">
-                      <span>对齐</span>
-                      <select id="pageNumbersAlign">
-                        <option value="left">左</option>
-                        <option value="center">中</option>
-                        <option value="right" selected>右</option>
-                      </select>
-                    </label>
-                    <label class="field">
-                      <span>位置</span>
-                      <select id="pageNumbersVertical">
-                        <option value="bottom" selected>底部</option>
-                        <option value="top">顶部</option>
-                      </select>
-                    </label>
-                  </div>
-                  <div class="field-row">
-                    <label class="field">
-                      <span>字号</span>
-                      <input type="number" id="pageNumbersFontSize" min="8" value="12" />
-                    </label>
-                    <label class="field">
-                      <span>边距</span>
-                      <input type="number" id="pageNumbersMargin" min="0" value="24" />
-                    </label>
-                  </div>
-                  <hr class="dropdown-divider" />
-                  <label class="checkbox">
-                    <input type="checkbox" id="batesEnabled" />
-                    <span>添加 Bates 编号</span>
-                  </label>
-                  <div class="field-row">
-                    <label class="field">
-                      <span>前缀</span>
-                      <input type="text" id="batesPrefix" value="BATES-" />
-                    </label>
-                    <label class="field">
-                      <span>起始值</span>
-                      <input type="number" id="batesStart" min="1" value="1" />
-                    </label>
-                  </div>
-                  <div class="field-row">
-                    <label class="field">
-                      <span>位数</span>
-                      <input type="number" id="batesDigits" min="2" max="12" value="6" />
-                    </label>
-                    <label class="field">
-                      <span>对齐</span>
-                      <select id="batesAlign">
-                        <option value="left">左</option>
-                        <option value="center">中</option>
-                        <option value="right" selected>右</option>
-                      </select>
-                    </label>
-                  </div>
-                  <div class="field-row">
-                    <label class="field">
-                      <span>位置</span>
-                      <select id="batesVertical">
-                        <option value="bottom" selected>底部</option>
-                        <option value="top">顶部</option>
-                      </select>
-                    </label>
-                    <label class="field">
-                      <span>字号</span>
-                      <input type="number" id="batesFontSize" min="8" value="12" />
-                    </label>
-                  </div>
-                  <label class="field">
-                    <span>边距</span>
-                    <input type="number" id="batesMargin" min="0" value="24" />
-                  </label>
-                </div>
-              </div>
-
-              <div class="toolbar-item">
-                <button type="button" class="toolbar-btn" data-menu="compress">
-                  压缩 <span class="arrow">▾</span>
-                </button>
-                <div class="dropdown" id="menuCompress">
-                  <label class="checkbox">
-                    <input type="checkbox" id="compressionEnabled" />
-                    <span>启用压缩</span>
-                  </label>
-                  <label class="field">
-                    <span>压缩级别</span>
-                    <select id="compressionLevel">
-                      <option value="low">低压缩（高质量）</option>
-                      <option value="medium" selected>平衡模式</option>
-                      <option value="high">高压缩（小体积）</option>
-                    </select>
-                  </label>
-                </div>
-              </div>
-
-              <div class="toolbar-item">
-                <button type="button" class="toolbar-btn" data-menu="security">
-                  保护 <span class="arrow">▾</span>
-                </button>
-                <div class="dropdown" id="menuSecurity">
-                  <form id="editorSecurityForm" class="sr-only" autocomplete="on" aria-hidden="true" tabindex="-1">
-                    <input type="text" id="editorSecurityUsername" name="username" autocomplete="username" tabindex="-1" />
-                  </form>
-                  <label class="checkbox">
-                    <input type="checkbox" id="securityEnabled" />
-                    <span>启用加密</span>
-                  </label>
-                  <label class="field">
-                    <span>打开密码</span>
-                    <input type="password" id="securityPassword" form="editorSecurityForm" autocomplete="new-password" placeholder="设置 PDF 打开密码" />
-                  </label>
-                </div>
-              </div>
-
-              <div class="toolbar-item">
-                <button type="button" class="toolbar-btn" data-menu="metadata">
-                  元数据 <span class="arrow">▾</span>
-                </button>
-                <div class="dropdown" id="menuMetadata">
-                  <label class="checkbox">
-                    <input type="checkbox" id="metadataEnabled" />
-                    <span>编辑文档信息</span>
-                  </label>
-                  <label class="checkbox">
-                    <input type="checkbox" id="metadataClearExisting" />
-                    <span>先清空已有信息</span>
-                  </label>
-                  <label class="field">
-                    <span>标题</span>
-                    <input type="text" id="metadataTitle" placeholder="例如：2026 年度合同汇编" />
-                  </label>
-                  <label class="field">
-                    <span>作者</span>
-                    <input type="text" id="metadataAuthor" placeholder="例如：Z7 PDF" />
-                  </label>
-                  <label class="field">
-                    <span>主题</span>
-                    <input type="text" id="metadataSubject" placeholder="例如：归档文档" />
-                  </label>
-                  <label class="field">
-                    <span>关键词</span>
-                    <input type="text" id="metadataKeywords" placeholder="用逗号分隔，例如：合同, 归档, 机密" />
-                  </label>
-                </div>
-              </div>
-
-              <div class="toolbar-item">
-                <button type="button" class="toolbar-btn" data-menu="bookmarks">
-                  书签 <span class="arrow">▾</span>
-                </button>
-                <div class="dropdown" id="menuBookmarks">
-                  <label class="checkbox">
-                    <input type="checkbox" id="bookmarksEnabled" />
-                    <span>导出并写回书签</span>
-                  </label>
-                  <p class="dropdown-hint">当前版本支持一级书签。上传后会预填首个 PDF 的书签，页码按最终导出页序填写。</p>
-                  <div id="bookmarksList" class="bookmark-list">
-                    <p class="dropdown-hint bookmark-empty">还没有书签，可点击下方按钮新增。</p>
-                  </div>
-                  <button type="button" class="btn btn-xs" id="bookmarkAddBtn">新增书签</button>
-                </div>
-              </div>
-
-              <div class="toolbar-item">
-                <button type="button" class="toolbar-btn" data-menu="headerfooter">
-                  页眉页脚 <span class="arrow">▾</span>
-                </button>
-                <div class="dropdown" id="menuHeaderfooter">
-                  <label class="checkbox">
-                    <input type="checkbox" id="headerFooterEnabled" />
-                    <span>添加页眉 / 页脚</span>
-                  </label>
-                  <label class="field">
-                    <span>页眉文字</span>
-                    <input type="text" id="headerText" placeholder="例如：内部资料，请勿外传" />
-                  </label>
-                  <label class="field">
-                    <span>页脚文字</span>
-                    <input type="text" id="footerText" placeholder="例如：Z7 PDF 归档中心" />
-                  </label>
-                  <p class="dropdown-hint">支持变量：`{{page}}`、`{{pages}}`、`{{file}}`、`{{date}}`、`{{datetime}}`。</p>
-                  <div class="field-row">
-                    <label class="field">
-                      <span>对齐</span>
-                      <select id="headerFooterAlign">
-                        <option value="left">左</option>
-                        <option value="center" selected>中</option>
-                        <option value="right">右</option>
-                      </select>
-                    </label>
-                    <label class="field">
-                      <span>颜色</span>
-                      <select id="headerFooterColor">
-                        <option value="slate" selected>蓝灰</option>
-                        <option value="orange">橙色</option>
-                        <option value="red">红色</option>
-                        <option value="#111111">黑色</option>
-                      </select>
-                    </label>
-                  </div>
-                  <div class="field-row">
-                    <label class="field">
-                      <span>字号</span>
-                      <input type="number" id="headerFooterFontSize" min="8" value="10" />
-                    </label>
-                    <label class="field">
-                      <span>边距</span>
-                      <input type="number" id="headerFooterMargin" min="8" value="24" />
-                    </label>
-                  </div>
-                  <label class="field">
-                    <span>透明度</span>
-                    <input type="number" id="headerFooterOpacity" min="0.1" max="1" step="0.05" value="0.85" />
-                  </label>
-                </div>
-              </div>
-
-              <div class="toolbar-item toolbar-toggle-group">
-                <button type="button" class="toolbar-btn toolbar-btn-toggle" data-toggle="grayscale" id="grayscaleToggleBtn" title="转换为灰度">灰度</button>
-                <button type="button" class="toolbar-btn toolbar-btn-toggle" data-toggle="invert" id="invertToggleBtn" title="创建反色版本">反色</button>
-                <button type="button" class="toolbar-btn toolbar-btn-toggle" data-toggle="scan" id="scanToggleBtn" title="模拟扫描效果">扫描</button>
-                <button type="button" class="toolbar-btn toolbar-btn-toggle" data-toggle="ocr" id="ocrToggleBtn" title="扫描件文字识别">识别</button>
-                <button type="button" class="toolbar-btn toolbar-btn-toggle" data-toggle="pdfa" id="pdfaToggleBtn" title="PDF/A 归档">归档</button>
-                <input type="checkbox" id="grayscaleEnabled" hidden />
-                <input type="checkbox" id="invertEnabled" hidden />
-                <input type="checkbox" id="scanEffectEnabled" hidden />
-                <select id="scanEffectLevel" hidden>
-                  <option value="light">轻度</option>
-                  <option value="medium" selected>标准</option>
-                  <option value="strong">增强</option>
-                </select>
-                <input type="checkbox" id="ocrEnabled" hidden />
-                <select id="ocrLanguage" hidden>
-                  <option value="chi_sim+eng" selected>中英混合</option>
-                  <option value="chi_sim">中文简体</option>
-                  <option value="eng">英文</option>
-                </select>
-                <input type="checkbox" id="pdfaEnabled" hidden />
-                <select id="pdfaLevel" hidden>
-                  <option value="1b">PDF/A-1b</option>
-                  <option value="2b" selected>PDF/A-2b</option>
-                  <option value="3b">PDF/A-3b</option>
-                </select>
-              </div>
-
-                <span class="toolbar-sep">|</span>
-                <button type="button" class="toolbar-btn toolbar-btn-compact" id="selectAllBtn">全选</button>
-                <button type="button" class="toolbar-btn toolbar-btn-compact" id="clearSelectionBtn">清空</button>
-                <button type="button" class="toolbar-btn toolbar-btn-compact" id="invertSelectionBtn">反选</button>
-                <button type="button" class="toolbar-btn toolbar-btn-compact" id="previewBtn">预览</button>
-                <button type="button" class="toolbar-btn toolbar-btn-compact" id="printBtn" title="打印文档">打印</button>
-                <span class="toolbar-sep">|</span>
-                <button type="button" class="toolbar-btn toolbar-btn-compact" id="moveUpBtn" title="前移">前移</button>
-                <button type="button" class="toolbar-btn toolbar-btn-compact" id="moveDownBtn" title="后移">后移</button>
-                <button type="button" class="toolbar-btn toolbar-btn-compact" id="rotateLeftBtn" title="左转">左转</button>
-                <button type="button" class="toolbar-btn toolbar-btn-compact" id="rotateRightBtn" title="右转">右转</button>
-                <span class="toolbar-sep">|</span>
-                <button type="button" class="toolbar-btn toolbar-btn-compact" id="drawBtn">标注</button>
-                <button type="button" class="toolbar-btn toolbar-btn-compact" id="cropBtn">裁剪</button>
-                <button type="button" class="toolbar-btn toolbar-btn-compact" data-menu="split">
-                  分割 <span class="arrow">▾</span>
-                </button>
-                 <span class="toolbar-sep">|</span>
-                 <button type="button" class="toolbar-btn toolbar-btn-compact" id="globalUndoBtn" title="撤销 (Ctrl+Z)" disabled>撤销</button>
-                <button type="button" class="toolbar-btn toolbar-btn-compact" id="globalRedoBtn" title="重做 (Ctrl+Y)" disabled>重做</button>
-                <button type="button" class="toolbar-btn toolbar-btn-compact" id="insertBlankBtn" title="插入空白页">插入</button>
-                <button type="button" class="toolbar-btn toolbar-btn-compact btn-danger" id="deleteBtn" title="删除">删除</button>
-                <div class="dropdown" id="menuSplit">
-                  <label class="field">
-                    <span>分割方向</span>
-                    <select id="splitDirection">
-                      <option value="horizontal">横向（切横刀）</option>
-                      <option value="vertical">纵向（切竖刀）</option>
-                    </select>
-                  </label>
-                  <label class="field">
-                    <span>分割份数</span>
-                    <input type="number" id="splitCount" value="2" min="2" max="10" />
-                  </label>
-                  <label class="checkbox">
-                    <input type="checkbox" id="splitAllPages" />
-                    <span>应用到所有选中页面</span>
-                  </label>
-                  <button type="button" class="btn btn-sm btn-primary" id="applySplitBtn">确认分割</button>
-                </div>
-                <span class="toolbar-sep">|</span>
-                <select id="workspaceZoomSelect" class="preview-zoom-select main-zoom-select">
-                  <option value="fit-all">全部</option>
-                  <option value="fit-width">宽度</option>
-                  <option value="0.5">50%</option>
-                  <option value="0.75">75%</option>
-                  <option value="1" selected>100%</option>
-                  <option value="1.25">125%</option>
-                  <option value="1.5">150%</option>
-                  <option value="2">200%</option>
-                  <option value="3">300%</option>
-                </select>
-              </div>
-            </div>
-
-            </div> <!-- 结束 editor-fixed-wrapper -->
-
-            <div id="editorDropZone" class="editor-drop-zone">
-              <!-- 空状态 -->
-              <div id="editorEmpty" class="empty-box" role="button" tabindex="0" aria-label="点击或拖拽文件到此处上传">
-                <div class="empty-icon">📄</div>
-                <h3>上传一个或多个 PDF 文件开始编辑</h3>
-                <p>支持页面整理、旋转、尺寸调整、水印、页码、页眉页脚、压缩、加密、元数据编辑和拆分</p>
-                <p class="empty-box-upload-hint">点击或拖拽文件到此处上传，支持 PDF 格式</p>
-              </div>
-
-              <!-- 编辑器内容区：现在包含了信息栏和反馈条，形成完整闭环 -->
-              <div id="editorShell" class="editor-workspace hidden">
-                <div class="editor-info">
-                  <div class="editor-info-left" id="editorInfoLeft">
-                    <strong id="editorFilename">尚未加载文件</strong>
-                    <span id="editorMeta">0 页</span>
-                  </div>
-                  <div class="editor-info-right" id="editorInfoRight"></div>
-                </div>
-                <!-- 操作反馈横条 -->
-                <div id="editorResult" class="result-message hidden"></div>
-                
-                <div id="thumbGrid" class="thumb-grid"></div>
-              </div>
-
-              <div id="editorDropOverlay" class="editor-drop-overlay hidden" aria-hidden="true">
-                <div class="editor-drop-overlay-inner">
-                  <strong>松开鼠标，立即导入 PDF</strong>
-                  <span>支持一次拖入多个 PDF 文件</span>
-                </div>
-              </div>
-            </div>
-            </div>
-          </div>
-        </div>
-      </section>
+      <div id="workbenchMount"></div>
     </main>
 
-    <!-- 登录弹窗 -->
-    <div id="authPanel" class="modal hidden">
-      <div class="modal-content">
-        <div class="modal-header">
-          <div class="modal-title">
-            <span class="kicker">账号访问</span>
-            <h2 id="authPanelTitle">登录或注册</h2>
-          </div>
-          <button type="button" class="close-btn" id="authCloseBtn">✕</button>
-        </div>
-        <div class="auth-forms">
-          <!-- 登录注册表单 -->
-          <div id="authLoginSection">
-            <div class="auth-tabs">
-              <button type="button" class="tab-btn active" data-form="password">密码登录</button>
-              <button type="button" class="tab-btn" data-form="code">验证码登录</button>
-            </div>
+    <div id="modalMount"></div>
 
-            <form id="passwordLoginForm" class="auth-form">
-              <label class="field">
-                <span>邮箱</span>
-                <input type="email" id="loginEmail" autocomplete="username" required />
-              </label>
-              <label class="field">
-                <span>密码</span>
-                <input type="password" id="loginPassword" autocomplete="current-password" required />
-              </label>
-              <div class="auth-links">
-                <a href="#" id="showForgotPassword">忘记密码？</a>
-              </div>
-              <button type="submit" class="btn btn-primary">登录</button>
-            </form>
-
-            <form id="authForm" class="auth-form hidden">
-              <label class="field">
-                <span>邮箱</span>
-                <input type="email" id="authEmail" autocomplete="email" required />
-              </label>
-              <p id="authEmailStatus" class="hint">先输入邮箱，我们会自动判断是登录还是注册。</p>
-              <label class="field">
-                <span>验证码</span>
-                <div class="code-input">
-                  <input type="text" id="authCode" inputmode="numeric" pattern="[0-9]{6}" maxlength="6" autocomplete="one-time-code" placeholder="6 位验证码" required />
-                  <button type="button" class="btn btn-sm" id="sendCodeBtn">发送验证码</button>
-                </div>
-              </label>
-              <label class="field" id="authRegisterPasswordField">
-                <span>注册密码</span>
-                <input type="password" id="authRegisterPassword" autocomplete="new-password" minlength="6" placeholder="未注册邮箱时必填，至少 6 位" />
-              </label>
-              <p id="authModeHint" class="hint">已注册邮箱可直接用验证码登录；未注册邮箱需要同时填写注册密码，验证成功后才会创建账号。</p>
-              <button type="submit" class="btn btn-primary" id="authSubmitBtn">继续</button>
-            </form>
-          </div>
-
-          <!-- 忘记密码表单 -->
-          <div id="authForgotSection" class="hidden">
-            <form id="forgotPasswordForm" class="auth-form">
-              <span class="form-kicker">重置密码</span>
-              <h3>忘记密码</h3>
-              <p class="hint">输入您的邮箱地址，我们将发送验证码帮助您重置密码。</p>
-              <label class="field">
-                <span>邮箱</span>
-                <input type="email" id="forgotEmail" autocomplete="email" required />
-              </label>
-              <label class="field">
-                <span>验证码</span>
-                <div class="code-input">
-                  <input type="text" id="forgotCode" inputmode="numeric" pattern="[0-9]{6}" maxlength="6" autocomplete="one-time-code" placeholder="6 位验证码" required />
-                  <button type="button" class="btn btn-sm" id="forgotSendCodeBtn">发送验证码</button>
-                </div>
-              </label>
-              <label class="field">
-                <span>新密码</span>
-                <input type="password" id="forgotNewPassword" autocomplete="new-password" minlength="6" placeholder="至少 6 位" required />
-              </label>
-              <label class="field">
-                <span>确认密码</span>
-                <input type="password" id="forgotConfirmPassword" autocomplete="new-password" minlength="6" placeholder="再次输入新密码" required />
-              </label>
-              <div class="auth-links">
-                <a href="#" id="backToLogin">返回登录</a>
-              </div>
-              <button type="submit" class="btn btn-primary">重置密码</button>
-            </form>
-          </div>
-
-          <!-- 修改密码表单（已登录） -->
-          <div id="authChangePasswordSection" class="hidden">
-            <form id="changePasswordForm" class="auth-form">
-              <span class="form-kicker">修改密码</span>
-              <h3>修改密码</h3>
-              <input type="email" id="changePasswordUsername" autocomplete="username" tabindex="-1" class="sr-only" aria-hidden="true" />
-              <label class="field">
-                <span>当前密码</span>
-                <input type="password" id="currentPassword" autocomplete="current-password" required />
-              </label>
-              <label class="field">
-                <span>新密码</span>
-                <input type="password" id="newPassword" autocomplete="new-password" minlength="6" placeholder="至少 6 位" required />
-              </label>
-              <label class="field">
-                <span>确认新密码</span>
-                <input type="password" id="confirmNewPassword" autocomplete="new-password" minlength="6" placeholder="再次输入新密码" required />
-              </label>
-              <button type="submit" class="btn btn-primary">修改密码</button>
-            </form>
-          </div>
-
-          <!-- 修改邮箱表单（已登录） -->
-          <div id="authChangeEmailSection" class="hidden">
-            <form id="changeEmailForm" class="auth-form">
-              <span class="form-kicker">修改邮箱</span>
-              <h3>修改邮箱</h3>
-              <p class="hint">当前邮箱：<strong id="currentEmailDisplay"></strong></p>
-              <label class="field">
-                <span>新邮箱</span>
-                <input type="email" id="newEmail" autocomplete="email" required />
-              </label>
-              <label class="field">
-                <span>验证码</span>
-                <div class="code-input">
-                  <input type="text" id="changeEmailCode" inputmode="numeric" pattern="[0-9]{6}" maxlength="6" placeholder="6 位验证码" required />
-                  <button type="button" class="btn btn-sm" id="changeEmailSendCodeBtn">发送验证码</button>
-                </div>
-              </label>
-              <button type="submit" class="btn btn-primary">修改邮箱</button>
-            </form>
-          </div>
-
-          <!-- 兑换码表单 -->
-          <div id="authRedeemSection" class="hidden">
-            <form id="redeemForm" class="auth-form">
-              <span class="form-kicker">兑换码</span>
-              <h3>兑换会员</h3>
-              <p class="hint">输入兑换码激活会员天数</p>
-              <label class="field">
-                <span>兑换码</span>
-                <input type="text" id="redeemCodeInput" placeholder="XXXX-XXXX-XXXX-XXXX" required />
-              </label>
-              <button type="submit" class="btn btn-primary">立即兑换</button>
-              <p id="redeemResult" class="result-message"></p>
-            </form>
-          </div>
-        </div>
-        <p id="registerDisabledHint" class="hint hidden">当前站点暂未开放新用户注册，仅已存在账号可继续登录。</p>
-        <p id="authResult" class="result-message" aria-live="assertive"></p>
-      </div>
-    </div>
-
-    <!-- 预览弹窗 (仅用于全屏查看) -->
-    <div id="previewModal" class="modal hidden preview-immersive-modal">
-      <div class="preview-dialog full-preview-dialog">
-        <button type="button" class="close-btn preview-immersive-close" id="previewCloseBtn" title="关闭 (Esc)">✕</button>
-        <div id="previewBody" class="preview-content preview-view-only"></div>
-        <div class="preview-toolbar">
-          <button type="button" id="previewPrev" title="上一页 (←)" class="btn btn-icon">上页</button>
-          <div class="preview-pagination">
-            <span id="previewCurrentPage">1</span> / <span id="previewTotalPages">1</span>
-          </div>
-          <button type="button" id="previewNext" title="下一页 (→)" class="btn btn-icon">下页</button>
-          
-          <div class="preview-divider"></div>
-          
-          <button type="button" id="previewRotateLeft" title="向左旋转" class="btn btn-icon">左转</button>
-          <button type="button" id="previewRotateRight" title="向右旋转" class="btn btn-icon">右转</button>
-          <button type="button" id="previewDeletePage" title="删除当前页" class="btn btn-icon btn-danger-soft">删除</button>
-          
-          <div class="preview-divider"></div>
-          
-          <button type="button" id="previewZoomOut" title="缩小 (-)" class="btn btn-icon">缩小</button>
-          <span id="previewZoomLevel" title="重置比例">100%</span>
-          <button type="button" id="previewZoomIn" title="放大 (+)" class="btn btn-icon">放大</button>
-          <button type="button" id="previewZoomFit" title="适应窗口 (Fit)" class="btn btn-icon">适应</button>
-        </div>
-      </div>
-    </div>
-
-    <!-- 分享弹窗 -->
-    <div id="shareModal" class="modal hidden">
-      <div class="modal-dialog">
-        <div class="modal-header">
-          <h3>创建分享链接</h3>
-          <button type="button" class="close-btn" id="shareCloseBtn">✕</button>
-        </div>
-        <form id="shareForm" class="modal-form">
-          <div class="form-grid">
-            <label class="field">
-              <span>分享模式</span>
-              <select id="shareAccessMode">
-                <option value="public">公开 (任何人可见)</option>
-                <option value="password">密码保护 (仅知晓密码者可见)</option>
-                <option value="login">仅登录可见 (仅本站注册用户可见)</option>
-              </select>
-            </label>
-            <label class="field hidden" id="sharePasswordRow">
-              <span>访问密码</span>
-              <input type="text" id="sharePassword" placeholder="设置访问密码" />
-            </label>
-            <div class="field-row">
-              <label class="field">
-                <span>最大下载次数</span>
-                <input type="number" id="shareMaxDownloads" value="0" min="0" placeholder="0 表示不限" />
-              </label>
-              <label class="field">
-                <span>过期时间 (留空为永久)</span>
-                <input type="datetime-local" id="shareExpiresAt" />
-              </label>
-            </div>
-            <label class="checkbox">
-              <input type="checkbox" id="shareDestroyAfterReading" />
-              <span>阅后即焚 (文件被下载一次后链接自动失效并删除)</span>
-            </label>
-          </div>
-          <div class="modal-footer">
-            <button type="submit" class="btn btn-primary btn-lg">创建分享</button>
-          </div>
-        </form>
-      </div>
-    </div>
-
-    <!-- 图片转PDF模态框 -->
-    <div id="imageToPdfModal" class="modal hidden">
-      <div class="modal-dialog image-pdf-dialog">
-        <div class="modal-header image-pdf-header">
-          <h3>图片转PDF</h3>
-          <button type="button" class="close-btn" id="imageToPdfCloseBtn">✕</button>
-        </div>
-        <div class="modal-body image-pdf-body">
-          <!-- 图片上传区域 -->
-          <div class="upload-area image-pdf-upload" id="imageUploadArea">
-            <label class="file-input file-input-primary image-pdf-upload-input">
-              <input type="file" id="imageToPdfInput" accept="image/png,image/jpeg,image/jpg,image/webp" multiple />
-              <div class="image-pdf-upload-copy">
-                <div class="image-pdf-upload-icon">📷</div>
-                <div class="image-pdf-upload-title">点击或拖拽图片到此处</div>
-                <div class="image-pdf-upload-help">支持 PNG、JPG、JPEG、WebP 格式</div>
-              </div>
-            </label>
-          </div>
-
-          <!-- 图片预览区域 -->
-          <div id="imagePreviewArea" class="image-pdf-preview hidden">
-            <div class="image-pdf-preview-head">
-              <span id="imageCountLabel">已选择 0 张图片</span>
-              <button type="button" id="clearImagesBtn" class="btn btn-xs btn-danger-soft">清空</button>
-            </div>
-            <div id="imagePreviewGrid" class="image-pdf-preview-grid"></div>
-          </div>
-
-          <!-- 配置选项 -->
-          <div class="form-grid image-pdf-grid">
-            <label class="field">
-              <span>每页图片数</span>
-              <select id="imageLayout">
-                <option value="1">1 张 (单页单图)</option>
-                <option value="2">2 张 (1列2行)</option>
-                <option value="4">4 张 (2列2行)</option>
-                <option value="6">6 张 (2列3行)</option>
-                <option value="9">9 张 (3列3行)</option>
-              </select>
-            </label>
-            <label class="field">
-              <span>页面尺寸</span>
-              <select id="imagePageSize">
-                <option value="A4">A4</option>
-                <option value="A3">A3</option>
-                <option value="A5">A5</option>
-                <option value="Letter">Letter (美式信纸)</option>
-                <option value="Legal">Legal (美式长页)</option>
-              </select>
-            </label>
-            <label class="field">
-              <span>适应模式</span>
-              <select id="imageFit">
-                <option value="contain">包含 (完整显示)</option>
-                <option value="cover">覆盖 (填满裁剪)</option>
-                <option value="fill">拉伸 (填满变形)</option>
-              </select>
-            </label>
-            <label class="field">
-              <span>页边距 (mm)</span>
-              <input type="number" id="imageMargin" value="10" min="0" max="50" />
-            </label>
-            <label class="field">
-              <span>图片间距 (mm)</span>
-              <input type="number" id="imageGap" value="5" min="0" max="20" />
-            </label>
-            <label class="field">
-              <span>输出文件名</span>
-              <input type="text" id="imageOutputName" value="images_to_pdf.pdf" />
-            </label>
-          </div>
-        </div>
-        <div class="modal-footer image-pdf-footer">
-          <button type="button" id="imageToPdfCancelBtn" class="btn btn-secondary">取消</button>
-          <button type="button" id="imageToPdfConvertBtn" class="btn btn-primary">转换为PDF</button>
-        </div>
-      </div>
-    </div>
-
+    <!-- Compatibility Placeholders -->
     <!-- 隐藏元素（兼容） -->
     <div id="workspacePanel" class="hidden"></div>
-    <div id="workspaceBatchBar" class="hidden"></div>
     <div id="workspaceListHead" class="hidden"></div>
     <button id="workspaceRootBtn" type="button" class="hidden"></button>
     <button id="workspaceToggleSidebarBtn" type="button" class="hidden"></button>
     <button id="workspaceEmptyTrashBtn" type="button" class="hidden"></button>
     <button id="workspaceTableModeBtn" type="button" class="hidden"></button>
     <button id="workspaceCardModeBtn" type="button" class="hidden"></button>
-    <button id="workspaceSortSelect" type="button" class="hidden"></button>
-    <button id="workspaceTreeScope" type="button" class="hidden"></button>
     <button id="workspaceHeadNameBtn" type="button" class="hidden"></button>
     <button id="workspaceHeadDateBtn" type="button" class="hidden"></button>
     <input id="workspaceTreeScope" type="checkbox" class="hidden" />
     <select id="workspaceSortSelect" class="hidden"><option value="newest">最新</option></select>
     <div id="workspaceSelectionSummary" class="hidden"></div>
     <div id="workspaceSelectionHint" class="hidden"></div>
-    <button id="workspaceSelectAllVisibleBtn" type="button" class="hidden"></button>
     <button id="workspaceClearSelectionBtn" type="button" class="hidden"></button>
     <button id="workspaceOpenSelectedBtn" type="button" class="hidden"></button>
-    <button id="workspaceDownloadSelectedBtn" type="button" class="hidden"></button>
-    <button id="workspaceTrashSelectedBtn" type="button" class="hidden"></button>
     <button id="workspaceRestoreSelectedBtn" type="button" class="hidden"></button>
     <button id="workspacePurgeSelectedBtn" type="button" class="hidden"></button>
-    <button id="workspaceBatchRenameToggleBtn" type="button" class="hidden"></button>
-    <div id="workspaceBatchRenamePanel" class="hidden"></div>
-    <input id="workspaceBatchPrefixInput" class="hidden" />
-    <input id="workspaceBatchSuffixInput" class="hidden" />
-    <input id="workspaceBatchFindInput" class="hidden" />
-    <input id="workspaceBatchReplaceInput" class="hidden" />
-    <input id="workspaceBatchFolderInput" class="hidden" />
-    <input id="workspaceBatchSequenceEnabled" type="checkbox" class="hidden" />
-    <input id="workspaceBatchSequenceStart" type="number" class="hidden" />
-    <button id="workspaceBatchRenameResetBtn" type="button" class="hidden"></button>
-    <button id="workspaceBatchRenameApplyBtn" type="button" class="hidden"></button>
-    <div id="workspaceBatchRenameHint" class="hidden"></div>
 
-    <script type="module" src="/editor.js?v=0410"></script>
-    <script type="module" src="/workspace.js?v=0415"></script>
-    <script>
-      // 移动端菜单切换
-      const navMenuBtn = document.getElementById('navMenuBtn');
-      const mainNav = document.getElementById('mainNav');
-      navMenuBtn?.addEventListener('click', () => {
-        mainNav.classList.toggle('active');
-      });
-
-      // 移动端导航链接点击后隐藏菜单
-      document.querySelectorAll('.nav-link').forEach(link => {
-        link.addEventListener('click', () => {
-          if (window.innerWidth <= 720 && mainNav.classList.contains('active')) {
-            mainNav.classList.remove('active');
-          }
-        });
-      });
-
-      // 图片转PDF功能
-      const imageToPdfBtn = document.getElementById('imageToPdfBtn');
-      const imageToPdfModal = document.getElementById('imageToPdfModal');
-      const imageToPdfCloseBtn = document.getElementById('imageToPdfCloseBtn');
-      const imageToPdfCancelBtn = document.getElementById('imageToPdfCancelBtn');
-      const imageToPdfInput = document.getElementById('imageToPdfInput');
-      const imagePreviewArea = document.getElementById('imagePreviewArea');
-      const imagePreviewGrid = document.getElementById('imagePreviewGrid');
-      const imageCountLabel = document.getElementById('imageCountLabel');
-      const clearImagesBtn = document.getElementById('clearImagesBtn');
-      const imageToPdfConvertBtn = document.getElementById('imageToPdfConvertBtn');
-
-      let selectedImages = [];
-
-      // 打开模态框
-      imageToPdfBtn?.addEventListener('click', () => {
-        imageToPdfModal?.classList.remove('hidden');
-      });
-
-      // 关闭模态框
-      function closeImageToPdfModal() {
-        imageToPdfModal?.classList.add('hidden');
-        selectedImages = [];
-        updateImagePreview();
-      }
-
-      imageToPdfCloseBtn?.addEventListener('click', closeImageToPdfModal);
-      imageToPdfCancelBtn?.addEventListener('click', closeImageToPdfModal);
-
-      // 图片选择
-      imageToPdfInput?.addEventListener('change', (e) => {
-        const files = Array.from(e.target.files || []);
-        selectedImages = [...selectedImages, ...files];
-        updateImagePreview();
-        e.target.value = ''; // 允许重复选择相同文件
-      });
-
-      // 更新图片预览
-      function updateImagePreview() {
-        if (selectedImages.length === 0) {
-          imagePreviewArea?.classList.add('hidden');
-          return;
-        }
-
-        imagePreviewArea?.classList.remove('hidden');
-        imageCountLabel.textContent = `已选择 ${selectedImages.length} 张图片`;
-
-        imagePreviewGrid.innerHTML = selectedImages.map((file, index) => `
-          <div class="image-pdf-preview-item">
-            <img src="${URL.createObjectURL(file)}" alt="待转换图片 ${index + 1}" />
-            <button type="button" class="image-pdf-preview-remove" onclick="removeImage(${index})" aria-label="移除第 ${index + 1} 张图片">✕</button>
-          </div>
-        `).join('');
-      }
-
-      // 移除图片
-      window.removeImage = (index) => {
-        selectedImages.splice(index, 1);
-        updateImagePreview();
-      };
-
-      // 清空图片
-      clearImagesBtn?.addEventListener('click', () => {
-        selectedImages = [];
-        updateImagePreview();
-      });
-
-      // 转换为PDF
-      imageToPdfConvertBtn?.addEventListener('click', async () => {
-        if (selectedImages.length === 0) {
-          alert('请先选择图片');
-          return;
-        }
-
-        const layout = document.getElementById('imageLayout')?.value || '1';
-        const pageSize = document.getElementById('imagePageSize')?.value || 'A4';
-        const fit = document.getElementById('imageFit')?.value || 'contain';
-        const margin = document.getElementById('imageMargin')?.value || 10;
-        const gap = document.getElementById('imageGap')?.value || 5;
-        const filename = document.getElementById('imageOutputName')?.value || 'images_to_pdf.pdf';
-
-        const formData = new FormData();
-        selectedImages.forEach(img => formData.append('images', img));
-        formData.append('layout', layout);
-        formData.append('pageSize', pageSize);
-        formData.append('fit', fit);
-        formData.append('margin', margin);
-        formData.append('gap', gap);
-        formData.append('filename', filename);
-
-        imageToPdfConvertBtn.disabled = true;
-        imageToPdfConvertBtn.textContent = '转换中...';
-
-        try {
-          const response = await fetch('/api/image-to-pdf', {
-            method: 'POST',
-            body: formData
-          });
-
-          if (!response.ok) {
-            const error = await response.json();
-            throw new Error(error.error || '转换失败');
-          }
-
-          const blob = await response.blob();
-          const pdfFile = new File([blob], filename.endsWith('.pdf') ? filename : filename + '.pdf', { type: 'application/pdf' });
-
-          // 在编辑器中打开
-          if (window.Z7PdfEditor && typeof window.Z7PdfEditor.loadFiles === 'function') {
-            await window.Z7PdfEditor.loadFiles([pdfFile]);
-            closeImageToPdfModal();
-          } else {
-            // 如果编辑器未加载，直接下载
-            const url = URL.createObjectURL(blob);
-            const a = document.createElement('a');
-            a.href = url;
-            a.download = pdfFile.name;
-            document.body.appendChild(a);
-            a.click();
-            document.body.removeChild(a);
-            URL.revokeObjectURL(url);
-            closeImageToPdfModal();
-          }
-        } catch (error) {
-          alert(error.message || '转换失败');
-        } finally {
-          imageToPdfConvertBtn.disabled = false;
-          imageToPdfConvertBtn.textContent = '转换为PDF';
-        }
-      });
-
-      // 页面导航逻辑
-      document.querySelectorAll('.nav-link[data-page]').forEach(link => {
-        link.addEventListener('click', (e) => {
-          e.preventDefault();
-          const page = link.dataset.page;
-          showPage(page);
-          // 更新URL
-          history.pushState(null, '', '#' + page);
-        });
-      });
-
-      function showPage(pageName) {
-        // 更新导航状态
-        document.querySelectorAll('.nav-link').forEach(link => {
-          link.classList.toggle('active', link.dataset.page === pageName);
-        });
-
-        // 显示对应页面
-        document.querySelectorAll('.page-section').forEach(section => {
-          section.classList.toggle('active', section.id === pageName || (pageName === 'home' && section.id === 'features'));
-        });
-
-        // 工作台模式调整
-        document.body.classList.toggle('workbench-open', pageName === 'workbench');
-      }
-
-      // 处理URL hash
-      function handleHash() {
-        const hash = window.location.hash.slice(1);
-        if (hash) {
-          showPage(hash);
-        } else {
-          showPage('features');
-        }
-      }
-
-      // 监听hash变化
-      window.addEventListener('hashchange', handleHash);
-      
-      // 初始处理
-      handleHash();
-
-      // 菜单下拉逻辑
-      document.querySelectorAll('.toolbar-btn[data-menu]').forEach(btn => {
-        btn.addEventListener('click', (e) => {
-          e.stopPropagation();
-          const menuId = btn.dataset.menu;
-          const dropdown = document.getElementById('menu' + menuId.charAt(0).toUpperCase() + menuId.slice(1));
-          if (!dropdown) {
-            return;
-          }
-          const isOpen = dropdown.classList.contains('open');
-          
-          document.querySelectorAll('.dropdown').forEach(d => d.classList.remove('open'));
-          document.querySelectorAll('.toolbar-btn[data-menu]').forEach(b => b.classList.remove('active'));
-          
-          if (!isOpen) {
-            dropdown.classList.add('open');
-            btn.classList.add('active');
-          }
-        });
-      });
-
-      document.addEventListener('click', () => {
-        document.querySelectorAll('.dropdown').forEach(d => d.classList.remove('open'));
-        document.querySelectorAll('.toolbar-btn[data-menu]').forEach(b => b.classList.remove('active'));
-      });
-
-      // 导出模式切换
-      document.getElementById('exportMode')?.addEventListener('change', (e) => {
-        const splitField = document.getElementById('splitEveryField');
-        if (splitField) {
-          splitField.style.display = e.target.value === 'splitEvery' ? 'flex' : 'none';
-        }
-      });
-
-      // 工作区标签切换（我的文件/会员中心）
-      document.querySelectorAll('.workspace-tabs .tab-btn').forEach(btn => {
-        btn.addEventListener('click', () => {
-          const tab = btn.dataset.workspaceTab;
-          document.querySelectorAll('.workspace-tabs .tab-btn').forEach(b => b.classList.remove('active'));
-          btn.classList.add('active');
-          document.querySelectorAll('.workspace-panel').forEach(p => p.classList.add('hidden'));
-          document.querySelector(`.workspace-panel[data-panel="${tab}"]`).classList.remove('hidden');
-        });
-      });
-
-      // 侧边栏折叠
-      const sidebarToggle = document.getElementById('sidebarToggle');
-      const headerSidebarToggle = document.getElementById('headerSidebarToggle');
-      const sidebar = document.getElementById('sidebar');
-      if (sidebarToggle && sidebar) {
-        sidebarToggle.addEventListener('click', () => {
-          sidebar.classList.toggle('collapsed');
-        });
-      }
-      if (headerSidebarToggle && sidebar) {
-        headerSidebarToggle.addEventListener('click', () => {
-          sidebar.classList.toggle('collapsed');
-        });
-      }
-
-      // 会员面板标签切换
-      document.querySelectorAll('.tab-btn[data-tab]').forEach(btn => {
-        btn.addEventListener('click', () => {
-          const tab = btn.dataset.tab;
-          document.querySelectorAll('.tab-btn[data-tab]').forEach(b => b.classList.remove('active'));
-          btn.classList.add('active');
-          document.querySelectorAll('.tab-content').forEach(c => c.classList.add('hidden'));
-          document.getElementById('workspaceTab' + tab.charAt(0).toUpperCase() + tab.slice(1)).classList.remove('hidden');
-        });
-      });
-
-      // 首页入口直接进入编辑台，游客也可上传试用
-      function openWorkbenchEditor(openPicker = false) {
-        showPage('workbench');
-        switchToFilesTab();
-        if (openPicker) {
-          setTimeout(() => {
-            document.getElementById('editorFileInput')?.click();
-          }, 120);
-        }
-      }
-
-      document.getElementById('startEditBtn')?.addEventListener('click', () => {
-        openWorkbenchEditor(true);
-      });
-
-      document.getElementById('uploadPdfBtn')?.addEventListener('click', () => {
-        openWorkbenchEditor(true);
-      });
-    </script>
+    <script type="module" src="/index-bootstrap.js?v=0415"></script>
 
     <!-- 浮动提示 -->
     <div id="toast" class="toast" aria-live="polite"></div>

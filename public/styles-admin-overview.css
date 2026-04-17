@@ -1,0 +1,477 @@
+/* ===== Admin 页面样式 ===== */
+.admin-main {
+  max-width: 1400px;
+  margin: 0 auto;
+  padding: 24px 20px 60px;
+}
+
+/* 概览区域 */
+.admin-overview {
+  padding: 20px;
+}
+
+.overview-hero {
+  text-align: center;
+  padding: 40px 20px;
+  margin-bottom: 24px;
+  border-radius: 20px;
+}
+
+.overview-hero h1 {
+  margin: 0 0 12px;
+  font-size: 32px;
+}
+
+.overview-hero p {
+  color: var(--muted);
+  margin: 0;
+  font-size: 16px;
+}
+
+/* 统计卡片网格 */
+.stats-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+  gap: 16px;
+}
+
+.overview-card {
+  background: rgba(255, 252, 248, 0.9);
+  border: 1px solid rgba(65, 49, 35, 0.1);
+  border-radius: 16px;
+  padding: 20px;
+  text-align: center;
+}
+
+.overview-card span {
+  display: block;
+  font-size: 13px;
+  color: var(--muted);
+  margin-bottom: 8px;
+}
+
+.overview-card strong {
+  display: block;
+  font-size: 28px;
+  color: var(--accent-strong);
+  margin-bottom: 4px;
+}
+
+.overview-card small {
+  font-size: 11px;
+  color: var(--muted);
+}
+
+/* 配置表单 */
+.settings-form {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+}
+
+.settings-form .card {
+  padding: 24px;
+}
+
+/* 套餐卡片网格 */
+.plan-admin-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+  gap: 16px;
+  padding: 20px;
+}
+
+.plan-admin-card {
+  background: rgba(255, 252, 248, 0.9);
+  border: 1px solid rgba(65, 49, 35, 0.1);
+  border-radius: 16px;
+  padding: 20px;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.plan-admin-head {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  gap: 12px;
+}
+
+.plan-admin-title strong {
+  display: block;
+  font-size: 16px;
+}
+
+.plan-admin-title span {
+  font-size: 12px;
+  color: var(--muted);
+}
+
+.plan-admin-badges {
+  display: flex;
+  gap: 6px;
+  flex-wrap: wrap;
+}
+
+.plan-admin-summary {
+  display: flex;
+  gap: 12px;
+  font-size: 12px;
+  color: var(--muted);
+}
+
+.plan-admin-card .field {
+  margin-bottom: 0;
+}
+
+.plan-admin-card .inline-fields {
+  display: flex;
+  gap: 12px;
+  flex-wrap: wrap;
+}
+
+.plan-admin-card .inline-fields .field {
+  flex: 1;
+  min-width: 100px;
+}
+
+.plan-admin-card .check {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 12px;
+}
+
+.plan-admin-card button {
+  align-self: flex-start;
+  margin-top: 8px;
+}
+
+.plan-admin-card .result-message {
+  align-self: stretch;
+  margin-top: 4px;
+  padding: 10px 12px;
+  border: 1px solid rgba(46, 117, 78, 0.18);
+}
+
+/* 兑换码样式 */
+.form-inline {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12px;
+  align-items: flex-end;
+}
+
+.form-inline .field {
+  flex: 1;
+  min-width: 120px;
+}
+
+.code-list {
+  margin-top: 16px;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.code-item {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 10px 14px;
+  background: rgba(255, 255, 255, 0.6);
+  border: 1px solid rgba(65, 49, 35, 0.1);
+  border-radius: 10px;
+  flex-wrap: wrap;
+}
+
+.code-item code {
+  font-family: monospace;
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--accent-strong);
+}
+
+.code-item span {
+  font-size: 12px;
+  color: var(--muted);
+}
+
+.admin-hero {
+  display: grid;
+  grid-template-columns: 1.5fr 1fr;
+  gap: 24px;
+  align-items: start;
+  margin-bottom: 32px;
+}
+
+.hero-content .kicker {
+  display: block;
+  font-size: 11px;
+  letter-spacing: 0.15em;
+  color: var(--accent-dark);
+  margin-bottom: 8px;
+}
+
+.hero-content h1 {
+  margin: 0 0 12px;
+}
+
+.hero-content .intro {
+  color: var(--muted);
+  margin: 0 0 16px;
+  max-width: 600px;
+}
+
+.feature-tags {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.tag {
+  padding: 6px 14px;
+  background: rgba(255, 255, 255, 0.8);
+  border: 1px solid rgba(65, 49, 35, 0.1);
+  border-radius: 20px;
+  font-size: 12px;
+  font-weight: 700;
+}
+
+.hero-card {
+  background: rgba(255, 252, 248, 0.9);
+  border: 1px solid rgba(65, 49, 35, 0.1);
+  border-radius: 20px;
+  padding: 20px;
+}
+
+.card-label {
+  font-size: 11px;
+  letter-spacing: 0.12em;
+  color: var(--accent-dark);
+}
+
+.card-body {
+  margin: 16px 0;
+}
+
+.card-body strong {
+  display: block;
+  font-size: 18px;
+  margin-bottom: 6px;
+}
+
+.card-body p {
+  color: var(--muted);
+  margin: 0;
+  font-size: 14px;
+}
+
+.admin-panel {
+  display: grid;
+  grid-template-columns: 260px 1fr;
+  gap: 24px;
+  align-items: start;
+}
+
+.admin-sidebar .sidebar-card {
+  position: sticky;
+  top: 90px;
+}
+
+.sidebar-header .kicker {
+  display: block;
+  font-size: 11px;
+  letter-spacing: 0.12em;
+  color: var(--accent-dark);
+  margin-bottom: 4px;
+}
+
+.sidebar-header h3 {
+  margin: 0 0 8px;
+}
+
+.sidebar-nav {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  margin-top: 16px;
+}
+
+.nav-item {
+  padding: 12px 16px;
+  border-radius: 14px;
+  text-decoration: none;
+  color: var(--muted);
+  font-weight: 600;
+  font-size: 14px;
+  transition: all 0.2s;
+}
+
+.nav-item:hover,
+.nav-item.active {
+  background: rgba(15, 108, 115, 0.1);
+  color: var(--accent-strong);
+}
+
+.admin-content {
+  display: flex;
+  flex-direction: column;
+  gap: 24px;
+}
+
+.admin-section {
+  scroll-margin-top: 90px;
+}
+
+.grid-cards {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 20px;
+}
+
+.overview-card,
+.config-card {
+  background: rgba(255, 252, 248, 0.9);
+  border: 1px solid rgba(65, 49, 35, 0.1);
+  border-radius: 20px;
+  padding: 22px;
+}
+
+.info-box {
+  padding: 14px 16px;
+  background: rgba(15, 108, 115, 0.08);
+  border: 1px solid rgba(15, 108, 115, 0.15);
+  border-radius: 14px;
+  margin-bottom: 20px;
+}
+
+.info-box strong {
+  display: block;
+  font-size: 14px;
+  margin-bottom: 4px;
+}
+
+.info-box p {
+  margin: 0;
+  font-size: 13px;
+  color: var(--muted);
+}
+
+.form-grid {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+}
+
+.section-divider {
+  margin: 24px 0 16px;
+  padding-top: 20px;
+  border-top: 1px solid rgba(65, 49, 35, 0.1);
+}
+
+.section-divider .kicker {
+  display: block;
+  font-size: 11px;
+  letter-spacing: 0.12em;
+  color: var(--accent-dark);
+  margin-bottom: 4px;
+}
+
+.section-divider h3 {
+  margin: 0 0 6px;
+}
+
+.stats-grid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 12px;
+}
+
+.stat-card {
+  padding: 18px;
+  background: rgba(255, 255, 255, 0.7);
+  border-radius: 14px;
+  border: 1px solid rgba(65, 49, 35, 0.08);
+}
+
+.stat-card span {
+  display: block;
+  font-size: 12px;
+  color: var(--muted);
+  margin-bottom: 4px;
+}
+
+.stat-card strong {
+  font-size: 24px;
+}
+
+/* 筛选栏 */
+.filter-bar {
+  display: grid;
+  grid-template-columns: 1fr auto auto auto;
+  gap: 12px;
+  align-items: end;
+  padding: 16px;
+  background: rgba(255, 255, 255, 0.6);
+  border-radius: 14px;
+  margin-bottom: 16px;
+}
+
+.filter-bar .field {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.filter-bar input[type="search"],
+.filter-bar select {
+  min-height: 46px;
+}
+
+.filter-bar .field.compact {
+  min-width: 140px;
+}
+
+.filter-bar span {
+  font-size: 12px;
+  color: var(--muted);
+}
+
+.filter-summary {
+  font-size: 13px;
+  color: var(--muted);
+  text-align: right;
+}
+
+.table-wrapper {
+  overflow-x: auto;
+  background: rgba(255, 255, 255, 0.6);
+  border-radius: 14px;
+}
+
+.data-table {
+  width: 100%;
+  border-collapse: collapse;
+}
+
+.data-table th,
+.data-table td {
+  padding: 14px 12px;
+  text-align: left;
+  border-bottom: 1px solid rgba(65, 49, 35, 0.1);
+}
+
+.data-table th {
+  font-size: 12px;
+  color: var(--muted);
+  font-weight: 700;
+  background: rgba(255, 252, 248, 0.8);
+}
+
+.plan-cards {
+  display: grid;
+  gap: 12px;
+}
+

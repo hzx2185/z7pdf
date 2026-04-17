@@ -1,4 +1,4 @@
-import { escapeHtml, requestJson, setResult as setElementResult } from "./common.js";
+import { escapeHtml, requestJson, setResult as setElementResult } from "./common.js?v=0414b";
 
 const elements = {
   overviewCards: document.querySelector("#overviewCards"),

@@ -1,0 +1,261 @@
+/* 套餐区域 */
+.pricing-section {
+  padding: 40px 0;
+}
+
+.section-container {
+  max-width: 1400px;
+  margin: 0 auto;
+}
+
+.section-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  gap: 24px;
+  margin-bottom: 24px;
+}
+
+.section-title .kicker {
+  display: block;
+  font-size: 11px;
+  letter-spacing: 0.15em;
+  color: var(--accent-dark);
+  margin-bottom: 4px;
+}
+
+.section-title h2 {
+  margin: 0;
+}
+
+.guest-policy {
+  padding: 16px 20px;
+  background: rgba(255, 255, 255, 0.7);
+  border-radius: 14px;
+  border: 1px solid rgba(65, 49, 35, 0.1);
+}
+
+.guest-policy strong {
+  display: block;
+  margin-bottom: 4px;
+}
+
+.pricing-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+  gap: 16px;
+}
+
+/* 模态框 */
+.modal {
+  position: fixed;
+  inset: 0;
+  z-index: 3200;
+  display: grid;
+  place-items: center;
+  padding: 24px;
+  background: rgba(26, 18, 12, 0.5);
+  backdrop-filter: blur(8px);
+}
+
+.modal-content {
+  width: 100%;
+  max-width: 500px;
+  background: rgba(255, 252, 248, 0.98);
+  border-radius: 24px;
+  padding: 28px;
+  box-shadow: 0 24px 64px rgba(30, 22, 16, 0.2);
+}
+
+.modal-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  margin-bottom: 24px;
+}
+
+.modal-title .kicker {
+  display: block;
+  font-size: 11px;
+  letter-spacing: 0.15em;
+  color: var(--accent-dark);
+  margin-bottom: 4px;
+}
+
+.modal-title h2 {
+  margin: 0;
+}
+
+.close-btn {
+  width: 36px;
+  height: 36px;
+  border-radius: 50%;
+  background: rgba(65, 49, 35, 0.1);
+  border: 1px solid rgba(65, 49, 35, 0.3);
+  font-size: 18px;
+  color: rgba(65, 49, 35, 0.8);
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-shadow: none;
+}
+
+.close-btn:hover {
+  background: rgba(65, 49, 35, 0.2);
+  color: rgba(65, 49, 35, 1);
+}
+
+.auth-forms {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+}
+
+.auth-tabs {
+  display: flex;
+  gap: 8px;
+}
+
+.auth-form {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+}
+
+.auth-links {
+  display: flex;
+  justify-content: flex-end;
+  gap: 16px;
+  font-size: 13px;
+}
+
+.auth-links a {
+  color: var(--accent-strong);
+  text-decoration: none;
+}
+
+.auth-links a:hover {
+  text-decoration: underline;
+}
+
+.form-kicker {
+  font-size: 11px;
+  letter-spacing: 0.12em;
+  color: var(--accent-dark);
+}
+
+.auth-form h3 {
+  margin: 0;
+}
+
+.code-input {
+  display: grid;
+  grid-template-columns: 1fr auto;
+  gap: 10px;
+}
+
+.result-message {
+  margin: 0;
+  padding: 12px 16px;
+  border-radius: 8px;
+  font-size: 13px;
+  font-weight: 500;
+  background: rgba(255, 252, 248, 0.95);
+  color: var(--text-main);
+  line-height: 1.5;
+  border-left: 4px solid var(--accent);
+  display: block;
+}
+
+.result-message:not(.is-visible):empty {
+  display: none;
+}
+
+.result-message.error {
+  background: rgba(173, 46, 36, 0.08);
+  color: #ad2e24;
+  border-left-color: #ad2e24;
+}
+
+.result-message.success {
+  background: rgba(46, 117, 78, 0.1);
+  color: #1e5035;
+  border-left-color: #2e7d32;
+}
+
+/* FAQ 区域 */
+.faq-section {
+  padding: 40px 0;
+}
+
+.faq-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(400px, 1fr));
+  gap: 16px;
+}
+
+.faq-item {
+  background: rgba(255, 255, 255, 0.8);
+  border: 1px solid rgba(65, 49, 35, 0.1);
+  border-radius: 16px;
+  overflow: hidden;
+}
+
+.faq-item summary {
+  padding: 18px 20px;
+  font-weight: 700;
+  cursor: pointer;
+  list-style: none;
+}
+
+.faq-item summary::-webkit-details-marker {
+  display: none;
+}
+
+.faq-item p {
+  padding: 0 20px 18px;
+  margin: 0;
+  color: var(--muted);
+  line-height: 1.6;
+}
+
+/* 浮动提示 */
+.toast {
+  position: fixed;
+  top: 180px;
+  left: 50%;
+  transform: translateX(-50%) translateY(-20px);
+  z-index: 9999;
+  padding: 12px 24px;
+  border-radius: 10px;
+  font-size: 13px;
+  font-weight: 500;
+  line-height: 1.5;
+  background: rgba(255, 252, 248, 0.96);
+  color: var(--text-main);
+  border-left: 4px solid var(--accent);
+  box-shadow: 0 8px 24px rgba(57, 39, 24, 0.15);
+  opacity: 0;
+  transition: opacity 0.3s ease, transform 0.3s ease;
+  pointer-events: none;
+  max-width: 80%;
+  text-align: center;
+}
+
+.toast.show {
+  opacity: 1;
+  transform: translateX(-50%) translateY(0);
+}
+
+.toast.error {
+  background: rgba(173, 46, 36, 0.1);
+  color: #ad2e24;
+  border-left-color: #ad2e24;
+}
+
+.toast.success {
+  background: rgba(46, 117, 78, 0.12);
+  color: #1e5035;
+  border-left-color: #2e7d32;
+}

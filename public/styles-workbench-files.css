@@ -1,0 +1,609 @@
+.sidebar {
+  width: 310px;
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  align-self: stretch;
+  transition: all 0.3s ease;
+  height: 100%;
+  overflow-y: auto;
+  overflow-x: hidden;
+  flex-shrink: 0;
+  padding-right: 4px;
+  scrollbar-width: thin;
+  scrollbar-color: rgba(65, 49, 35, 0.15) transparent;
+}
+
+.sidebar::-webkit-scrollbar {
+  width: 4px;
+}
+
+.sidebar::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+.sidebar::-webkit-scrollbar-thumb {
+  background: rgba(65, 49, 35, 0.15);
+  border-radius: 2px;
+}
+
+.sidebar.collapsed {
+  width: 0;
+  padding: 0;
+  margin: 0;
+  overflow: visible;
+}
+
+.sidebar.collapsed .workspace-card {
+  display: none;
+}
+
+.sidebar-toggle {
+  display: none;
+}
+
+.sidebar-toggle-header {
+  width: 32px;
+  height: 32px;
+  background: rgba(255, 252, 248, 0.85);
+  border: 1px solid rgba(65, 49, 35, 0.1);
+  border-radius: 6px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 16px;
+  color: var(--muted);
+  transition: all 0.2s;
+  box-shadow: 0 2px 6px rgba(0,0,0,0.05);
+  flex-shrink: 0;
+}
+
+.sidebar-toggle-header:hover {
+  background: rgba(255, 255, 255, 0.95);
+  color: var(--accent-strong);
+}
+
+.sidebar.collapsed .sidebar-toggle-header {
+  transform: rotate(180deg);
+}
+
+.sidebar .card {
+  flex-shrink: 0;
+}
+
+/* 统一工作区卡片 */
+.sidebar .workspace-card {
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+}
+
+.workspace-tabs {
+  display: flex;
+  gap: 8px;
+  margin-bottom: 12px;
+  padding-bottom: 8px;
+}
+
+.workspace-tabs .tab-btn {
+  flex: 1;
+  padding: 10px 14px;
+  border-radius: 10px;
+  background: transparent;
+  border: 1px solid transparent;
+  font-weight: 700;
+  font-size: 13px;
+  color: var(--muted);
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.workspace-tabs .tab-btn:hover {
+  background: rgba(255, 255, 255, 0.8);
+}
+
+.workspace-tabs .tab-btn.active {
+  background: rgba(255, 255, 255, 0.9);
+  color: var(--accent-strong);
+  border-color: rgba(65, 49, 35, 0.15);
+}
+
+.workspace-panel {
+  display: flex;
+  flex-direction: column;
+  flex: 1;
+}
+
+.workspace-panel.hidden {
+  display: none;
+}
+
+/* 文件管理面板紧凑样式 */
+.workspace-panel[data-panel="files"] .upload-area {
+  margin-bottom: 8px;
+}
+
+.workspace-panel[data-panel="files"] .card-header {
+  margin-bottom: 8px;
+}
+
+.workspace-panel[data-panel="files"] .card-header h3 {
+  font-size: 14px;
+  margin: 0;
+}
+
+.workspace-panel[data-panel="files"] .view-toggle {
+  display: flex;
+  gap: 4px;
+}
+
+.workspace-panel[data-panel="files"] .search-bar {
+  margin-bottom: 8px;
+}
+
+.workspace-panel[data-panel="files"] .search-bar input,
+.workspace-panel[data-panel="files"] .search-bar select {
+  font-size: 12px;
+  padding: 6px 8px;
+}
+
+.workspace-panel[data-panel="files"] .batch-actions {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  margin-bottom: 8px;
+  padding: 4px 6px;
+  background: rgba(15, 108, 115, 0.08);
+  border-radius: 8px;
+}
+
+.workspace-panel[data-panel="files"] .batch-actions .btn {
+  padding: 4px 8px;
+  font-size: 12px;
+  border-radius: 6px;
+}
+
+.workspace-panel[data-panel="files"] .batch-actions .btn.active {
+  background: var(--accent-strong);
+  color: #fff;
+  border-color: transparent;
+}
+
+.workspace-panel[data-panel="files"] .batch-select-all {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  font-size: 12px;
+  color: var(--muted);
+  margin-right: auto;
+}
+
+.workspace-panel[data-panel="files"] .batch-select-all input {
+  width: 14px;
+  height: 14px;
+}
+
+.workspace-panel[data-panel="files"] .batch-rename-panel {
+  display: grid;
+  gap: 10px;
+  margin-bottom: 8px;
+  padding: 10px;
+  border-radius: 12px;
+  border: 1px solid rgba(15, 108, 115, 0.14);
+  background: rgba(255, 255, 255, 0.76);
+}
+
+.pagination-bar {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 12px 8px;
+  border-top: 1px solid rgba(65, 49, 35, 0.1);
+  margin-top: auto;
+}
+
+.pagination-bar.hidden {
+  display: none;
+}
+
+.pagination-info {
+  font-size: 12px;
+  color: var(--muted);
+}
+
+.pagination-controls {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.page-select-dropdown {
+  padding: 4px 8px;
+  border: 1px solid rgba(65, 49, 35, 0.15);
+  border-radius: 6px;
+  background: rgba(255, 252, 248, 0.9);
+  font-size: 13px;
+  color: var(--text);
+  cursor: pointer;
+}
+
+.page-select-dropdown:focus {
+  outline: none;
+  border-color: var(--accent);
+}
+
+.pagination-pages {
+  display: flex;
+  align-items: center;
+  gap: 2px;
+  margin: 0 4px;
+}
+
+.pagination-pages .btn-xs {
+  min-width: 28px;
+  padding: 4px 6px;
+  font-size: 11px;
+}
+
+@media (max-width: 520px) {
+  .pagination-bar {
+    flex-direction: column;
+    gap: 8px;
+  }
+}
+
+.workspace-panel[data-panel="files"] .batch-rename-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 10px;
+}
+
+.workspace-panel[data-panel="files"] .batch-rename-panel .field span,
+.workspace-panel[data-panel="files"] .batch-rename-panel .check span {
+  font-size: 12px;
+}
+
+.workspace-panel[data-panel="files"] .batch-rename-panel input[type="text"],
+.workspace-panel[data-panel="files"] .batch-rename-panel input[type="number"] {
+  padding: 8px 10px;
+  font-size: 12px;
+}
+
+.workspace-panel[data-panel="files"] .batch-rename-folder-field {
+  grid-column: 1 / -1;
+}
+
+.workspace-panel[data-panel="files"] .batch-rename-sequence {
+  align-self: end;
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.workspace-panel[data-panel="files"] .batch-sequence-start-field {
+  align-self: end;
+}
+
+.workspace-panel[data-panel="files"] .batch-rename-actions {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
+.workspace-panel[data-panel="files"] .batch-rename-actions .helper-text {
+  margin: 0 auto 0 0;
+  font-size: 12px;
+}
+
+.workspace-panel[data-panel="files"] .folder-tree {
+  margin: 0 0 8px 0;
+  max-height: 60px;
+  overflow-y: auto;
+}
+
+.workspace-panel[data-panel="files"] .file-list {
+  margin: 0;
+}
+
+/* 文件卡片样式 */
+.sidebar .files-card {
+  flex: 1;
+  min-height: 300px;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+}
+
+.sidebar .files-card .card-header {
+  flex-shrink: 0;
+}
+
+.sidebar .files-card .search-bar {
+  flex-shrink: 0;
+}
+
+.sidebar .files-card .folder-tree {
+  flex-shrink: 0;
+  max-height: 120px;
+  overflow-y: auto;
+}
+
+.sidebar .files-card .file-list,
+.sidebar .files-card .files-empty {
+  flex: 1;
+  overflow-y: auto;
+  min-height: 100px;
+}
+
+.sidebar .files-card .upload-area {
+  flex-shrink: 0;
+  margin-top: auto;
+  padding-top: 12px;
+  border-top: 1px solid rgba(65, 49, 35, 0.1);
+}
+
+/* 工作区主区域 */
+.workbench-main {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+  height: 100%;
+  overflow: hidden;
+}
+
+.workbench-header {
+  flex-shrink: 0;
+}
+
+/* 编辑器工具栏 */
+.toolbar {
+  flex-shrink: 0;
+}
+
+/* 编辑器工作区 */
+/* 已合并并清理冗余代码 */
+
+/* 空状态 */
+.empty-box {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  min-height: 300px;
+}
+
+.card {
+  background: rgba(255, 252, 248, 0.9);
+  border: 1px solid rgba(65, 49, 35, 0.1);
+  border-radius: 20px;
+  padding: 18px;
+  box-shadow: 0 8px 24px rgba(57, 39, 24, 0.06);
+}
+
+.card-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 12px;
+  gap: 8px;
+}
+
+.card-header h3 {
+  font-size: 16px;
+  margin: 0;
+}
+
+.card-header .view-toggle {
+  display: flex;
+  gap: 4px;
+}
+
+.card-header #workspaceFolderFilter {
+  padding: 4px 8px;
+  border: 1px solid rgba(65, 49, 35, 0.15);
+  border-radius: 6px;
+  background: rgba(255, 252, 248, 0.9);
+  font-size: 13px;
+  color: var(--text);
+  cursor: pointer;
+  max-width: 140px;
+}
+
+.user-status {
+  font-size: 13px;
+  color: var(--muted);
+}
+
+.hint {
+  font-size: 13px;
+  color: var(--muted);
+  margin: 0 0 12px;
+  line-height: 1.5;
+}
+
+.auth-buttons {
+  display: flex;
+  gap: 8px;
+  margin-bottom: 12px;
+}
+
+/* 文件管理 */
+.view-toggle {
+  display: flex;
+  gap: 4px;
+}
+
+.search-bar {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  margin-bottom: 12px;
+}
+
+.search-bar input,
+.search-bar select {
+  width: 100%;
+}
+
+.folder-tree,
+.file-list {
+  margin: 12px 0;
+}
+
+.empty-state {
+  padding: 24px;
+  text-align: center;
+  color: var(--muted);
+  font-size: 13px;
+  background: rgba(255, 255, 255, 0.5);
+  border-radius: 12px;
+  border: 1px dashed rgba(65, 49, 35, 0.15);
+}
+
+.upload-area {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  padding: 12px;
+  background: rgba(15, 108, 115, 0.05);
+  border-radius: 12px;
+  margin-bottom: 12px;
+}
+
+.upload-area .btn-block {
+  width: 100%;
+}
+
+.upload-area-combined {
+  gap: 10px;
+}
+
+.upload-main-row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  align-items: stretch;
+}
+
+.upload-main-row > .btn,
+.upload-main-row > .file-input {
+  flex-shrink: 0;
+}
+
+.upload-actions-row {
+  display: flex;
+  gap: 6px;
+  align-items: center;
+  flex-wrap: nowrap;
+  overflow-x: auto;
+  margin-bottom: 10px;
+}
+
+.file-input-primary,
+.file-input-secondary {
+  display: flex;
+  flex-shrink: 0;
+}
+
+.file-input-primary {
+  min-width: 0;
+}
+
+.file-input-secondary {
+  flex-shrink: 0;
+}
+
+.file-input-primary .btn,
+.file-input-secondary .btn {
+  border-radius: 6px;
+}
+
+.upload-actions-row .btn,
+.upload-actions-row .file-input .btn {
+  padding: 8px 14px;
+  font-size: 12px;
+  border-radius: 6px;
+}
+
+.file-action-btn {
+  min-height: 38px;
+  padding: 0 12px;
+  border-radius: 12px;
+  white-space: nowrap;
+  flex-shrink: 0;
+}
+
+.file-input {
+  cursor: pointer;
+}
+
+.file-input input {
+  display: none;
+}
+
+/* 文件列表 - 紧凑样式，无滚动条 */
+.file-list {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  overflow-y: visible;
+  align-items: stretch;
+  max-height: none;
+}
+
+.file-list .file-card {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 4px 6px;
+  background: rgba(255, 255, 255, 0.6);
+  border: 1px solid rgba(65, 49, 35, 0.08);
+  border-radius: 6px;
+  transition: all 0.2s;
+}
+
+.file-list .file-card:hover {
+  background: rgba(255, 255, 255, 0.95);
+  border-color: rgba(15, 108, 115, 0.3);
+}
+
+.file-list .file-info {
+  flex: 1;
+  min-width: 0;
+}
+
+.file-list .file-name {
+  font-weight: 600;
+  font-size: 13px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.file-list .file-meta {
+  font-size: 11px;
+  color: var(--muted);
+}
+
+.file-list .file-actions {
+  display: flex;
+  gap: 4px;
+  flex-shrink: 0;
+}
+
+/* 空状态 */
+.empty-state {
+  padding: 24px;
+  text-align: center;
+  color: var(--muted);
+  font-size: 13px;
+  background: rgba(255, 255, 255, 0.5);
+  border-radius: 12px;
+  border: 1px dashed rgba(65, 49, 35, 0.15);
+}
+
+/* 工作台主区域 */

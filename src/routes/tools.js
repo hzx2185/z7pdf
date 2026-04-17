@@ -172,9 +172,9 @@ router.post('/api/resize', upload.single('file'), async (req, res) => {
       return res.status(400).json({ error: '不支持的页面尺寸。' });
     }
 
-    const orientation = req.body.orientation || 'portrait';
-    if (!['portrait', 'landscape'].includes(orientation)) {
-      return res.status(400).json({ error: '页面方向仅支持 portrait/landscape。' });
+    const orientation = req.body.orientation || 'auto';
+    if (!['portrait', 'landscape', 'auto'].includes(orientation)) {
+      return res.status(400).json({ error: '页面方向仅支持 portrait/landscape/auto。' });
     }
 
     const fitMode = req.body.fitMode || 'contain';

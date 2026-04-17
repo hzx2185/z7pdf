@@ -1,0 +1,67 @@
+/* 分享列表优化样式 */
+.share-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 12px;
+}
+
+.share-filename {
+  flex: 1;
+  color: var(--text-primary);
+  transition: color 0.2s;
+}
+
+.share-filename:hover {
+  color: var(--accent);
+}
+
+.share-meta {
+  font-size: 13px;
+  color: var(--text-secondary);
+  white-space: nowrap;
+}
+
+.share-status {
+  font-size: 12px;
+  color: var(--text-muted);
+  margin-top: 4px;
+}
+
+.share-item .workspace-file-actions button {
+  font-size: 16px;
+  padding: 4px 8px;
+  min-width: 32px;
+}
+
+/* 分享列表优化 - 文件名换行显示 */
+.share-filename {
+  display: block;
+  word-break: break-all;
+  line-height: 1.4;
+  max-width: 100%;
+}
+
+/* 已停用图标样式 */
+.share-disabled-icon {
+  opacity: 0.4;
+  cursor: not-allowed;
+  pointer-events: none;
+  font-size: 16px;
+  padding: 4px 8px;
+  min-width: 32px;
+  display: inline-block;
+}
+
+/* 分享项布局优化 */
+.share-header {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.share-status {
+  margin-top: 4px;
+  font-size: 12px;
+  color: var(--text-muted);
+}

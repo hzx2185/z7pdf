@@ -160,6 +160,16 @@ db.exec(`
     created_at TEXT NOT NULL,
     requested_ip TEXT NOT NULL DEFAULT ''
   );
+  CREATE TABLE IF NOT EXISTS editor_presets (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    user_id INTEGER NOT NULL,
+    name TEXT NOT NULL,
+    config_json TEXT NOT NULL,
+    created_at TEXT NOT NULL,
+    updated_at TEXT NOT NULL,
+    UNIQUE (user_id, name),
+    FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE
+  );
 `);
 
 function ensureColumn(tableName, columnName, definition) {
@@ -187,6 +197,7 @@ db.exec(`
   CREATE INDEX IF NOT EXISTS idx_sessions_expires ON sessions(expires_at);
   CREATE INDEX IF NOT EXISTS idx_shares_token ON shares(token);
   CREATE INDEX IF NOT EXISTS idx_shares_user_enabled ON shares(user_id, enabled);
+  CREATE INDEX IF NOT EXISTS idx_editor_presets_user ON editor_presets(user_id, updated_at);
 `);
 
 // 导出 Stmt 对象
@@ -514,6 +525,23 @@ const stmts = {
   createEmailVerification: db.prepare(`
     INSERT INTO email_verifications (email, code_hash, purpose, expires_at, consumed_at, created_at, requested_ip)
     VALUES (?, ?, ?, ?, '', ?, ?)
+  `),
+  listEditorPresetsByUser: db.prepare(`
+    SELECT id, user_id, name, config_json, created_at, updated_at
+    FROM editor_presets
+    WHERE user_id = ?
+    ORDER BY updated_at DESC, id DESC
+  `),
+  upsertEditorPreset: db.prepare(`
+    INSERT INTO editor_presets (user_id, name, config_json, created_at, updated_at)
+    VALUES (?, ?, ?, ?, ?)
+    ON CONFLICT(user_id, name) DO UPDATE SET
+      config_json = excluded.config_json,
+      updated_at = excluded.updated_at
+  `),
+  deleteEditorPresetForUser: db.prepare(`
+    DELETE FROM editor_presets
+    WHERE user_id = ? AND name = ?
   `),
   consumeVerification: db.prepare(`
     UPDATE email_verifications

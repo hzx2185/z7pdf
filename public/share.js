@@ -1,4 +1,4 @@
-import { requestJson, setResult as setElementResult } from "./common.js";
+import { requestJson, setResult as setElementResult } from "./common.js?v=0414b";
 
 const elements = {
   shareHint: document.querySelector("#shareHint"),

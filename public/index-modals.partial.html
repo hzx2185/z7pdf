@@ -1,0 +1,317 @@
+    <!-- Modal: Auth -->
+    <!-- 登录弹窗 -->
+    <div id="authPanel" class="modal hidden">
+      <div class="modal-content">
+        <div class="modal-header">
+          <div class="modal-title">
+            <span class="kicker">账号访问</span>
+            <h2 id="authPanelTitle">登录或注册</h2>
+          </div>
+          <button type="button" class="close-btn" id="authCloseBtn">✕</button>
+        </div>
+        <div class="auth-forms">
+          <!-- 登录注册表单 -->
+          <div id="authLoginSection">
+            <div class="auth-tabs">
+              <button type="button" class="tab-btn active" data-form="password">密码登录</button>
+              <button type="button" class="tab-btn" data-form="code">验证码登录</button>
+            </div>
+
+            <form id="passwordLoginForm" class="auth-form">
+              <label class="field">
+                <span>邮箱</span>
+                <input type="email" id="loginEmail" autocomplete="username" required />
+              </label>
+              <label class="field">
+                <span>密码</span>
+                <input type="password" id="loginPassword" autocomplete="current-password" required />
+              </label>
+              <div class="auth-links">
+                <a href="#" id="showForgotPassword">忘记密码？</a>
+              </div>
+              <button type="submit" class="btn btn-primary">登录</button>
+            </form>
+
+            <form id="authForm" class="auth-form hidden">
+              <label class="field">
+                <span>邮箱</span>
+                <input type="email" id="authEmail" autocomplete="email" required />
+              </label>
+              <p id="authEmailStatus" class="hint">先输入邮箱，我们会自动判断是登录还是注册。</p>
+              <label class="field">
+                <span>验证码</span>
+                <div class="code-input">
+                  <input type="text" id="authCode" inputmode="numeric" pattern="[0-9]{6}" maxlength="6" autocomplete="one-time-code" placeholder="6 位验证码" required />
+                  <button type="button" class="btn btn-sm" id="sendCodeBtn">发送验证码</button>
+                </div>
+              </label>
+              <label class="field" id="authRegisterPasswordField">
+                <span>注册密码</span>
+                <input type="password" id="authRegisterPassword" autocomplete="new-password" minlength="6" placeholder="未注册邮箱时必填，至少 6 位" />
+              </label>
+              <p id="authModeHint" class="hint">已注册邮箱可直接用验证码登录；未注册邮箱需要同时填写注册密码，验证成功后才会创建账号。</p>
+              <button type="submit" class="btn btn-primary" id="authSubmitBtn">继续</button>
+            </form>
+          </div>
+
+          <!-- 忘记密码表单 -->
+          <div id="authForgotSection" class="hidden">
+            <form id="forgotPasswordForm" class="auth-form">
+              <span class="form-kicker">重置密码</span>
+              <h3>忘记密码</h3>
+              <p class="hint">输入您的邮箱地址，我们将发送验证码帮助您重置密码。</p>
+              <label class="field">
+                <span>邮箱</span>
+                <input type="email" id="forgotEmail" autocomplete="email" required />
+              </label>
+              <label class="field">
+                <span>验证码</span>
+                <div class="code-input">
+                  <input type="text" id="forgotCode" inputmode="numeric" pattern="[0-9]{6}" maxlength="6" autocomplete="one-time-code" placeholder="6 位验证码" required />
+                  <button type="button" class="btn btn-sm" id="forgotSendCodeBtn">发送验证码</button>
+                </div>
+              </label>
+              <label class="field">
+                <span>新密码</span>
+                <input type="password" id="forgotNewPassword" autocomplete="new-password" minlength="6" placeholder="至少 6 位" required />
+              </label>
+              <label class="field">
+                <span>确认密码</span>
+                <input type="password" id="forgotConfirmPassword" autocomplete="new-password" minlength="6" placeholder="再次输入新密码" required />
+              </label>
+              <div class="auth-links">
+                <a href="#" id="backToLogin">返回登录</a>
+              </div>
+              <button type="submit" class="btn btn-primary">重置密码</button>
+            </form>
+          </div>
+
+          <!-- 修改密码表单（已登录） -->
+          <div id="authChangePasswordSection" class="hidden">
+            <form id="changePasswordForm" class="auth-form">
+              <span class="form-kicker">修改密码</span>
+              <h3>修改密码</h3>
+              <input type="email" id="changePasswordUsername" autocomplete="username" tabindex="-1" class="sr-only" aria-hidden="true" />
+              <label class="field">
+                <span>当前密码</span>
+                <input type="password" id="currentPassword" autocomplete="current-password" required />
+              </label>
+              <label class="field">
+                <span>新密码</span>
+                <input type="password" id="newPassword" autocomplete="new-password" minlength="6" placeholder="至少 6 位" required />
+              </label>
+              <label class="field">
+                <span>确认新密码</span>
+                <input type="password" id="confirmNewPassword" autocomplete="new-password" minlength="6" placeholder="再次输入新密码" required />
+              </label>
+              <button type="submit" class="btn btn-primary">修改密码</button>
+            </form>
+          </div>
+
+          <!-- 修改邮箱表单（已登录） -->
+          <div id="authChangeEmailSection" class="hidden">
+            <form id="changeEmailForm" class="auth-form">
+              <span class="form-kicker">修改邮箱</span>
+              <h3>修改邮箱</h3>
+              <p class="hint">当前邮箱：<strong id="currentEmailDisplay"></strong></p>
+              <label class="field">
+                <span>新邮箱</span>
+                <input type="email" id="newEmail" autocomplete="email" required />
+              </label>
+              <label class="field">
+                <span>验证码</span>
+                <div class="code-input">
+                  <input type="text" id="changeEmailCode" inputmode="numeric" pattern="[0-9]{6}" maxlength="6" placeholder="6 位验证码" required />
+                  <button type="button" class="btn btn-sm" id="changeEmailSendCodeBtn">发送验证码</button>
+                </div>
+              </label>
+              <button type="submit" class="btn btn-primary">修改邮箱</button>
+            </form>
+          </div>
+
+          <!-- 兑换码表单 -->
+          <div id="authRedeemSection" class="hidden">
+            <form id="redeemForm" class="auth-form">
+              <span class="form-kicker">兑换码</span>
+              <h3>兑换会员</h3>
+              <p class="hint">输入兑换码激活会员天数</p>
+              <label class="field">
+                <span>兑换码</span>
+                <input type="text" id="redeemCodeInput" placeholder="XXXX-XXXX-XXXX-XXXX" required />
+              </label>
+              <button type="submit" class="btn btn-primary">立即兑换</button>
+              <p id="redeemResult" class="result-message"></p>
+            </form>
+          </div>
+        </div>
+        <p id="registerDisabledHint" class="hint hidden">当前站点暂未开放新用户注册，仅已存在账号可继续登录。</p>
+        <p id="authResult" class="result-message" aria-live="assertive"></p>
+      </div>
+    </div>
+
+    <!-- Modal: Preview -->
+    <!-- 预览弹窗 (仅用于全屏查看) -->
+    <div id="previewModal" class="modal hidden preview-immersive-modal">
+      <div class="preview-dialog full-preview-dialog">
+        <button type="button" class="close-btn preview-immersive-close" id="previewCloseBtn" title="关闭 (Esc)">✕</button>
+        <div id="previewBody" class="preview-content preview-view-only"></div>
+        <div id="previewSelectionToolbar" class="preview-selection-toolbar hidden" aria-hidden="true">
+          <button type="button" id="previewTextHighlightBtn" class="btn btn-icon">高亮</button>
+          <button type="button" id="previewTextUnderlineBtn" class="btn btn-icon">下划线</button>
+          <button type="button" id="previewTextSelectionCloseBtn" class="btn btn-icon">取消</button>
+        </div>
+        <div class="preview-toolbar">
+          <button type="button" id="previewPrev" title="上一页 (←)" class="btn btn-icon">上页</button>
+          <div class="preview-pagination">
+            <span id="previewCurrentPage">1</span> / <span id="previewTotalPages">1</span>
+          </div>
+          <button type="button" id="previewNext" title="下一页 (→)" class="btn btn-icon">下页</button>
+
+          <div class="preview-divider"></div>
+
+          <button type="button" id="previewRotateLeft" title="向左旋转" class="btn btn-icon">左转</button>
+          <button type="button" id="previewRotateRight" title="向右旋转" class="btn btn-icon">右转</button>
+          <button type="button" id="previewDeletePage" title="删除当前页" class="btn btn-icon btn-danger-soft">删除</button>
+
+          <div class="preview-divider"></div>
+
+          <button type="button" id="previewZoomOut" title="缩小 (-)" class="btn btn-icon">缩小</button>
+          <span id="previewZoomLevel" title="重置比例">100%</span>
+          <button type="button" id="previewZoomIn" title="放大 (+)" class="btn btn-icon">放大</button>
+          <button type="button" id="previewZoomFit" title="适应窗口 (Fit)" class="btn btn-icon">适应</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Toolbar: Workspace Text Selection -->
+    <div id="workspaceSelectionToolbar" class="workspace-selection-toolbar hidden" aria-hidden="true">
+      <button type="button" id="workspaceTextHighlightBtn" class="btn btn-icon">高亮</button>
+      <button type="button" id="workspaceTextUnderlineBtn" class="btn btn-icon">下划线</button>
+      <button type="button" id="workspaceTextSelectionCloseBtn" class="btn btn-icon">取消</button>
+    </div>
+
+    <!-- Modal: Share -->
+    <!-- 分享弹窗 -->
+    <div id="shareModal" class="modal hidden">
+      <div class="modal-dialog">
+        <div class="modal-header">
+          <h3>创建分享链接</h3>
+          <button type="button" class="close-btn" id="shareCloseBtn">✕</button>
+        </div>
+        <form id="shareForm" class="modal-form">
+          <div class="form-grid">
+            <label class="field">
+              <span>分享模式</span>
+              <select id="shareAccessMode">
+                <option value="public">公开 (任何人可见)</option>
+                <option value="password">密码保护 (仅知晓密码者可见)</option>
+                <option value="login">仅登录可见 (仅本站注册用户可见)</option>
+              </select>
+            </label>
+            <label class="field hidden" id="sharePasswordRow">
+              <span>访问密码</span>
+              <input type="text" id="sharePassword" placeholder="设置访问密码" />
+            </label>
+            <div class="field-row">
+              <label class="field">
+                <span>最大下载次数</span>
+                <input type="number" id="shareMaxDownloads" value="0" min="0" placeholder="0 表示不限" />
+              </label>
+              <label class="field">
+                <span>过期时间 (留空为永久)</span>
+                <input type="datetime-local" id="shareExpiresAt" />
+              </label>
+            </div>
+            <label class="checkbox">
+              <input type="checkbox" id="shareDestroyAfterReading" />
+              <span>阅后即焚 (文件被下载一次后链接自动失效并删除)</span>
+            </label>
+          </div>
+          <div class="modal-footer">
+            <button type="submit" class="btn btn-primary btn-lg">创建分享</button>
+          </div>
+        </form>
+      </div>
+    </div>
+
+    <!-- Modal: Image To PDF -->
+    <!-- 图片转PDF模态框 -->
+    <div id="imageToPdfModal" class="modal hidden">
+      <div class="modal-dialog image-pdf-dialog">
+        <div class="modal-header image-pdf-header">
+          <h3>图片转PDF</h3>
+          <button type="button" class="close-btn" id="imageToPdfCloseBtn">✕</button>
+        </div>
+        <div class="modal-body image-pdf-body">
+          <!-- 图片上传区域 -->
+          <div class="upload-area image-pdf-upload" id="imageUploadArea">
+            <label class="file-input file-input-primary image-pdf-upload-input">
+              <input type="file" id="imageToPdfInput" accept="image/png,image/jpeg,image/jpg,image/webp" multiple />
+              <div class="image-pdf-upload-copy">
+                <div class="image-pdf-upload-icon">📷</div>
+                <div class="image-pdf-upload-title">点击或拖拽图片到此处</div>
+                <div class="image-pdf-upload-help">支持 PNG、JPG、JPEG、WebP 格式</div>
+              </div>
+            </label>
+          </div>
+
+          <!-- 图片预览区域 -->
+          <div id="imagePreviewArea" class="image-pdf-preview hidden">
+            <div class="image-pdf-preview-head">
+              <span id="imageCountLabel">已选择 0 张图片</span>
+              <button type="button" id="clearImagesBtn" class="btn btn-xs btn-danger-soft">清空</button>
+            </div>
+            <div id="imagePreviewGrid" class="image-pdf-preview-grid"></div>
+          </div>
+
+          <!-- 配置选项 -->
+          <div class="form-grid image-pdf-grid">
+            <label class="field">
+              <span>每页图片数</span>
+              <select id="imageLayout">
+                <option value="1">1 张 (单页单图)</option>
+                <option value="2">2 张 (1列2行)</option>
+                <option value="4">4 张 (2列2行)</option>
+                <option value="6">6 张 (2列3行)</option>
+                <option value="9">9 张 (3列3行)</option>
+              </select>
+            </label>
+            <label class="field">
+              <span>页面尺寸</span>
+              <select id="imagePageSize">
+                <option value="A4">A4</option>
+                <option value="A3">A3</option>
+                <option value="A5">A5</option>
+                <option value="Letter">Letter (美式信纸)</option>
+                <option value="Legal">Legal (美式长页)</option>
+              </select>
+            </label>
+            <label class="field">
+              <span>适应模式</span>
+              <select id="imageFit">
+                <option value="contain">包含 (完整显示)</option>
+                <option value="cover">覆盖 (填满裁剪)</option>
+                <option value="fill">拉伸 (填满变形)</option>
+              </select>
+            </label>
+            <label class="field">
+              <span>页边距 (mm)</span>
+              <input type="number" id="imageMargin" value="10" min="0" max="50" />
+            </label>
+            <label class="field">
+              <span>图片间距 (mm)</span>
+              <input type="number" id="imageGap" value="5" min="0" max="20" />
+            </label>
+            <label class="field">
+              <span>输出文件名</span>
+              <input type="text" id="imageOutputName" value="images_to_pdf.pdf" />
+            </label>
+          </div>
+        </div>
+        <div class="modal-footer image-pdf-footer">
+          <button type="button" id="imageToPdfCancelBtn" class="btn btn-secondary">取消</button>
+          <button type="button" id="imageToPdfConvertBtn" class="btn btn-primary">转换为PDF</button>
+        </div>
+      </div>
+    </div>
+
