@@ -1,8 +1,6 @@
 const express = require('express');
-const multer = require('multer');
-const path = require('path');
 
-const { DATA_DIR } = require('../db');
+const { upload, cleanupUploadedFiles } = require('../middleware/upload');
 const { normalizeUploadedFiles, withPdfExtension } = require('../services/workspace-service');
 const {
   PAGE_SIZE_MAP,
@@ -21,11 +19,6 @@ const {
 } = require('../services/pdf-service');
 
 const router = express.Router();
-
-const upload = multer({
-  dest: path.join(DATA_DIR, 'temp'),
-  limits: { fileSize: 100 * 1024 * 1024 }
-});
 
 function sendPdf(res, bytes, filename) {
   res.setHeader('Content-Type', 'application/pdf');
@@ -46,7 +39,7 @@ router.get('/api/health', (_req, res) => {
   });
 });
 
-router.post('/api/merge', upload.array('files', 20), async (req, res) => {
+router.post('/api/merge', upload.array('files', 20), cleanupUploadedFiles, async (req, res) => {
   try {
     if (!req.files || req.files.length < 2) {
       return res.status(400).json({ error: '请至少上传两个 PDF 文件。' });
@@ -60,7 +53,7 @@ router.post('/api/merge', upload.array('files', 20), async (req, res) => {
   }
 });
 
-router.post('/api/image-to-pdf', upload.array('images', 50), async (req, res) => {
+router.post('/api/image-to-pdf', upload.array('images', 50), cleanupUploadedFiles, async (req, res) => {
   try {
     if (!req.files || req.files.length === 0) {
       return res.status(400).json({ error: '请至少上传一张图片。' });
@@ -94,7 +87,7 @@ router.post('/api/image-to-pdf', upload.array('images', 50), async (req, res) =>
   }
 });
 
-router.post('/api/compress', upload.single('file'), async (req, res) => {
+router.post('/api/compress', upload.single('file'), cleanupUploadedFiles, async (req, res) => {
   try {
     if (!req.file) {
       return res.status(400).json({ error: '请上传一个 PDF 文件。' });
@@ -115,7 +108,7 @@ router.post('/api/compress', upload.single('file'), async (req, res) => {
   }
 });
 
-router.post('/api/organize', upload.single('file'), async (req, res) => {
+router.post('/api/organize', upload.single('file'), cleanupUploadedFiles, async (req, res) => {
   try {
     if (!req.file) {
       return res.status(400).json({ error: '请上传一个 PDF 文件。' });
@@ -135,7 +128,7 @@ router.post('/api/organize', upload.single('file'), async (req, res) => {
   }
 });
 
-router.post('/api/rotate', upload.single('file'), async (req, res) => {
+router.post('/api/rotate', upload.single('file'), cleanupUploadedFiles, async (req, res) => {
   try {
     if (!req.file) {
       return res.status(400).json({ error: '请上传一个 PDF 文件。' });
@@ -159,7 +152,7 @@ router.post('/api/rotate', upload.single('file'), async (req, res) => {
   }
 });
 
-router.post('/api/resize', upload.single('file'), async (req, res) => {
+router.post('/api/resize', upload.single('file'), cleanupUploadedFiles, async (req, res) => {
   try {
     if (!req.file) {
       return res.status(400).json({ error: '请上传一个 PDF 文件。' });
@@ -195,7 +188,7 @@ router.post('/api/resize', upload.single('file'), async (req, res) => {
   }
 });
 
-router.post('/api/split', upload.single('file'), async (req, res) => {
+router.post('/api/split', upload.single('file'), cleanupUploadedFiles, async (req, res) => {
   try {
     if (!req.file) {
       return res.status(400).json({ error: '请上传一个 PDF 文件。' });
@@ -214,7 +207,7 @@ router.post('/api/split', upload.single('file'), async (req, res) => {
   }
 });
 
-router.post('/api/mark', upload.single('file'), async (req, res) => {
+router.post('/api/mark', upload.single('file'), cleanupUploadedFiles, async (req, res) => {
   try {
     if (!req.file) {
       return res.status(400).json({ error: '请上传一个 PDF 文件。' });
@@ -261,7 +254,7 @@ router.post('/api/mark', upload.single('file'), async (req, res) => {
   }
 });
 
-router.post('/api/security', upload.single('file'), async (req, res) => {
+router.post('/api/security', upload.single('file'), cleanupUploadedFiles, async (req, res) => {
   try {
     if (!req.file) {
       return res.status(400).json({ error: '请上传一个 PDF 文件。' });

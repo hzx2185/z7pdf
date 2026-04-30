@@ -1,9 +1,8 @@
 const express = require('express');
-const multer = require('multer');
-const path = require('path');
 
-const { stmts, DATA_DIR } = require('../db');
+const { stmts } = require('../db');
 const { requireUser } = require('../middleware/auth');
+const { upload, cleanupUploadedFiles } = require('../middleware/upload');
 const {
   getEffectivePlanForUser,
   getEffectivePlanForGuest,
@@ -29,11 +28,6 @@ const { nowIso } = require('../utils/common');
 
 const router = express.Router();
 
-const upload = multer({
-  dest: path.join(DATA_DIR, 'temp'),
-  limits: { fileSize: 100 * 1024 * 1024 }
-});
-
 function sendPdf(res, bytes, filename) {
   res.setHeader('Content-Type', 'application/pdf');
   res.setHeader('Content-Disposition', buildAttachmentDisposition(filename, 'download.pdf'));
@@ -54,7 +48,7 @@ function parseRecipe(bodyRecipe) {
   }
 }
 
-router.post('/api/workspace/visual-save', requireUser, upload.array('files', 20), async (req, res) => {
+router.post('/api/workspace/visual-save', requireUser, upload.array('files', 20), cleanupUploadedFiles, async (req, res) => {
   try {
     if (!req.files || req.files.length === 0) {
       return res.status(400).json({ error: '请先上传至少一个 PDF 文件。' });
@@ -128,7 +122,7 @@ router.post('/api/workspace/visual-save', requireUser, upload.array('files', 20)
   }
 });
 
-router.post('/api/visual-workbench', upload.array('files', 20), async (req, res) => {
+router.post('/api/visual-workbench', upload.array('files', 20), cleanupUploadedFiles, async (req, res) => {
   try {
     if (!req.files || req.files.length === 0) {
       return res.status(400).json({ error: '请先上传至少一个 PDF 文件。' });

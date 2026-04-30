@@ -13,6 +13,15 @@ const { createRedemptionCodes } = require('../services/billing-service');
 
 const router = express.Router();
 
+function getSafeSettingsObject() {
+  const settings = getSettingsObject();
+  if (settings.smtp_pass) {
+    settings.smtp_pass_configured = 'true';
+  }
+  delete settings.smtp_pass;
+  return settings;
+}
+
 router.get('/api/admin/overview', requireAdmin, (_req, res) => {
   res.json({
     stats: {
@@ -22,7 +31,7 @@ router.get('/api/admin/overview', requireAdmin, (_req, res) => {
       shares: Number(stmts.stats.shares.get().total || 0),
       activeMemberships: Number(stmts.stats.activeMemberships.get().total || 0)
     },
-    settings: getSettingsObject()
+    settings: getSafeSettingsObject()
   });
 });
 
@@ -142,7 +151,7 @@ router.patch('/api/admin/users/:id', requireAdmin, express.json({ limit: '512kb'
 });
 
 router.get('/api/admin/settings', requireAdmin, (_req, res) => {
-  res.json({ settings: getSettingsObject() });
+  res.json({ settings: getSafeSettingsObject() });
 });
 
 router.post('/api/admin/settings', requireAdmin, express.json({ limit: '1mb' }), async (req, res) => {
@@ -170,10 +179,13 @@ router.post('/api/admin/settings', requireAdmin, express.json({ limit: '1mb' }),
       if (!allowedKeys.has(key)) {
         throw new Error(`不支持的配置项：${key}`);
       }
+      if (key === 'smtp_pass' && String(value ?? '') === '') {
+        return;
+      }
       stmts.insertSetting.run(key, String(value ?? ''), now);
     });
 
-    return res.json({ ok: true, settings: getSettingsObject() });
+    return res.json({ ok: true, settings: getSafeSettingsObject() });
   } catch (error) {
     return res.status(400).json({ error: error.message || '配置保存失败。' });
   }

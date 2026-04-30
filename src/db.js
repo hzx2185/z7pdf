@@ -7,10 +7,12 @@ const DATA_DIR = process.env.DATA_DIR
   ? path.resolve(process.env.DATA_DIR)
   : path.join(PROJECT_ROOT, "data");
 const STORAGE_DIR = path.join(DATA_DIR, "storage");
+const TEMP_DIR = path.join(DATA_DIR, "temp");
 const DB_PATH = path.join(DATA_DIR, "app.db");
 
 // 确保目录存在
 fsSync.mkdirSync(STORAGE_DIR, { recursive: true });
+fsSync.mkdirSync(TEMP_DIR, { recursive: true });
 
 const db = new DatabaseSync(DB_PATH);
 
@@ -571,5 +573,6 @@ module.exports = {
   stmts,
   DATA_DIR,
   STORAGE_DIR,
+  TEMP_DIR,
   DB_PATH
 };

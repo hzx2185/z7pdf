@@ -1,10 +1,10 @@
 const express = require('express');
-const multer = require('multer');
 const path = require('path');
 const rateLimit = require('express-rate-limit');
 
-const { stmts, DATA_DIR, STORAGE_DIR } = require('../db');
+const { stmts, STORAGE_DIR } = require('../db');
 const { requireUser } = require('../middleware/auth');
+const { upload, cleanupUploadedFiles } = require('../middleware/upload');
 const { nowIso } = require('../utils/common');
 const {
   formatPlan,
@@ -50,11 +50,6 @@ const uploadLimiter = rateLimit({
   windowMs: 60 * 1000,
   max: 10,
   message: { error: '上传请求过于频繁,请稍后再试' }
-});
-
-const upload = multer({
-  dest: path.join(DATA_DIR, 'temp'),
-  limits: { fileSize: 100 * 1024 * 1024 }
 });
 
 router.get('/api/workspace/account', requireUser, async (req, res) => {
@@ -144,7 +139,7 @@ router.get('/api/workspace/files', requireUser, async (req, res) => {
   });
 });
 
-router.post('/api/workspace/upload', uploadLimiter, requireUser, upload.array('files', 20), async (req, res) => {
+router.post('/api/workspace/upload', uploadLimiter, requireUser, upload.array('files', 20), cleanupUploadedFiles, async (req, res) => {
   try {
     if (!req.files || req.files.length === 0) {
       return res.status(400).json({ error: '请先上传至少一个文件。' });

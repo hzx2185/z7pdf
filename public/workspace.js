@@ -4,7 +4,7 @@ import { setupWorkspaceBindings } from "./workspace-bindings-runtime.js?v=0414b"
 import { createWorkspaceFilesRuntime } from "./workspace-files-runtime.js?v=0414b";
 
 function showPage(...args) {
-  if (typeof window.showPage === "function") {
+  if (typeof window.showPage === "function" && window.showPage !== showPage) {
     return window.showPage(...args);
   }
   return undefined;

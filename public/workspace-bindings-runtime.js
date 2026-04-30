@@ -833,7 +833,6 @@ export function setupWorkspaceBindings({
     window.revealAuthPanel = revealAuthPanel;
     window.toggleAuthPanel = toggleAuthPanel;
     window.updateSignedInLayout = updateSignedInLayout;
-    window.showPage = showPage;
 
     initSectionSpy();
     await syncSession();

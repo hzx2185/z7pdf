@@ -184,7 +184,9 @@ function renderOverview(data) {
   elements.settingSmtpHost.value = data.settings?.smtp_host || "";
   elements.settingSmtpPort.value = Number(data.settings?.smtp_port || 465);
   elements.settingSmtpUser.value = data.settings?.smtp_user || "";
-  elements.settingSmtpPass.value = data.settings?.smtp_pass || "";
+  elements.settingSmtpPass.value = "";
+  elements.settingSmtpPass.placeholder =
+    data.settings?.smtp_pass_configured === "true" ? "留空则保留已保存密码" : "邮箱授权码";
   elements.settingSmtpFromEmail.value = data.settings?.smtp_from_email || "";
   elements.settingSmtpFromName.value = data.settings?.smtp_from_name || "Z7 PDF 工作台";
   elements.settingSmtpSecure.checked =

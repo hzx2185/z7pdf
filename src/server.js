@@ -5,6 +5,7 @@ const path = require('path');
 const { stmts, DATA_DIR, STORAGE_DIR } = require('./db');
 const { nowIso, ensureDefaultSettings } = require('./utils/common');
 const { authenticateSession } = require('./middleware/auth');
+const { cleanStaleTempFiles } = require('./middleware/upload');
 
 const authRoutes = require('./routes/auth');
 const workspaceRoutes = require('./routes/workspace');
@@ -74,8 +75,25 @@ setInterval(() => {
   }
 }, 10 * 60 * 1000);
 
+async function cleanTempFilesWithLog(reason) {
+  try {
+    const removedCount = await cleanStaleTempFiles();
+    if (removedCount > 0) {
+      console.log(`${reason}已清理 ${removedCount} 个过期上传临时文件。`);
+    }
+  } catch (error) {
+    console.error(`${reason}清理上传临时文件失败:`, error);
+  }
+}
+
+// 上传临时文件兜底清理：正常请求结束会即时删除，这里处理进程中断等残留。
+setInterval(() => {
+  cleanTempFilesWithLog('定时任务');
+}, 60 * 60 * 1000);
+
 // 初始化数据库
 ensureDefaultSettings();
+cleanTempFilesWithLog('启动时');
 
 // 启动服务器
 const PORT = process.env.PORT || 39010;
