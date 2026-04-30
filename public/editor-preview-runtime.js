@@ -1,4 +1,4 @@
-export function findEquivalentMatchIndex(matches, targetMatch) {
+function findEquivalentMatchIndex(matches, targetMatch) {
   if (!targetMatch) return -1;
   return matches.findIndex(
     (match) =>
@@ -8,7 +8,7 @@ export function findEquivalentMatchIndex(matches, targetMatch) {
   );
 }
 
-export function reconcilePreviewSearchMatchForPage({
+function reconcilePreviewSearchMatchForPage({
   searchPending,
   normalizedQuery,
   currentIndex,
@@ -212,7 +212,7 @@ function createManagedPreviewCompositeCanvas({
   };
 }
 
-export function createImmersivePreviewStage(canvas, pageIndex, options = {}) {
+function createImmersivePreviewStage(canvas, pageIndex, options = {}) {
   const {
     rotation = 0,
     previewSettings = null,
@@ -267,7 +267,7 @@ export function createImmersivePreviewStage(canvas, pageIndex, options = {}) {
   };
 }
 
-export async function renderManagedImmersivePreviewPage({
+async function renderManagedImmersivePreviewPage({
   page,
   pageIndex,
   previewState,
@@ -409,7 +409,7 @@ export async function openManagedStandaloneVisualEditor({
   }
 }
 
-export function mountImmersivePreviewView({
+function mountImmersivePreviewView({
   previewState,
   previewBody,
   stage,
@@ -426,7 +426,7 @@ export function mountImmersivePreviewView({
   resetZoom(false);
 }
 
-export function clearImmersivePreviewView({
+function clearImmersivePreviewView({
   previewState,
   previewBody,
   message = "预览失败"

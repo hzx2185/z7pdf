@@ -91,6 +91,7 @@ import {
   queryManagedEditorDom,
 } from "./editor-bootstrap-runtime.js?v=0414b";
 import {
+  pickManagedInsertFiles,
   setupManagedEditorBindings,
 } from "./editor-bindings-runtime.js?v=0414b";
 import {
@@ -1063,29 +1064,8 @@ function insertBlankPage(options = {}) {
   });
 }
 
-function pickInsertPdfFiles() {
-  return new Promise((resolve) => {
-    const input = document.createElement("input");
-    input.type = "file";
-    input.accept = "application/pdf,.pdf";
-    input.multiple = true;
-    input.className = "hidden";
-    input.addEventListener("change", () => {
-      const files = Array.from(input.files || []);
-      input.remove();
-      resolve(files);
-    }, { once: true });
-    input.addEventListener("cancel", () => {
-      input.remove();
-      resolve([]);
-    }, { once: true });
-    document.body.appendChild(input);
-    input.click();
-  });
-}
-
 async function insertLocalPdfAtSelection(options = {}) {
-  const files = await pickInsertPdfFiles();
+  const files = await pickManagedInsertFiles(document);
   if (files.length === 0) return false;
   return insertEditorFiles(files, options);
 }

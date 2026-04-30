@@ -11,6 +11,8 @@ services:
       PORT: "39010"
       HOST: "0.0.0.0"
       TZ: ${TZ:-Asia/Shanghai}
+      ADMIN_EMAIL: ${ADMIN_EMAIL:-}
+      ADMIN_PASSWORD: ${ADMIN_PASSWORD:-}
     volumes:
       - ./data:/app/data
     restart: unless-stopped

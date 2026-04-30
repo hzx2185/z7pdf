@@ -9,7 +9,7 @@ function normalizeManagedRotation(rotation) {
   return ((Number(rotation || 0) % 360) + 360) % 360;
 }
 
-export function getManagedPageTotalRotation(page) {
+function getManagedPageTotalRotation(page) {
   return normalizeManagedRotation(
     Number(page?.sourceRotation || 0) + Number(page?.rotation || 0)
   );

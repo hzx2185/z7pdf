@@ -139,7 +139,7 @@ export function setManagedCurrentUser({
   state.currentUser = user || null;
 }
 
-export function normalizeManagedWorkspaceSource(source) {
+function normalizeManagedWorkspaceSource(source) {
   if (!source || !Number.isInteger(Number(source.id)) || Number(source.id) < 1) {
     return null;
   }
@@ -151,7 +151,7 @@ export function normalizeManagedWorkspaceSource(source) {
   };
 }
 
-export function getManagedOverwriteTarget({
+function getManagedOverwriteTarget({
   state,
   controls
 }) {
@@ -177,7 +177,7 @@ async function resolveManagedOutlinePageNumber(pdf, rawDest) {
   }
 }
 
-export async function readManagedPdfBookmarks(pdf) {
+async function readManagedPdfBookmarks(pdf) {
   const outline = await pdf.getOutline().catch(() => []);
   const topLevelItems = Array.isArray(outline) ? outline : [];
   const bookmarks = [];
@@ -192,7 +192,7 @@ export async function readManagedPdfBookmarks(pdf) {
   return bookmarks;
 }
 
-export async function readManagedPdfMetadata(pdf) {
+async function readManagedPdfMetadata(pdf) {
   const metadata = await pdf.getMetadata().catch(() => null);
   const info = metadata?.info || {};
   return {

@@ -293,7 +293,7 @@ function assignWorkspaceMountState(textEditorState, { loadingToken, pageId, card
   textEditorState.canvasRef = canvas;
 }
 
-export function createManagedCanvasLayer({
+function createManagedCanvasLayer({
   className,
   canvas,
   surface,

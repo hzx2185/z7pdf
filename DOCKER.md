@@ -8,6 +8,8 @@
 
 为了减少不同机器上的目录权限问题，镜像启动时会先尝试修正 `/app/data` 的属主，再切回 `node` 用户运行服务。
 
+镜像不需要浏览器访问第三方 CDN：前端使用的 `pdf-lib` 和 `pdfjs-dist` 均从容器内 `node_modules` 通过 `/vendor/` 路径提供。
+
 ## 镜像结构
 
 项目的 `Dockerfile` 采用三阶段：
@@ -79,6 +81,8 @@ services:
       PORT: "39010"
       HOST: "0.0.0.0"
       TZ: ${TZ:-Asia/Shanghai}
+      ADMIN_EMAIL: ${ADMIN_EMAIL:-}
+      ADMIN_PASSWORD: ${ADMIN_PASSWORD:-}
     volumes:
       - ./data:/app/data
     restart: unless-stopped
@@ -105,16 +109,18 @@ docker compose down
 
 ## 环境变量与隐私
 
-当前 `docker-compose.yml` 只包含以下环境变量：
+当前 `docker-compose.yml` 默认只写入非敏感运行配置，并预留初始管理员环境变量占位：
 - `PORT`
 - `HOST`
 - `TZ`
+- `ADMIN_EMAIL`
+- `ADMIN_PASSWORD`
 
-这些都不是敏感信息。
+其中 `ADMIN_EMAIL` 和 `ADMIN_PASSWORD` 的真实值应从宿主机环境变量、未提交的 `.env` 或 Secret 管理系统注入；仓库中的 compose 文件不包含真实密码。
 
-当前仓库中的 `docker-compose.yml` 不包含：
-- 管理员邮箱
-- 管理员密码
+当前仓库中的 `docker-compose.yml` 不包含真实的：
+- 管理员邮箱值
+- 管理员密码值
 - SMTP 用户名或密码
 - API Key
 - Token
@@ -123,6 +129,64 @@ docker compose down
 - 使用宿主机环境变量注入
 - 使用 `.env` 文件，但不要提交到仓库
 - 使用部署平台的 Secret 管理能力
+
+示例：
+
+```bash
+ADMIN_EMAIL=admin@example.com \
+ADMIN_PASSWORD='replace-with-a-long-random-password' \
+docker compose up -d --build
+```
+
+或在未提交的 `.env` 中保存：
+
+```dotenv
+ADMIN_EMAIL=admin@example.com
+ADMIN_PASSWORD=replace-with-a-long-random-password
+```
+
+不要把以下内容提交到仓库、镜像或公开日志：
+- `ADMIN_PASSWORD`
+- SMTP 密码
+- 反向代理证书私钥
+- API Key、Token、Cookie
+- 生产数据库或用户上传文件
+
+首次启动时如果未提供 `ADMIN_PASSWORD`，应用会生成随机管理员密码并写入启动日志。完成首次登录后建议立即修改密码，并限制能查看容器日志的人员范围。
+
+## 数据目录、备份与删除
+
+`./data` 是最重要的持久化目录，通常包含：
+- `app.db`、`app.db-wal`、`app.db-shm`
+- 会员上传和在线保存的文件
+- 分享、兑换码、会员有效期等数据库记录
+
+建议：
+- 定期备份整个 `./data` 目录，而不是只备份 `app.db`。
+- 备份前可短暂停止容器，避免 SQLite WAL 文件处于写入中。
+- 备份文件同样可能包含用户 PDF 和账号记录，应按敏感数据管理。
+- 删除容器不会删除 `./data`；只有手动删除宿主机目录才会清空数据。
+
+备份示例：
+
+```bash
+docker compose stop
+tar -czf z7pdf-data-$(date +%Y%m%d-%H%M%S).tar.gz data
+docker compose up -d
+```
+
+恢复时解压到仓库根目录的 `data/`，并确认权限允许容器中的 `node` 用户写入。
+
+## 公网部署安全建议
+
+如果通过域名或公网 IP 提供服务，建议至少配置：
+- HTTPS 反向代理
+- 上传体积限制，避免超大文件耗尽磁盘或内存
+- 访问日志保留策略，避免长期保存敏感 URL、分享 token 或账号信息
+- 防火墙或网关限制管理后台访问来源
+- 强管理员密码和受控的容器日志访问权限
+
+分享链接应视为访问凭证。公开分享知道链接即可访问；敏感文件应使用密码、到期时间和下载次数限制。
 
 ## 目录权限处理
 

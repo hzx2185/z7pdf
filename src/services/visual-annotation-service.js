@@ -1,5 +1,6 @@
 const { createCanvas } = require('@napi-rs/canvas');
 const { BlendMode, rgb } = require('pdf-lib');
+const { pdfColorFromHex } = require('../utils/color');
 
 const HEADER_FOOTER_COLOR_MAP = {
   orange: rgb(0.75, 0.35, 0.14),
@@ -10,19 +11,8 @@ const HEADER_FOOTER_COLOR_MAP = {
 const TEXT_HIGHLIGHT_COLOR = rgb(1, 0.82, 0.4);
 const TEXT_UNDERLINE_COLOR = rgb(1, 0.47, 0.24);
 
-function parseHexColor(input) {
-  const value = String(input || '').trim();
-  if (!/^#?[0-9a-fA-F]{6}$/.test(value)) {
-    return null;
-  }
-
-  const hex = value.startsWith('#') ? value.slice(1) : value;
-  const toUnit = (segment) => Number.parseInt(segment, 16) / 255;
-  return rgb(toUnit(hex.slice(0, 2)), toUnit(hex.slice(2, 4)), toUnit(hex.slice(4, 6)));
-}
-
 function getHeaderFooterColor(input) {
-  return parseHexColor(input) || HEADER_FOOTER_COLOR_MAP[input] || HEADER_FOOTER_COLOR_MAP.slate;
+  return pdfColorFromHex(input) || HEADER_FOOTER_COLOR_MAP[input] || HEADER_FOOTER_COLOR_MAP.slate;
 }
 
 function clampOpacity(value, fallback = 1) {
@@ -47,7 +37,7 @@ function canvasColorFromHex(input, opacity = 1, fallback = '#111827') {
 }
 
 function resolvePdfColor(input, fallback = '#111827') {
-  return parseHexColor(input) || parseHexColor(fallback) || rgb(0.07, 0.1, 0.15);
+  return pdfColorFromHex(input) || pdfColorFromHex(fallback) || rgb(0.07, 0.1, 0.15);
 }
 
 function normalizeAnnotationPoint(point) {

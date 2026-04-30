@@ -1,4 +1,5 @@
 const { PDFDocument, degrees, StandardFonts, rgb } = require('pdf-lib');
+const { pdfColorFromHex } = require('../utils/color');
 
 const WATERMARK_COLOR_MAP = {
   orange: rgb(0.75, 0.35, 0.14),
@@ -6,19 +7,8 @@ const WATERMARK_COLOR_MAP = {
   red: rgb(0.75, 0.2, 0.2)
 };
 
-function parseHexColor(input) {
-  const value = String(input || '').trim();
-  if (!/^#?[0-9a-fA-F]{6}$/.test(value)) {
-    return null;
-  }
-
-  const hex = value.startsWith('#') ? value.slice(1) : value;
-  const toUnit = (segment) => Number.parseInt(segment, 16) / 255;
-  return rgb(toUnit(hex.slice(0, 2)), toUnit(hex.slice(2, 4)), toUnit(hex.slice(4, 6)));
-}
-
 function getWatermarkColor(input) {
-  return parseHexColor(input) || WATERMARK_COLOR_MAP[input] || WATERMARK_COLOR_MAP.orange;
+  return pdfColorFromHex(input) || WATERMARK_COLOR_MAP[input] || WATERMARK_COLOR_MAP.orange;
 }
 
 function normalizePosition(position) {

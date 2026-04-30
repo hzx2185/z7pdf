@@ -6,7 +6,7 @@
     <title>Z7 PDF - 在线PDF编辑工具</title>
     <link rel="icon" href="data:," />
     <link rel="stylesheet" href="/styles.css?v=0423" />
-    <script src="https://unpkg.com/pdf-lib/dist/pdf-lib.min.js"></script>
+    <script src="/vendor/pdf-lib/pdf-lib.min.js"></script>
   </head>
   <body>
     <!-- 顶部导航 -->
@@ -229,6 +229,32 @@
           </div>
 
           <div class="section-header" style="margin-top: 32px;">
+            <h3>隐私与安全</h3>
+          </div>
+          <div class="faq-grid">
+            <details class="faq-item" open>
+              <summary>我的 PDF 会被上传到第三方平台吗？</summary>
+              <p>不会。Z7 PDF 是自部署应用，PDF 上传、编辑、导出和会员空间文件都在当前部署的服务器内处理。本版本已移除前端第三方 CDN 依赖，编辑器所需的 PDF 脚本由本服务本地提供。</p>
+            </details>
+            <details class="faq-item">
+              <summary>游客、会员和管理员分别会保存哪些数据？</summary>
+              <p>游客导出默认只下载到本机，不进入会员空间；会员主动上传、在线保存或创建分享时，文件与分享设置会写入服务器数据目录。管理员可查看站点运行所需的用户、套餐、兑换码、文件和分享记录，因此请只在可信服务器上部署并妥善保管管理员账号。</p>
+            </details>
+            <details class="faq-item">
+              <summary>分享链接安全吗？</summary>
+              <p>分享链接相当于访问凭证。公开分享知道链接即可访问；密码分享需要访问密码；登录访问要求对方登录会员账号。建议给敏感文件设置访问密码、到期时间和下载次数，文件不再需要分享时及时停用或删除分享。</p>
+            </details>
+            <details class="faq-item">
+              <summary>部署时要注意哪些隐私安全事项？</summary>
+              <p>生产环境建议启用 HTTPS，使用强管理员密码，不把 SMTP 密码、管理员密码或 Token 写进仓库；定期备份并限制 <code>data/</code> 目录访问权限。若通过反向代理公开到公网，请同时配置访问日志保留策略和上传体积限制。</p>
+            </details>
+            <details class="faq-item">
+              <summary>浏览器本地会留下文件吗？</summary>
+              <p>导出的 PDF 会按浏览器下载规则保存到你的设备；浏览器也可能保留下载记录。处理敏感文件后，建议关闭不需要的分享链接，并按你的浏览器或系统策略清理下载记录和本地文件。</p>
+            </details>
+          </div>
+
+          <div class="section-header" style="margin-top: 32px;">
             <h3>常见问题</h3>
           </div>
           <div class="faq-grid">
@@ -306,6 +332,18 @@
           </div>
           <div class="changelog-list">
             <details class="changelog-item" open>
+              <summary>
+                <span class="changelog-version">v1.3.0</span>
+                <span class="changelog-date">2026-05-01</span>
+              </summary>
+              <ul class="changelog-features">
+                <li>补充帮助中心的隐私与安全说明，明确游客、会员、管理员和分享链接的数据边界</li>
+                <li>前端 PDF 依赖改为由本服务本地提供，移除第三方 CDN 请求，降低敏感文件处理时的外部访问面</li>
+                <li>完善 README 与 Docker 部署说明，补充 Secret 管理、数据目录权限、备份和公网部署建议</li>
+                <li>清理冗余样式入口和重复工具逻辑，缩小前端 runtime 暴露面</li>
+              </ul>
+            </details>
+            <details class="changelog-item">
               <summary>
                 <span class="changelog-version">v1.2.0</span>
                 <span class="changelog-date">2026-04-14</span>

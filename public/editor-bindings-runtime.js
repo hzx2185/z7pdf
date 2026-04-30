@@ -145,7 +145,7 @@ function collectManagedClipboardPdfFiles(clipboardData) {
     .filter(Boolean);
 }
 
-function pickManagedInsertFiles(documentApi = globalThis.document) {
+export function pickManagedInsertFiles(documentApi = globalThis.document) {
   return new Promise((resolve) => {
     const input = documentApi.createElement("input");
     input.type = "file";

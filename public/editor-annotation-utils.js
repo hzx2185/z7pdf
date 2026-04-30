@@ -220,7 +220,7 @@ export function createTextBoxRect(origin, text) {
   });
 }
 
-export function getAnnotationBounds(annotation) {
+function getAnnotationBounds(annotation) {
   if (!annotation) return null;
   if ((annotation.type === "rect" || annotation.type === "textbox") && annotation.rect) {
     return clampAnnotationRect(annotation.rect);

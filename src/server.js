@@ -39,6 +39,10 @@ app.use(
   '/vendor/pdfjs',
   express.static(path.join(__dirname, '..', 'node_modules', 'pdfjs-dist', 'build'), { maxAge: '7d' })
 );
+app.use(
+  '/vendor/pdf-lib',
+  express.static(path.join(__dirname, '..', 'node_modules', 'pdf-lib', 'dist'), { maxAge: '7d' })
+);
 app.use(authenticateSession);
 
 // 健康检查端点

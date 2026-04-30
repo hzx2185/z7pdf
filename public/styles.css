@@ -1,2 +1,15 @@
-@import url("/styles-core.css");
-@import url("/styles-app-pages.css");
+@import url("/styles-base.css");
+@import url("/styles-marketing-landing.css");
+@import url("/styles-marketing-sections.css");
+@import url("/styles-marketing-overlays.css");
+@import url("/styles-workbench-layout.css");
+@import url("/styles-workbench-files.css");
+@import url("/styles-workbench-member.css");
+@import url("/styles-editor-shell.css");
+@import url("/styles-editor-workspace.css");
+@import url("/styles-editor-preview.css");
+@import url("/styles-editor-toolbar.css");
+@import url("/styles-core-admin.css");
+@import url("/styles-admin-overview.css");
+@import url("/styles-admin-responsive.css");
+@import url("/styles-share-pages.css");

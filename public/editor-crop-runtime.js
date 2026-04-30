@@ -269,7 +269,7 @@ export function removeManagedCropLivePreview({
   documentApi.getElementById("editorCropLivePreview")?.remove();
 }
 
-export function ensureManagedCropLivePreview({
+function ensureManagedCropLivePreview({
   state,
   thumbGrid,
   page,

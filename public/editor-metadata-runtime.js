@@ -29,7 +29,7 @@ export function markManagedMetadataDirty(state) {
   return true;
 }
 
-export function normalizeManagedBookmarkItems(items) {
+function normalizeManagedBookmarkItems(items) {
   return (Array.isArray(items) ? items : [])
     .map((item, index) => ({
       title: String(item?.title || "").trim(),

@@ -66,11 +66,6 @@ function isRegistrationEnabled() {
   return String(getSettingValue("allow_registration", "true")).toLowerCase() === "true";
 }
 
-function getWorkspaceQuotaBytes() {
-  const quotaMb = Number(getSettingValue("workspace_quota_mb", "512"));
-  return Math.max(1, quotaMb) * 1024 * 1024;
-}
-
 function getSmtpConfig() {
   const port = Number(getSettingValue("smtp_port", "465") || 465);
   return {
@@ -197,7 +192,6 @@ module.exports = {
   getSettingsObject,
   getSettingValue,
   isRegistrationEnabled,
-  getWorkspaceQuotaBytes,
   getSmtpConfig,
   isSmtpConfigured,
   createAccessCode,

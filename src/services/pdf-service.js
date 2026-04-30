@@ -11,6 +11,7 @@ const {
   rgb
 } = require('pdf-lib');
 
+const { pdfColorFromHex } = require('../utils/color');
 const { sanitizeFilename, getDisplayFilename } = require('./workspace-service');
 const {
   addMarksPdf: addMarksPdfWithDeps,
@@ -221,17 +222,6 @@ function computePageSize(baseWidth, baseHeight, pageSize, orientation) {
   return width <= height ? [width, height] : [height, width];
 }
 
-function parseHexColor(input) {
-  const value = String(input || '').trim();
-  if (!/^#?[0-9a-fA-F]{6}$/.test(value)) {
-    return null;
-  }
-
-  const hex = value.startsWith('#') ? value.slice(1) : value;
-  const toUnit = (segment) => Number.parseInt(segment, 16) / 255;
-  return rgb(toUnit(hex.slice(0, 2)), toUnit(hex.slice(2, 4)), toUnit(hex.slice(4, 6)));
-}
-
 async function mergePdfs(files) {
   const merged = await PDFDocument.create();
 
@@ -379,7 +369,7 @@ async function resizePdfBuffer(buffer, filename, options) {
   const orientation = options.orientation || 'auto';
   const fitMode = options.fitMode || 'contain';
   const margin = Math.max(0, Number(options.margin || 0));
-  const backgroundColor = parseHexColor(options.backgroundColor) || rgb(1, 1, 1);
+  const backgroundColor = pdfColorFromHex(options.backgroundColor) || rgb(1, 1, 1);
   const srcPages = await out.copyPages(src, src.getPageIndices());
 
   for (const srcPage of srcPages) {

@@ -12,7 +12,7 @@ function collectManagedDroppedPdfFiles(fileList) {
   return Array.from(fileList || []).filter(isManagedPdfUploadFile);
 }
 
-export function setManagedEditorDropActive({
+function setManagedEditorDropActive({
   dropZone,
   dropOverlay,
   active
@@ -25,7 +25,7 @@ export function setManagedEditorDropActive({
   return true;
 }
 
-export function resetManagedEditorDropState({
+function resetManagedEditorDropState({
   state,
   dropZone,
   dropOverlay
@@ -38,11 +38,11 @@ export function resetManagedEditorDropState({
   });
 }
 
-export function openManagedEditorFilePicker(fileInput) {
+function openManagedEditorFilePicker(fileInput) {
   fileInput?.click?.();
 }
 
-export async function importManagedDroppedPdfFiles({
+async function importManagedDroppedPdfFiles({
   fileList,
   loadEditor,
   setResult
@@ -277,7 +277,7 @@ export function attachManagedEditorShortcuts({
   });
 }
 
-export function getManagedWorkspaceNavigation({ pages, selectedIndex = 0 }) {
+function getManagedWorkspaceNavigation({ pages, selectedIndex = 0 }) {
   const activePages = pages.filter((page) => !page.deleted);
   if (activePages.length === 0) {
     return {
@@ -429,7 +429,7 @@ export function ensureManagedInPlaceEditor({
   };
 }
 
-export function navigateManagedWorkspacePage({
+function navigateManagedWorkspacePage({
   pages,
   selectedIndex = 0,
   delta,
@@ -492,7 +492,7 @@ export function applyManagedWorkspaceZoom({
   return true;
 }
 
-export function stepManagedWorkspaceZoom({
+function stepManagedWorkspaceZoom({
   currentZoom,
   direction,
   levels = [0.5, 0.75, 1, 1.25, 1.5, 2, 3]
