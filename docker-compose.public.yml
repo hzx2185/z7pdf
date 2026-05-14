@@ -1,6 +1,7 @@
 services:
-  z7pdf:
-    build: .
+  z7rss:
+    image: hzx2185/z7rss:latest
+    container_name: z7rss
     ports:
       - "39010:80"
     volumes:

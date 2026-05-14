@@ -1,6 +1,6 @@
 # Z7 PDF 工作台
 
-一个本地部署的 PDF 在线编辑工具，默认通过 `docker compose` 运行在 `39010` 端口，支持会员空间、在线保存、文件分享、回收站、兑换码会员和后台管理。
+一个本地部署的 PDF 在线编辑工具，支持会员空间、在线保存、文件分享、回收站、兑换码会员和后台管理。
 
 ## 功能特性
 
@@ -53,23 +53,42 @@
 | 加密与解密 | 密码加密和去密码 |
 | OCR 文字识别 | 基于 Tesseract 与 OCRmyPDF，支持图片 PDF 转双层可搜索 PDF |
 
-## Docker 架构
+## 开发与源码构建
 
-项目现在采用标准的 Docker 分层方式：
+本仓库面向开发人员和从源码构建的部署方式：
 - `Dockerfile` 使用 `base / deps / runtime` 多阶段结构，区分系统依赖、Node 依赖和最终运行层。
 - `.dockerignore` 会过滤 `data/`、`.git/`、本地工具历史和日志，避免把无关文件打进镜像上下文。
-- `docker-compose.yml` 负责生产运行。
+- `docker-compose.yml` 使用 `build: .`，适合本地源码和 GitHub 源码部署。
 - 容器默认以非 root 的 `node` 用户运行，并带 `/health` 健康检查。
 - 默认使用宿主机目录 `./data` 持久化 `/app/data`，便于直接备份和迁移。
 - 容器启动时会自动尝试修正 `./data` 的目录权限，然后再降权到 `node` 用户运行。
-- 当前 `docker-compose.yml` 默认只写入非敏感配置，并预留 `ADMIN_EMAIL`、`ADMIN_PASSWORD` 环境变量占位；真实密码应通过宿主机环境变量、未提交的 `.env` 或 Secret 管理系统注入。
+- 当前 `docker-compose.yml` 不写入管理员账号、SMTP 密码、Token 或 API Key；首次管理员密码默认由系统自动生成。
 - 前端 `pdf-lib` 与 `pdfjs-dist` 均从本服务 `/vendor/` 路径提供，避免浏览器访问第三方 CDN。
 
-详细说明见 [DOCKER.md](DOCKER.md)。
+公开镜像部署说明见 [DOCKER.md](DOCKER.md)。
 
 ## 快速开始
 
-### Docker（推荐）
+### 本地 Node.js 运行
+
+```bash
+npm install
+npm start
+```
+
+默认访问：http://127.0.0.1:39010
+
+> 注意：本地运行需要安装 `ghostscript` 和 `qpdf` 以支持压缩和加密功能。
+>
+> 如需启用 OCR，还需要安装 `ocrmypdf`、`unpaper`、`tesseract-ocr`、`tesseract-ocr-eng`、`tesseract-ocr-chi-sim`。
+
+### 运行测试
+
+```bash
+npm test
+```
+
+### Docker 源码构建
 
 #### 构建标准镜像
 ```bash
@@ -80,15 +99,29 @@ docker build -t z7pdf:latest .
 ```bash
 docker run -d \
   --name z7pdf \
-  -p 39010:39010 \
+  -p 39010:80 \
   -v "$(pwd)/data:/app/data" \
   z7pdf:latest
 ```
 
-#### 生产模式
+#### 源码构建运行
 ```bash
 docker compose up -d --build
 ```
+
+本地源码和 GitHub 源码部署使用 `build` 模板：
+
+```yaml
+services:
+  z7pdf:
+    build: .
+    ports:
+      - "39010:80"
+    volumes:
+      - ./data:/app/data
+```
+
+端口说明：宿主机访问端口是 `39010`，容器内部服务端口是 `80`。
 
 数据持久化：默认使用宿主机目录 `./data` 挂载到容器 `/app/data`，包含 SQLite 数据库和用户文件。
 
@@ -99,9 +132,9 @@ docker compose up -d --build
 
 首次初始化说明：
 - 如果数据库里还没有管理员账号，系统会自动创建一个管理员。
-- 管理员邮箱默认是 `admin@z7pdf.local`，可用 `ADMIN_EMAIL` 覆盖。
+- 管理员邮箱默认是 `admin@z7pdf.local`。
 - 如果未设置 `ADMIN_PASSWORD`，系统会在首次启动时生成随机密码、写入数据库，并打印到启动日志。
-- 如果使用 `docker compose up -d --build` 后台启动，可通过 `docker compose logs --tail=50 z7pdf` 查看这组初始账号信息。
+- 使用源码构建模板后台启动时，可通过 `docker compose logs --tail=50 z7pdf` 查看这组初始账号信息。
 
 停止服务：
 
@@ -109,18 +142,7 @@ docker compose up -d --build
 docker compose down
 ```
 
-注意：`docker compose down` 不会删除 `./data` 目录。容器启动时会自动尝试修正该目录权限；如果你的宿主机策略不允许，手动执行 `sudo chown -R 1000:1000 data` 即可。
-
-### 本地 Node.js 运行
-
-```bash
-npm install
-npm start
-```
-
-> 注意：本地运行需要安装 `ghostscript` 和 `qpdf` 以支持压缩和加密功能。
->
-> 如需启用 OCR，还需要安装 `ocrmypdf`、`unpaper`、`tesseract-ocr`、`tesseract-ocr-eng`、`tesseract-ocr-chi-sim`。
+注意：停止 Compose 服务不会删除 `./data` 目录。容器启动时会自动尝试修正该目录权限；如果你的宿主机策略不允许，手动执行 `sudo chown -R 1000:1000 data` 即可。
 
 ## 管理员初始化
 
@@ -131,18 +153,22 @@ npm start
 
 管理员账号只会在首次写库时自动创建一次。后续重启不会重复生成，也不会覆盖你已存在的管理员密码。
 
-可通过环境变量覆盖：
+源码运行时可通过环境变量覆盖。使用 Docker Compose 时，保持仓库模板精简；如确需固定首次管理员账号，创建本地的 `docker-compose.override.yml`（已被 `.gitignore` 和 `.dockerignore` 忽略）：
 
 ```yaml
-environment:
-  ADMIN_EMAIL: "your-admin@example.com"
-  ADMIN_PASSWORD: "your-secure-password"
+services:
+  z7pdf:
+    environment:
+      ADMIN_EMAIL: "your-admin@example.com"
+      ADMIN_PASSWORD: "your-secure-password"
 ```
 
-使用 Docker Compose 时，不要把真实密码直接写进 `docker-compose.yml`；可以在命令前注入：
+不要把真实密码直接写进仓库的 `docker-compose.yml`。
+
+本地 Node.js 运行可在命令前临时设置：
 
 ```bash
-ADMIN_EMAIL=your-admin@example.com ADMIN_PASSWORD='your-secure-password' docker compose up -d --build
+ADMIN_EMAIL=your-admin@example.com ADMIN_PASSWORD='your-secure-password' npm start
 ```
 
 ## 隐私与安全边界
@@ -202,8 +228,9 @@ ADMIN_EMAIL=your-admin@example.com ADMIN_PASSWORD='your-secure-password' docker 
 z7pdf/
 ├── package.json        # 依赖配置
 ├── Dockerfile          # Docker 镜像构建
-├── docker-compose.yml  # Docker Compose 配置
-├── DOCKER.md           # Docker 镜像与 Compose 说明
+├── docker-compose.yml        # 源码构建 Compose 配置
+├── docker-compose.public.yml # 公开镜像 Compose 示例
+├── DOCKER.md           # 公开镜像部署说明
 ├── docker/             # Docker 入口脚本
 ├── src/                # 后端源码
 │   ├── server.js       # 主服务入口（仅作路由挂载与初始化）

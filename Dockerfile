@@ -17,7 +17,7 @@ RUN apt-get update \
   && rm -rf /var/lib/apt/lists/*
 
 ENV NODE_ENV=production \
-    PORT=39010 \
+    PORT=80 \
     HOST=0.0.0.0
 
 FROM base AS deps
@@ -34,10 +34,10 @@ COPY docker/entrypoint.sh /usr/local/bin/z7pdf-entrypoint.sh
 RUN install -d -o node -g node /app/data /tmp/z7pdf
 RUN chmod +x /usr/local/bin/z7pdf-entrypoint.sh
 
-EXPOSE 39010
+EXPOSE 80
 
 HEALTHCHECK --interval=30s --timeout=5s --start-period=20s --retries=3 \
-  CMD node -e "const http=require('node:http');const req=http.get('http://127.0.0.1:'+(process.env.PORT||39010)+'/health',res=>process.exit(res.statusCode===200?0:1));req.on('error',()=>process.exit(1));"
+  CMD node -e "const http=require('node:http');const req=http.get('http://127.0.0.1:'+(process.env.PORT||80)+'/health',res=>process.exit(res.statusCode===200?0:1));req.on('error',()=>process.exit(1));"
 
 ENTRYPOINT ["/usr/local/bin/z7pdf-entrypoint.sh"]
 CMD ["node", "src/server.js"]
