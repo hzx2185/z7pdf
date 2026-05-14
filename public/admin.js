@@ -107,6 +107,63 @@ function createBadge(label, tone = "neutral") {
   return `<span class="admin-badge admin-badge-${safeTone}">${escapeHtml(label)}</span>`;
 }
 
+function appendBadge(container, label, tone = "neutral") {
+  const safeTone = ["neutral", "success", "warn", "danger", "accent"].includes(tone) ? tone : "neutral";
+  const badge = document.createElement("span");
+  badge.className = `admin-badge admin-badge-${safeTone}`;
+  badge.textContent = label;
+  container.appendChild(badge);
+}
+
+function createPlanField(labelText, key, type, value, attributes = {}) {
+  const label = document.createElement("label");
+  label.className = "field";
+  const labelSpan = document.createElement("span");
+  labelSpan.textContent = labelText;
+  const input = document.createElement("input");
+  input.dataset.key = key;
+  input.type = type;
+  Object.entries(attributes).forEach(([name, attributeValue]) => {
+    input.setAttribute(name, attributeValue);
+  });
+  input.value = value ?? "";
+  label.append(labelSpan, input);
+  return label;
+}
+
+function createPlanCheck(labelText, key, checked) {
+  const label = document.createElement("label");
+  label.className = "check";
+  const input = document.createElement("input");
+  input.dataset.key = key;
+  input.type = "checkbox";
+  input.checked = Boolean(checked);
+  const labelSpan = document.createElement("span");
+  labelSpan.textContent = labelText;
+  label.append(input, labelSpan);
+  return label;
+}
+
+function renderPlanBadges(container, plan) {
+  container.replaceChildren();
+  appendBadge(container, plan.active ? "已启用" : "已停用", plan.active ? "success" : "warn");
+  appendBadge(container, formatMoney(plan.priceCents), "accent");
+  appendBadge(container, formatBillingInterval(plan.billingInterval), "neutral");
+}
+
+function renderPlanSummary(container, plan) {
+  container.replaceChildren();
+  [
+    `${plan.storageQuotaMb} MB 空间`,
+    `${plan.maxFiles} 个文件`,
+    `${plan.maxShareLinks} 个分享`
+  ].forEach((text) => {
+    const item = document.createElement("span");
+    item.textContent = text;
+    container.appendChild(item);
+  });
+}
+
 function renderEmptyRow(target, columns, title, description) {
   target.innerHTML = `
     <tr>
@@ -290,41 +347,72 @@ function renderPlans(plans = []) {
     const card = document.createElement("article");
     card.className = "plan-admin-card";
     const planLabel = formatPlanLabel(plan.code);
-    card.innerHTML = `
-      <div class="plan-admin-head">
-        <div class="plan-admin-title">
-          <strong>${escapeHtml(plan.name)}</strong>
-          <span>${escapeHtml(planLabel)}</span>
-        </div>
-        <div class="plan-admin-badges">
-          ${createBadge(plan.active ? "已启用" : "已停用", plan.active ? "success" : "warn")}
-          ${createBadge(formatMoney(plan.priceCents), "accent")}
-          ${createBadge(formatBillingInterval(plan.billingInterval), "neutral")}
-        </div>
-      </div>
-      <div class="plan-admin-summary">
-        <span>${plan.storageQuotaMb} MB 空间</span>
-        <span>${plan.maxFiles} 个文件</span>
-        <span>${plan.maxShareLinks} 个分享</span>
-      </div>
-      <label class="field"><span>名称</span><input data-key="name" type="text" value="${plan.name}" /></label>
-      <label class="field"><span>说明</span><input data-key="description" type="text" value="${plan.description || ""}" /></label>
-      <div class="inline-fields">
-        <label class="field"><span>价格（分）</span><input data-key="priceCents" type="number" min="0" step="100" value="${plan.priceCents}" /></label>
-        <label class="field"><span>周期</span><select data-key="billingInterval">${buildBillingIntervalOptions(plan.billingInterval)}</select></label>
-      </div>
-      <div class="inline-fields">
-        <label class="field"><span>空间 MB</span><input data-key="storageQuotaMb" type="number" min="1" step="1" value="${plan.storageQuotaMb}" /></label>
-        <label class="field"><span>文件数</span><input data-key="maxFiles" type="number" min="1" step="1" value="${plan.maxFiles}" /></label>
-        <label class="field"><span>分享数</span><input data-key="maxShareLinks" type="number" min="0" step="1" value="${plan.maxShareLinks}" /></label>
-      </div>
-      <div class="inline-fields">
-        <label class="check"><input data-key="allowCompression" type="checkbox" ${plan.allowCompression ? "checked" : ""} /><span>压缩</span></label>
-        <label class="check"><input data-key="allowSplit" type="checkbox" ${plan.allowSplit ? "checked" : ""} /><span>拆分</span></label>
-        <label class="check"><input data-key="allowSecurity" type="checkbox" ${plan.allowSecurity ? "checked" : ""} /><span>加密</span></label>
-        <label class="check"><input data-key="active" type="checkbox" ${plan.active ? "checked" : ""} /><span>启用</span></label>
-      </div>
-    `;
+
+    const head = document.createElement("div");
+    head.className = "plan-admin-head";
+    const title = document.createElement("div");
+    title.className = "plan-admin-title";
+    const titleText = document.createElement("strong");
+    titleText.textContent = plan.name;
+    const subtitle = document.createElement("span");
+    subtitle.textContent = planLabel;
+    title.append(titleText, subtitle);
+    const badges = document.createElement("div");
+    badges.className = "plan-admin-badges";
+    renderPlanBadges(badges, plan);
+    head.append(title, badges);
+
+    const summary = document.createElement("div");
+    summary.className = "plan-admin-summary";
+    renderPlanSummary(summary, plan);
+
+    const firstRow = document.createElement("div");
+    firstRow.className = "inline-fields";
+    const billingLabel = document.createElement("label");
+    billingLabel.className = "field";
+    const billingText = document.createElement("span");
+    billingText.textContent = "周期";
+    const billingSelect = document.createElement("select");
+    billingSelect.dataset.key = "billingInterval";
+    ["daily", "weekly", "monthly", "yearly"].forEach((interval) => {
+      const option = document.createElement("option");
+      option.value = interval;
+      option.textContent = formatBillingInterval(interval);
+      option.selected = interval === plan.billingInterval;
+      billingSelect.appendChild(option);
+    });
+    billingLabel.append(billingText, billingSelect);
+    firstRow.append(
+      createPlanField("价格（分）", "priceCents", "number", plan.priceCents, { min: "0", step: "100" }),
+      billingLabel
+    );
+
+    const quotaRow = document.createElement("div");
+    quotaRow.className = "inline-fields";
+    quotaRow.append(
+      createPlanField("空间 MB", "storageQuotaMb", "number", plan.storageQuotaMb, { min: "1", step: "1" }),
+      createPlanField("文件数", "maxFiles", "number", plan.maxFiles, { min: "1", step: "1" }),
+      createPlanField("分享数", "maxShareLinks", "number", plan.maxShareLinks, { min: "0", step: "1" })
+    );
+
+    const featureRow = document.createElement("div");
+    featureRow.className = "inline-fields";
+    featureRow.append(
+      createPlanCheck("压缩", "allowCompression", plan.allowCompression),
+      createPlanCheck("拆分", "allowSplit", plan.allowSplit),
+      createPlanCheck("加密", "allowSecurity", plan.allowSecurity),
+      createPlanCheck("启用", "active", plan.active)
+    );
+
+    card.append(
+      head,
+      summary,
+      createPlanField("名称", "name", "text", plan.name),
+      createPlanField("说明", "description", "text", plan.description || ""),
+      firstRow,
+      quotaRow,
+      featureRow
+    );
     const saveButton = document.createElement("button");
     saveButton.type = "button";
     saveButton.className = "secondary-button";
@@ -350,26 +438,18 @@ function renderPlans(plans = []) {
         setElementResult(cardResult, `已保存套餐：${savedName}`, false, { visibleClass: "is-visible" });
         setResult(`已保存套餐：${savedName}`);
         Object.assign(plan, savedPlan);
-        const title = card.querySelector(".plan-admin-title strong");
-        const subtitle = card.querySelector(".plan-admin-title span");
-        const badges = card.querySelector(".plan-admin-badges");
-        const summary = card.querySelector(".plan-admin-summary");
-        if (title) title.textContent = savedName;
-        if (subtitle) subtitle.textContent = formatPlanLabel(savedPlan.code || plan.code);
-        if (badges) {
-          badges.innerHTML = `
-            ${createBadge((savedPlan.active ?? payload.active) ? "已启用" : "已停用", (savedPlan.active ?? payload.active) ? "success" : "warn")}
-            ${createBadge(formatMoney(savedPlan.priceCents ?? payload.priceCents), "accent")}
-            ${createBadge(formatBillingInterval(savedPlan.billingInterval ?? payload.billingInterval), "neutral")}
-          `;
-        }
-        if (summary) {
-          summary.innerHTML = `
-            <span>${savedPlan.storageQuotaMb ?? payload.storageQuotaMb} MB 空间</span>
-            <span>${savedPlan.maxFiles ?? payload.maxFiles} 个文件</span>
-            <span>${savedPlan.maxShareLinks ?? payload.maxShareLinks} 个分享</span>
-          `;
-        }
+        titleText.textContent = savedName;
+        subtitle.textContent = formatPlanLabel(savedPlan.code || plan.code);
+        renderPlanBadges(badges, {
+          active: savedPlan.active ?? payload.active,
+          priceCents: savedPlan.priceCents ?? payload.priceCents,
+          billingInterval: savedPlan.billingInterval ?? payload.billingInterval
+        });
+        renderPlanSummary(summary, {
+          storageQuotaMb: savedPlan.storageQuotaMb ?? payload.storageQuotaMb,
+          maxFiles: savedPlan.maxFiles ?? payload.maxFiles,
+          maxShareLinks: savedPlan.maxShareLinks ?? payload.maxShareLinks
+        });
       } catch (error) {
         setElementResult(cardResult, error.message || "套餐保存失败", true, { visibleClass: "is-visible" });
         setResult(error.message || "套餐保存失败", true);

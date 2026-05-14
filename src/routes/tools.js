@@ -1,6 +1,10 @@
 const express = require('express');
 
 const { upload, cleanupUploadedFiles } = require('../middleware/upload');
+const {
+  assertGuestToolAllowed,
+  consumeGuestExport
+} = require('../services/tool-access-service');
 const { normalizeUploadedFiles, withPdfExtension } = require('../services/workspace-service');
 const {
   PAGE_SIZE_MAP,
@@ -46,7 +50,9 @@ router.post('/api/merge', upload.array('files', 20), cleanupUploadedFiles, async
     }
 
     await normalizeUploadedFiles(req.files);
+    const guestUsage = assertGuestToolAllowed(req);
     const mergedBytes = await mergePdfs(req.files);
+    consumeGuestExport(req, guestUsage);
     return sendPdf(res, mergedBytes, 'merged.pdf');
   } catch (error) {
     return res.status(400).json({ error: error.message || 'PDF 合并失败。' });
@@ -60,6 +66,7 @@ router.post('/api/image-to-pdf', upload.array('images', 50), cleanupUploadedFile
     }
 
     await normalizeUploadedFiles(req.files);
+    const guestUsage = assertGuestToolAllowed(req);
 
     const options = {
       layout: String(req.body.layout || '1'),
@@ -81,6 +88,7 @@ router.post('/api/image-to-pdf', upload.array('images', 50), cleanupUploadedFile
 
     const bytes = await imagesToPdf(req.files, options);
     const filename = req.body.filename || 'images_to_pdf.pdf';
+    consumeGuestExport(req, guestUsage);
     return sendPdf(res, bytes, withPdfExtension(filename, 'images_to_pdf.pdf'));
   } catch (error) {
     return res.status(400).json({ error: error.message || '图片转 PDF 失败。' });
@@ -94,6 +102,7 @@ router.post('/api/compress', upload.single('file'), cleanupUploadedFiles, async 
     }
 
     await normalizeUploadedFiles([req.file]);
+    const guestUsage = assertGuestToolAllowed(req, 'compression');
 
     const level = String(req.body.level || 'medium');
     if (!(level in COMPRESS_PRESET_MAP)) {
@@ -102,6 +111,7 @@ router.post('/api/compress', upload.single('file'), cleanupUploadedFiles, async 
 
     const bytes = await compressPdf(req.file, level);
     const filename = withPdfExtension(req.file.originalname, 'compressed.pdf');
+    consumeGuestExport(req, guestUsage);
     return sendPdf(res, bytes, `compressed_${filename}`);
   } catch (error) {
     return res.status(400).json({ error: error.message || 'PDF 压缩失败。' });
@@ -115,6 +125,7 @@ router.post('/api/organize', upload.single('file'), cleanupUploadedFiles, async 
     }
 
     await normalizeUploadedFiles([req.file]);
+    const guestUsage = assertGuestToolAllowed(req);
 
     const bytes = await organizePdf(req.file, {
       selection: req.body.selection || 'all',
@@ -122,6 +133,7 @@ router.post('/api/organize', upload.single('file'), cleanupUploadedFiles, async 
       reverse: req.body.reverse || 'false'
     });
     const filename = withPdfExtension(req.file.originalname, 'organized.pdf');
+    consumeGuestExport(req, guestUsage);
     return sendPdf(res, bytes, `organized_${filename}`);
   } catch (error) {
     return res.status(400).json({ error: error.message || '页面整理失败。' });
@@ -135,6 +147,7 @@ router.post('/api/rotate', upload.single('file'), cleanupUploadedFiles, async (r
     }
 
     await normalizeUploadedFiles([req.file]);
+    const guestUsage = assertGuestToolAllowed(req);
 
     const rotate = Number(req.body.rotate || 0);
     if (![90, 180, 270].includes(rotate)) {
@@ -146,6 +159,7 @@ router.post('/api/rotate', upload.single('file'), cleanupUploadedFiles, async (r
       selection: req.body.selection || 'all'
     });
     const filename = withPdfExtension(req.file.originalname, 'rotated.pdf');
+    consumeGuestExport(req, guestUsage);
     return sendPdf(res, bytes, `rotated_${filename}`);
   } catch (error) {
     return res.status(400).json({ error: error.message || '页面旋转失败。' });
@@ -159,6 +173,7 @@ router.post('/api/resize', upload.single('file'), cleanupUploadedFiles, async (r
     }
 
     await normalizeUploadedFiles([req.file]);
+    const guestUsage = assertGuestToolAllowed(req);
 
     const pageSize = req.body.pageSize || 'keep';
     if (!(pageSize in PAGE_SIZE_MAP)) {
@@ -182,6 +197,7 @@ router.post('/api/resize', upload.single('file'), cleanupUploadedFiles, async (r
       margin: req.body.margin || 0
     });
     const filename = withPdfExtension(req.file.originalname, 'resized.pdf');
+    consumeGuestExport(req, guestUsage);
     return sendPdf(res, bytes, `resized_${filename}`);
   } catch (error) {
     return res.status(400).json({ error: error.message || '页面尺寸调整失败。' });
@@ -195,12 +211,14 @@ router.post('/api/split', upload.single('file'), cleanupUploadedFiles, async (re
     }
 
     await normalizeUploadedFiles([req.file]);
+    const guestUsage = assertGuestToolAllowed(req, 'split');
 
     const bytes = await splitPdf(req.file, {
       mode: req.body.mode || 'ranges',
       ranges: req.body.ranges || '',
       every: req.body.every || '1'
     });
+    consumeGuestExport(req, guestUsage);
     return sendZip(res, bytes, `${stripPdfExtension(req.file.originalname)}_split.zip`);
   } catch (error) {
     return res.status(400).json({ error: error.message || 'PDF 拆分失败。' });
@@ -214,6 +232,7 @@ router.post('/api/mark', upload.single('file'), cleanupUploadedFiles, async (req
     }
 
     await normalizeUploadedFiles([req.file]);
+    const guestUsage = assertGuestToolAllowed(req);
 
     const markMode = req.body.markMode || 'watermark';
     if (!['watermark', 'pageNumber', 'both'].includes(markMode)) {
@@ -248,6 +267,7 @@ router.post('/api/mark', upload.single('file'), cleanupUploadedFiles, async (req
       batesMargin: req.body.batesMargin || '24'
     });
     const filename = withPdfExtension(req.file.originalname, 'marked.pdf');
+    consumeGuestExport(req, guestUsage);
     return sendPdf(res, bytes, `marked_${filename}`);
   } catch (error) {
     return res.status(400).json({ error: error.message || '加水印或页码失败。' });
@@ -261,6 +281,7 @@ router.post('/api/security', upload.single('file'), cleanupUploadedFiles, async 
     }
 
     await normalizeUploadedFiles([req.file]);
+    const guestUsage = assertGuestToolAllowed(req, 'security');
 
     const action = req.body.action || 'encrypt';
     const bytes = await securePdf(req.file, {
@@ -270,6 +291,7 @@ router.post('/api/security', upload.single('file'), cleanupUploadedFiles, async 
 
     const base = withPdfExtension(req.file.originalname, 'secured.pdf');
     const filename = action === 'encrypt' ? `encrypted_${base}` : `decrypted_${base}`;
+    consumeGuestExport(req, guestUsage);
     return sendPdf(res, bytes, filename);
   } catch (error) {
     return res.status(400).json({ error: error.message || 'PDF 安全处理失败。' });

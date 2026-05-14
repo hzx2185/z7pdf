@@ -266,6 +266,15 @@ function createActionButton(label, className, handler, title) {
   return button;
 }
 
+function createTextElement(tagName, className, textContent) {
+  const element = document.createElement(tagName);
+  if (className) {
+    element.className = className;
+  }
+  element.textContent = textContent;
+  return element;
+}
+
 function getCurrentSubscription() {
   if (!Array.isArray(appState.subscriptions) || !appState.subscriptions.length || !appState.entitlements) {
     return null;
@@ -501,15 +510,15 @@ function renderPlans() {
     const isCurrent = plan.code === appState.entitlements.code;
     const card = document.createElement("article");
     card.className = `plan-card${isCurrent ? " active" : ""}`;
-    card.innerHTML = `
-      <strong class="plan-card-title">${plan.name}${isCurrent ? "（当前）" : ""}</strong>
-      <span class="plan-card-detail">${plan.description || ""}</span>
-      <span class="plan-card-meta">${formatMoney(plan.priceCents)} / ${formatBillingInterval(plan.billingInterval)}</span>
-      <span class="plan-card-detail">空间 ${plan.storageQuotaMb} MB</span>
-      <span class="plan-card-detail">文件上限 ${plan.maxFiles}</span>
-      <span class="plan-card-detail">分享上限 ${plan.maxShareLinks}</span>
-      <span class="plan-card-detail">压缩 ${plan.allowCompression ? "支持" : "不支持"} / 拆分 ${plan.allowSplit ? "支持" : "不支持"} / 加密 ${plan.allowSecurity ? "支持" : "不支持"}</span>
-    `;
+    card.append(
+      createTextElement("strong", "plan-card-title", `${plan.name}${isCurrent ? "（当前）" : ""}`),
+      createTextElement("span", "plan-card-detail", plan.description || ""),
+      createTextElement("span", "plan-card-meta", `${formatMoney(plan.priceCents)} / ${formatBillingInterval(plan.billingInterval)}`),
+      createTextElement("span", "plan-card-detail", `空间 ${plan.storageQuotaMb} MB`),
+      createTextElement("span", "plan-card-detail", `文件上限 ${plan.maxFiles}`),
+      createTextElement("span", "plan-card-detail", `分享上限 ${plan.maxShareLinks}`),
+      createTextElement("span", "plan-card-detail", `压缩 ${plan.allowCompression ? "支持" : "不支持"} / 拆分 ${plan.allowSplit ? "支持" : "不支持"} / 加密 ${plan.allowSecurity ? "支持" : "不支持"}`)
+    );
     if (!isCurrent && !isFreeMembershipPlan(plan)) {
       card.appendChild(createActionButton("兑换会员", "btn btn-primary btn-sm", async () => {
         window.showRedeemForm?.();

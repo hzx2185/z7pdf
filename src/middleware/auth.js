@@ -1,7 +1,7 @@
 const crypto = require('crypto');
 
 const { stmts } = require('../db');
-const { parseCookies } = require('../utils/common');
+const { clearSessionCookie, parseCookies } = require('../utils/common');
 const { GUEST_COOKIE, SESSION_COOKIE, publicUser, setGuestCookie } = require('../services/session-service');
 
 function requireUser(req, res, next) {
@@ -41,6 +41,14 @@ async function authenticateSession(req, res, next) {
 
   const session = stmts.getSession.get(sessionToken);
   if (!session) {
+    req.user = null;
+    req.sessionToken = null;
+    return next();
+  }
+
+  if (new Date(session.expires_at).getTime() <= Date.now()) {
+    stmts.deleteSession.run(sessionToken);
+    clearSessionCookie(res);
     req.user = null;
     req.sessionToken = null;
     return next();

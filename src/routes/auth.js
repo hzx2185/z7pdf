@@ -34,6 +34,18 @@ const loginLimiter = rateLimit({
   message: { error: '登录尝试次数过多,请 15 分钟后再试' }
 });
 
+const verificationCodeLimiter = rateLimit({
+  windowMs: 15 * 60 * 1000,
+  max: 10,
+  message: { error: '验证码请求过于频繁,请稍后再试' }
+});
+
+const verificationAttemptLimiter = rateLimit({
+  windowMs: 15 * 60 * 1000,
+  max: 20,
+  message: { error: '验证码尝试过于频繁,请稍后再试' }
+});
+
 router.get('/api/public-config', async (req, res) => {
   const guestEntitlements = getEffectivePlanForGuest();
   const guestUsage = getGuestUsageInfo(req.guestId);
@@ -66,7 +78,7 @@ router.get('/api/auth/me', async (req, res) => {
   });
 });
 
-router.post('/api/auth/send-code', async (req, res) => {
+router.post('/api/auth/send-code', verificationCodeLimiter, async (req, res) => {
   try {
     const email = String(req.body.email || '').trim().toLowerCase();
     if (!email || !email.includes('@')) {
@@ -127,7 +139,7 @@ router.post('/api/auth/email-status', async (req, res) => {
   }
 });
 
-router.post('/api/auth/email-access', async (req, res) => {
+router.post('/api/auth/email-access', verificationAttemptLimiter, async (req, res) => {
   try {
     const email = String(req.body.email || '').trim().toLowerCase();
     const code = String(req.body.code || '').trim();
@@ -246,7 +258,7 @@ router.post('/api/auth/logout', async (req, res) => {
   res.json({ ok: true });
 });
 
-router.post('/api/auth/code', async (req, res) => {
+router.post('/api/auth/code', verificationCodeLimiter, async (req, res) => {
   try {
     const email = String(req.body.email || '').trim().toLowerCase();
     const type = String(req.body.type || 'access').trim();
@@ -312,7 +324,7 @@ router.post('/api/auth/code', async (req, res) => {
   }
 });
 
-router.post('/api/auth/reset-password', async (req, res) => {
+router.post('/api/auth/reset-password', verificationAttemptLimiter, async (req, res) => {
   try {
     const email = String(req.body.email || '').trim().toLowerCase();
     const code = String(req.body.code || '').trim();
@@ -340,6 +352,9 @@ router.post('/api/auth/reset-password', async (req, res) => {
     if (new Date(verification.expires_at).getTime() < Date.now()) {
       stmts.consumeVerification.run(nowIso(), verification.id);
       return res.status(401).json({ error: '验证码已过期，请重新获取。' });
+    }
+    if (!(await verifyPassword(code, verification.code_hash))) {
+      return res.status(401).json({ error: '验证码不正确。' });
     }
 
     const now = nowIso();
@@ -379,7 +394,7 @@ router.post('/api/auth/change-password', requireUser, async (req, res) => {
   }
 });
 
-router.post('/api/auth/change-email', requireUser, async (req, res) => {
+router.post('/api/auth/change-email', verificationAttemptLimiter, requireUser, async (req, res) => {
   try {
     const newEmail = String(req.body.newEmail || '').trim().toLowerCase();
     const code = String(req.body.code || '').trim();
@@ -403,6 +418,9 @@ router.post('/api/auth/change-email', requireUser, async (req, res) => {
     if (new Date(verification.expires_at).getTime() < Date.now()) {
       stmts.consumeVerification.run(nowIso(), verification.id);
       return res.status(401).json({ error: '验证码已过期，请重新获取。' });
+    }
+    if (!(await verifyPassword(code, verification.code_hash))) {
+      return res.status(401).json({ error: '验证码不正确。' });
     }
 
     const now = nowIso();

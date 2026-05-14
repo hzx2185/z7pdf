@@ -1,6 +1,7 @@
 const express = require('express');
 const crypto = require('crypto');
 const path = require('path');
+const rateLimit = require('express-rate-limit');
 
 const { db, stmts, STORAGE_DIR } = require('../db');
 const { requireUser } = require('../middleware/auth');
@@ -19,6 +20,17 @@ const {
 
 const router = express.Router();
 
+const SHARE_ACCESS_MODES = new Set(['public', 'password', 'login']);
+const shareAccessLimiter = rateLimit({
+  windowMs: 15 * 60 * 1000,
+  max: 20,
+  message: { error: '分享访问尝试过于频繁,请稍后再试' }
+});
+
+function isValidShareAccessMode(accessMode) {
+  return SHARE_ACCESS_MODES.has(accessMode);
+}
+
 router.get('/api/workspace/shares', requireUser, async (req, res) => {
   res.json({ shares: stmts.listSharesByUser.all(req.user.id).map((row) => formatShare(row)) });
 });
@@ -33,7 +45,7 @@ router.post('/api/workspace/files/:id/share', requireUser, express.json({ limit:
     enforceShareLimit(req.user.id);
 
     const accessMode = String(req.body.accessMode || 'public').trim();
-    if (!['public', 'password', 'login'].includes(accessMode)) {
+    if (!isValidShareAccessMode(accessMode)) {
       return res.status(400).json({ error: '分享访问方式仅支持 public/password/login。' });
     }
 
@@ -79,9 +91,22 @@ router.patch('/api/workspace/shares/:id', requireUser, express.json({ limit: '51
     }
 
     const accessMode = String(req.body.accessMode || share.access_mode).trim();
+    if (!isValidShareAccessMode(accessMode)) {
+      return res.status(400).json({ error: '分享访问方式仅支持 public/password/login。' });
+    }
     const enabled =
       req.body.enabled === undefined ? Boolean(share.enabled) : Boolean(req.body.enabled);
     const password = String(req.body.password || '');
+    if (
+      accessMode === 'password' &&
+      share.access_mode !== 'password' &&
+      password.length < 4
+    ) {
+      return res.status(400).json({ error: '密码分享至少需要 4 位访问密码。' });
+    }
+    if (accessMode === 'password' && password && password.length < 4) {
+      return res.status(400).json({ error: '密码分享至少需要 4 位访问密码。' });
+    }
     const expiresAt = String(req.body.expiresAt ?? share.expires_at ?? '').trim();
     const maxDownloads = Math.max(0, Number(req.body.maxDownloads ?? share.max_downloads ?? 0));
     const destroyAfterReading =
@@ -206,7 +231,7 @@ router.get('/api/share/:token', async (req, res) => {
   });
 });
 
-router.post('/api/share/:token/access', express.json({ limit: '512kb' }), async (req, res) => {
+router.post('/api/share/:token/access', shareAccessLimiter, express.json({ limit: '512kb' }), async (req, res) => {
   const share = stmts.getShareByToken.get(String(req.params.token || ''));
   if (!share || !share.enabled) {
     return res.status(404).json({ error: '分享链接不存在或已失效。' });

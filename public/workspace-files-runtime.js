@@ -428,13 +428,20 @@ export function createWorkspaceFilesRuntime({
 
     const meta = document.createElement("div");
     meta.className = "workspace-file-meta";
-    meta.innerHTML = `
-      <strong class="file-name-clickable">${file.originalName}</strong>
-      <span>${file.folderPath || "根目录"} / ${file.kind === "zip" ? "ZIP 结果包" : `${file.pageCount || 0} 页 PDF`} / ${formatBytes(file.sizeBytes)}</span>
-      <span>${appState.currentView === "trash" ? "删除于" : "创建于"} ${new Date(file.deletedAt || file.createdAt).toLocaleString("zh-CN")}</span>
-    `;
 
-    const nameEl = meta.querySelector(".file-name-clickable");
+    const nameEl = document.createElement("strong");
+    nameEl.className = "file-name-clickable";
+    nameEl.textContent = file.originalName;
+
+    const detail = document.createElement("span");
+    detail.textContent = `${file.folderPath || "根目录"} / ${
+      file.kind === "zip" ? "ZIP 结果包" : `${file.pageCount || 0} 页 PDF`
+    } / ${formatBytes(file.sizeBytes)}`;
+
+    const timestamp = document.createElement("span");
+    timestamp.textContent = `${appState.currentView === "trash" ? "删除于" : "创建于"} ${new Date(file.deletedAt || file.createdAt).toLocaleString("zh-CN")}`;
+
+    meta.append(nameEl, detail, timestamp);
     if (file.kind === "pdf") {
       nameEl.style.cursor = "pointer";
       nameEl.style.color = "var(--accent-strong)";
@@ -526,14 +533,22 @@ export function createWorkspaceFilesRuntime({
         ? `${displayStatusParts.join(" · ")} · ${downloadInfo}`
         : downloadInfo;
 
-      item.innerHTML = `
-        <div class="share-header">
-          <strong class="share-filename" style="cursor:pointer;" title="点击打开">${share.fileName || "分享文件"}</strong>
-        </div>
-        <div class="share-status">${statusLine}</div>
-      `;
+      const header = document.createElement("div");
+      header.className = "share-header";
 
-      const filenameEl = item.querySelector(".share-filename");
+      const filenameEl = document.createElement("strong");
+      filenameEl.className = "share-filename";
+      filenameEl.style.cursor = "pointer";
+      filenameEl.title = "点击打开";
+      filenameEl.textContent = share.fileName || "分享文件";
+      header.appendChild(filenameEl);
+
+      const status = document.createElement("div");
+      status.className = "share-status";
+      status.textContent = statusLine;
+
+      item.append(header, status);
+
       filenameEl.addEventListener("click", () => {
         window.open(fullUrl, "_blank", "noreferrer");
       });

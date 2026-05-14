@@ -85,7 +85,7 @@ function isSmtpConfigured() {
 }
 
 function createAccessCode() {
-  return String(Math.floor(100000 + Math.random() * 900000));
+  return String(crypto.randomInt(100000, 1000000));
 }
 
 function generateRedeemCode() {
@@ -93,7 +93,7 @@ function generateRedeemCode() {
   let code = '';
   for (let i = 0; i < 12; i++) {
     if (i > 0 && i % 4 === 0) code += '-';
-    code += chars[Math.floor(Math.random() * chars.length)];
+    code += chars[crypto.randomInt(0, chars.length)];
   }
   return code;
 }
@@ -149,12 +149,19 @@ async function hashPassword(password) {
 async function verifyPassword(password, storedHash) {
   const [salt, expected] = String(storedHash || "").split(":");
   if (!salt || !expected) return false;
+  if (!/^[0-9a-f]+$/i.test(expected) || expected.length !== 128) {
+    return false;
+  }
   return new Promise((resolve, reject) => {
     crypto.scrypt(password, salt, 64, (err, derivedKey) => {
       if (err) reject(err);
       else {
-        const digest = derivedKey.toString("hex");
-        resolve(crypto.timingSafeEqual(Buffer.from(digest), Buffer.from(expected)));
+        const digest = Buffer.from(derivedKey.toString("hex"), "hex");
+        const expectedDigest = Buffer.from(expected, "hex");
+        resolve(
+          digest.length === expectedDigest.length &&
+            crypto.timingSafeEqual(digest, expectedDigest)
+        );
       }
     });
   });
@@ -167,7 +174,11 @@ function parseCookies(headerValue) {
     .filter(Boolean)
     .reduce((accumulator, segment) => {
       const [key, ...rest] = segment.split("=");
-      accumulator[key] = decodeURIComponent(rest.join("=") || "");
+      try {
+        accumulator[key] = decodeURIComponent(rest.join("=") || "");
+      } catch (_error) {
+        accumulator[key] = rest.join("=") || "";
+      }
       return accumulator;
     }, {});
 }

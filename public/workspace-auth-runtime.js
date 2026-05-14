@@ -18,6 +18,30 @@ function setDisabled(elementsToToggle, disabled) {
   });
 }
 
+function createElement(tagName, options = {}, children = []) {
+  const element = document.createElement(tagName);
+  Object.entries(options).forEach(([key, value]) => {
+    if (value === undefined || value === null || value === false) return;
+    if (key === "className") {
+      element.className = value;
+    } else if (key === "textContent") {
+      element.textContent = value;
+    } else if (key === "dataset") {
+      Object.entries(value).forEach(([dataKey, dataValue]) => {
+        element.dataset[dataKey] = dataValue;
+      });
+    } else if (key in element) {
+      element[key] = value;
+    } else {
+      element.setAttribute(key, value);
+    }
+  });
+  children.filter(Boolean).forEach((child) => {
+    element.append(child);
+  });
+  return element;
+}
+
 export function createWorkspaceAuthRuntime({
   elements,
   appState,
@@ -393,67 +417,99 @@ export function createWorkspaceAuthRuntime({
       return appState.user ? (plan.code === activeCode ? "当前套餐" : "可升级") : "会员方案";
     };
 
-    const getActionButton = (plan) => {
-      if (plan.isGuest || plan.code === activeCode || isFreeMembershipPlan(plan)) return "";
-      return `<button class="btn btn-sm btn-primary subscribe-btn plan-redeem-btn" data-plan="${plan.code}">兑换会员</button>`;
+    const createActionButton = (plan) => {
+      if (plan.isGuest || plan.code === activeCode || isFreeMembershipPlan(plan)) return null;
+      return createElement("button", {
+        className: "btn btn-sm btn-primary subscribe-btn plan-redeem-btn",
+        dataset: { plan: plan.code },
+        textContent: "兑换会员"
+      });
     };
 
-    const supportChip = (value) =>
-      value ? '<span class="support-chip is-on">✓</span>' : '<span class="support-chip is-off">✗</span>';
+    const createSupportChip = (value) =>
+      createElement("span", {
+        className: `support-chip ${value ? "is-on" : "is-off"}`,
+        textContent: value ? "✓" : "✗"
+      });
+
+    const createNote = (text) => createElement("span", {
+      className: "compare-head-note",
+      textContent: text
+    });
+
+    const createDescription = (text) => createElement("span", {
+      className: "compare-head-desc",
+      textContent: text
+    });
 
     const rows = [
       ["开通", (plan) => {
-        if (plan.isGuest) return '<span class="compare-head-note">当前默认可用</span>';
-        if (plan.code === activeCode) return '<span class="compare-head-note">当前套餐</span>';
-        if (isFreeMembershipPlan(plan)) return '<span class="compare-head-note">已包含</span>';
-        return getActionButton(plan) || '<span class="compare-head-note">可开通</span>';
+        if (plan.isGuest) return createNote("当前默认可用");
+        if (plan.code === activeCode) return createNote("当前套餐");
+        if (isFreeMembershipPlan(plan)) return createNote("已包含");
+        return createActionButton(plan) || createNote("可开通");
       }],
       ["价格", (plan) => plan.isGuest ? "免费试用" : `${formatMoney(plan.priceCents)} / ${formatBillingInterval(plan.billingInterval)}`],
-      ["说明", (plan) => `<span class="compare-head-desc">${plan.description || (plan.isGuest ? "未注册也可直接试用基础能力。" : "适合日常 PDF 编辑与导出。")}</span>`],
+      ["说明", (plan) => createDescription(plan.description || (plan.isGuest ? "未注册也可直接试用基础能力。" : "适合日常 PDF 编辑与导出。"))],
       ["空间大小", (plan) => plan.storageQuotaMb > 0 ? `${plan.storageQuotaMb} MB` : "无"],
       ["文件数", (plan) => plan.maxFiles > 0 ? `${plan.maxFiles} 个` : "无"],
       ["分享链接", (plan) => plan.maxShareLinks > 0 ? `${plan.maxShareLinks} 个` : "无"],
-      ["在线保存", (plan) => supportChip(Boolean(plan.allowOnlineSave ?? plan.maxFiles > 0))],
-      ["历史记录", (plan) => supportChip(Boolean(plan.allowHistory ?? plan.maxFiles > 0))],
-      ["页面编辑", () => supportChip(true)],
-      ["压缩功能", (plan) => supportChip(Boolean(plan.allowCompression))],
-      ["水印页码", () => supportChip(true)],
-      ["拆分加密", (plan) => supportChip(Boolean(plan.allowSplit || plan.allowSecurity))]
+      ["在线保存", (plan) => createSupportChip(Boolean(plan.allowOnlineSave ?? plan.maxFiles > 0))],
+      ["历史记录", (plan) => createSupportChip(Boolean(plan.allowHistory ?? plan.maxFiles > 0))],
+      ["页面编辑", () => createSupportChip(true)],
+      ["压缩功能", (plan) => createSupportChip(Boolean(plan.allowCompression))],
+      ["水印页码", () => createSupportChip(true)],
+      ["拆分加密", (plan) => createSupportChip(Boolean(plan.allowSplit || plan.allowSecurity))]
     ];
 
     const table = document.createElement("div");
     table.className = "table-wrap";
-    table.innerHTML = `
-      <table class="compare-table compare-table-plans">
-        <thead>
-          <tr>
-            <th>对比项</th>
-            ${displayPlans.map((plan) => `
-            <th class="${plan.code === activeCode || (plan.isGuest && !appState.user) ? "is-active" : ""}">
-                <div class="compare-plan-head">
-                  <span class="plan-badge">${getBadge(plan)}</span>
-                  <strong>${plan.name}</strong>
-                  <div class="compare-plan-meta">
-                    <span class="compare-price">${plan.isGuest ? "免费" : formatMoney(plan.priceCents)}</span>
-                    <span class="compare-sub">${plan.isGuest ? "" : `/${formatBillingInterval(plan.billingInterval)}`}</span>
-                  </div>
-                </div>
-              </th>
-            `).join("")}
-          </tr>
-        </thead>
-        <tbody>
-          ${rows.map(([label, render]) => `
-            <tr>
-              <td>${label}</td>
-              ${displayPlans.map((plan) => `
-                <td class="${plan.code === activeCode || (plan.isGuest && !appState.user) ? "is-active" : ""}">${render(plan)}</td>
-              `).join("")}
-            </tr>
-          `).join("")}
-        </tbody>
-      </table>
-    `;
+    const compareTable = createElement("table", { className: "compare-table compare-table-plans" });
+    const thead = document.createElement("thead");
+    const headRow = document.createElement("tr");
+    headRow.appendChild(createElement("th", { textContent: "对比项" }));
+    displayPlans.forEach((plan) => {
+      const active = plan.code === activeCode || (plan.isGuest && !appState.user);
+      const heading = createElement("th", { className: active ? "is-active" : "" });
+      const meta = createElement("div", { className: "compare-plan-meta" }, [
+        createElement("span", {
+          className: "compare-price",
+          textContent: plan.isGuest ? "免费" : formatMoney(plan.priceCents)
+        }),
+        createElement("span", {
+          className: "compare-sub",
+          textContent: plan.isGuest ? "" : `/${formatBillingInterval(plan.billingInterval)}`
+        })
+      ]);
+      heading.appendChild(createElement("div", { className: "compare-plan-head" }, [
+        createElement("span", { className: "plan-badge", textContent: getBadge(plan) }),
+        createElement("strong", { textContent: plan.name }),
+        meta
+      ]));
+      headRow.appendChild(heading);
+    });
+    thead.appendChild(headRow);
+
+    const tbody = document.createElement("tbody");
+    rows.forEach(([label, render]) => {
+      const row = document.createElement("tr");
+      row.appendChild(createElement("td", { textContent: label }));
+      displayPlans.forEach((plan) => {
+        const active = plan.code === activeCode || (plan.isGuest && !appState.user);
+        const cell = createElement("td", { className: active ? "is-active" : "" });
+        const rendered = render(plan);
+        if (rendered instanceof Node) {
+          cell.appendChild(rendered);
+        } else {
+          cell.textContent = String(rendered ?? "");
+        }
+        row.appendChild(cell);
+      });
+      tbody.appendChild(row);
+    });
+
+    compareTable.append(thead, tbody);
+    table.appendChild(compareTable);
     elements.publicPlans.appendChild(table);
   }
 

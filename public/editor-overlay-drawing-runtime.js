@@ -24,7 +24,7 @@ function resolveManagedOverlayMount(targetElement) {
   };
 }
 
-function redrawManagedPreviewOverlay({
+export function redrawManagedPreviewOverlay({
   documentApi = globalThis.document,
   overlayId = "editorCanvasOverlay",
   page,
@@ -41,7 +41,7 @@ function redrawManagedPreviewOverlay({
   return true;
 }
 
-function mountManagedPreviewOverlay({
+export function mountManagedPreviewOverlay({
   documentApi = globalThis.document,
   requestFrame = globalThis.requestAnimationFrame,
   targetElement,
@@ -91,7 +91,7 @@ function mountManagedPreviewOverlay({
   return true;
 }
 
-function drawManagedOverlayData({
+export function drawManagedOverlayData({
   overlay,
   page,
   coordinateSpace = "original",

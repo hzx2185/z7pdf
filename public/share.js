@@ -16,12 +16,23 @@ function setResult(message, isError = false) {
 }
 
 function renderShare(share) {
-  elements.shareMeta.innerHTML = `
-    <strong>${share.file?.originalName || share.fileName || "分享文件"}</strong>
-    <span>访问方式：${share.accessMode}</span>
-    <span>${share.expiresAt ? `到期：${new Date(share.expiresAt).toLocaleString("zh-CN")}` : "不过期"}</span>
-    <span>下载次数：${share.downloadCount}${share.maxDownloads ? ` / ${share.maxDownloads}` : ""}</span>
-  `;
+  elements.shareMeta.replaceChildren();
+
+  const name = document.createElement("strong");
+  name.textContent = share.file?.originalName || share.fileName || "分享文件";
+
+  const accessMode = document.createElement("span");
+  accessMode.textContent = `访问方式：${share.accessMode}`;
+
+  const expiresAt = document.createElement("span");
+  expiresAt.textContent = share.expiresAt
+    ? `到期：${new Date(share.expiresAt).toLocaleString("zh-CN")}`
+    : "不过期";
+
+  const downloads = document.createElement("span");
+  downloads.textContent = `下载次数：${share.downloadCount}${share.maxDownloads ? ` / ${share.maxDownloads}` : ""}`;
+
+  elements.shareMeta.append(name, accessMode, expiresAt, downloads);
   elements.shareHint.textContent = share.requiresAccess
     ? share.accessMode === "login"
       ? "此分享仅限登录会员访问。登录后刷新页面即可下载。"
