@@ -26,6 +26,20 @@ function getSafeSettingsObject() {
   return settings;
 }
 
+function resolveSubscriptionStatus(requestedStatus, periodEnd, fallbackStatus) {
+  const explicitStatus = String(requestedStatus || '').trim();
+  if (explicitStatus) {
+    return explicitStatus;
+  }
+
+  const periodEndTime = Date.parse(periodEnd || '');
+  if (Number.isFinite(periodEndTime)) {
+    return periodEndTime >= Date.now() ? 'active' : 'expired';
+  }
+
+  return fallbackStatus;
+}
+
 router.get('/api/admin/overview', requireAdmin, (_req, res) => {
   res.json({
     stats: {
@@ -123,8 +137,8 @@ router.patch('/api/admin/subscriptions/:id', requireAdmin, express.json({ limit:
       return res.status(404).json({ error: '会员有效期记录不存在。' });
     }
 
-    const status = String(req.body.status || target.status).trim();
     const periodEnd = String(req.body.periodEnd || target.period_end).trim() || target.period_end;
+    const status = resolveSubscriptionStatus(req.body.status, periodEnd, target.status);
     stmts.updateSubscriptionStatus.run(status, periodEnd, nowIso(), subscriptionId);
 
     return res.json({

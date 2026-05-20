@@ -19,19 +19,13 @@ const elements = {
   settingSmtpFromName: document.querySelector("#settingSmtpFromName"),
   settingSmtpSecure: document.querySelector("#settingSmtpSecure"),
   currentVersionValue: document.querySelector("#currentVersionValue"),
-  currentVersionMeta: document.querySelector("#currentVersionMeta"),
-  currentBuildTimeValue: document.querySelector("#currentBuildTimeValue"),
-  currentRevisionValue: document.querySelector("#currentRevisionValue"),
   latestVersionValue: document.querySelector("#latestVersionValue"),
-  latestVersionMeta: document.querySelector("#latestVersionMeta"),
   latestUpdatedAtValue: document.querySelector("#latestUpdatedAtValue"),
-  latestCheckedAtValue: document.querySelector("#latestCheckedAtValue"),
   checkUpdateBtn: document.querySelector("#checkUpdateBtn"),
   versionUpdateResult: document.querySelector("#versionUpdateResult"),
   memberSearch: document.querySelector("#memberSearch"),
   memberRoleFilter: document.querySelector("#memberRoleFilter"),
   memberPlanFilter: document.querySelector("#memberPlanFilter"),
-  memberSubscriptionStatusFilter: document.querySelector("#memberSubscriptionStatusFilter"),
   memberExpiryFrom: document.querySelector("#memberExpiryFrom"),
   memberExpiryTo: document.querySelector("#memberExpiryTo"),
   memberFilterSummary: document.querySelector("#memberFilterSummary"),
@@ -84,11 +78,7 @@ function formatBillingInterval(interval) {
 function formatStatusLabel(status) {
   const labels = {
     member: "会员",
-    admin: "管理员",
-    cancelled: "已取消",
-    active: "生效中",
-    expired: "已过期",
-    none: "无有效期"
+    admin: "管理员"
   };
   return labels[status] || status;
 }
@@ -115,15 +105,6 @@ function formatDateTime(value, fallback = "暂无") {
 function formatVersion(value) {
   const version = String(value || "").trim().replace(/^v/i, "");
   return version ? `v${version}` : "未知版本";
-}
-
-function formatVersionSource(value) {
-  const labels = {
-    env: "环境变量",
-    package: "package.json",
-    "docker-hub": "Docker Hub"
-  };
-  return labels[value] || value || "未知来源";
 }
 
 function formatPlanLabel(planCode) {
@@ -195,19 +176,9 @@ function renderVersionInfo(version = state.version, check = state.versionCheck) 
   const latest = check?.latest || {};
   const hasLatest = Boolean(latest.version);
   const releaseTime = latest.publishedAt || latest.updatedAt;
-  const revision = current.revision ? current.revision.slice(0, 12) : "";
 
   if (elements.currentVersionValue) {
     elements.currentVersionValue.textContent = formatVersion(current.version);
-  }
-  if (elements.currentVersionMeta) {
-    elements.currentVersionMeta.textContent = `${formatVersionSource(current.source)} · ${current.dockerImage || current.repository || "镜像未设置"}`;
-  }
-  if (elements.currentBuildTimeValue) {
-    elements.currentBuildTimeValue.textContent = formatDateTime(current.buildTime, "未提供");
-  }
-  if (elements.currentRevisionValue) {
-    elements.currentRevisionValue.textContent = revision ? `提交 ${revision}` : "未提供提交号";
   }
   if (elements.latestVersionValue) {
     elements.latestVersionValue.textContent = hasLatest
@@ -216,28 +187,11 @@ function renderVersionInfo(version = state.version, check = state.versionCheck) 
         ? "未发布"
         : "待检查";
   }
-  if (elements.latestVersionMeta) {
-    const latestSource = formatVersionSource(latest.source);
-    if (latest.url) {
-      elements.latestVersionMeta.innerHTML = `<a href="${escapeHtml(latest.url)}" target="_blank" rel="noopener">${escapeHtml(latestSource)}</a>`;
-    } else {
-      elements.latestVersionMeta.textContent = hasLatest
-        ? latestSource
-        : check
-          ? "Docker Hub 暂无版本标签"
-          : "点击检查更新";
-    }
-  }
   if (elements.latestUpdatedAtValue) {
     elements.latestUpdatedAtValue.textContent = formatDateTime(
       releaseTime,
       hasLatest ? "Docker Hub 未提供" : check ? "无记录" : "待检查"
     );
-  }
-  if (elements.latestCheckedAtValue) {
-    elements.latestCheckedAtValue.textContent = check?.checkedAt
-      ? `检查时间 ${formatDateTime(check.checkedAt)}`
-      : "尚未检查";
   }
 }
 
@@ -381,7 +335,7 @@ function renderOverview(data) {
     { label: "文件数", value: Number(data.stats?.files || 0), note: "未删除文件" },
     { label: "总占用", value: formatBytes(data.stats?.storageBytes || 0), note: "当前存储占用" },
     { label: "有效分享", value: Number(data.stats?.shares || 0), note: "已启用分享链接" },
-    { label: "生效有效期", value: Number(data.stats?.activeMemberships || 0), note: "active 且未到期" }
+    { label: "未到期会员", value: Number(data.stats?.activeMemberships || 0), note: "按到期时间统计" }
   ];
 
   elements.overviewCards.innerHTML = "";
@@ -448,7 +402,7 @@ function createPlanSelect(value) {
 function renderUsers(users = []) {
   elements.usersTableBody.innerHTML = "";
   if (!users.length) {
-    renderEmptyRow(elements.usersTableBody, 9, "没有匹配的会员数据", "调整搜索、角色、套餐或有效期筛选条件后再试。");
+    renderEmptyRow(elements.usersTableBody, 8, "没有匹配的会员数据", "调整搜索、角色、套餐或到期时间筛选条件后再试。");
     return;
   }
   users.forEach((user) => {
@@ -458,15 +412,6 @@ function renderUsers(users = []) {
     roleSelect.className = "admin-select";
     const planSelect = createPlanSelect(user.plan);
     planSelect.className = "admin-select";
-    const statusSelect = document.createElement("select");
-    ["active", "expired", "cancelled"].forEach((status) => {
-      const option = document.createElement("option");
-      option.value = status;
-      option.textContent = formatStatusLabel(status);
-      option.selected = status === subscription?.status;
-      statusSelect.appendChild(option);
-    });
-    statusSelect.className = "admin-select";
     const endInput = document.createElement("input");
     endInput.type = "text";
     endInput.value = subscription?.periodEnd || "";
@@ -493,7 +438,6 @@ function renderUsers(users = []) {
             method: "PATCH",
             headers: { "Content-Type": "application/json" },
             body: JSON.stringify({
-              status: statusSelect.value,
               periodEnd: endInput.value
             })
           }));
@@ -506,9 +450,6 @@ function renderUsers(users = []) {
       }
     });
 
-    const subscriptionStatusCell = subscription?.id
-      ? ""
-      : createBadge(formatStatusLabel("none"), "warn");
     const subscriptionEndCell = subscription?.id ? "" : "无记录";
 
     row.innerHTML = `
@@ -522,7 +463,6 @@ function renderUsers(users = []) {
       <td class="admin-cell-role"></td>
       <td class="admin-cell-plan"></td>
       <td>${formatBytes(user.usedBytes)}</td>
-      <td class="admin-cell-subscription-status">${subscriptionStatusCell}</td>
       <td class="admin-cell-subscription-end">${subscriptionEndCell}</td>
       <td>${new Date(user.createdAt).toLocaleString("zh-CN")}</td>
       <td class="admin-cell-action"></td>
@@ -530,7 +470,6 @@ function renderUsers(users = []) {
     row.querySelector(".admin-cell-role").appendChild(roleSelect);
     row.querySelector(".admin-cell-plan").appendChild(planSelect);
     if (subscription?.id) {
-      row.querySelector(".admin-cell-subscription-status").appendChild(statusSelect);
       row.querySelector(".admin-cell-subscription-end").appendChild(endInput);
     }
     row.querySelector(".admin-cell-action").appendChild(saveButton);
@@ -674,7 +613,6 @@ function applyFilters() {
   const memberKeyword = elements.memberSearch?.value.trim().toLowerCase() || "";
   const memberRole = elements.memberRoleFilter?.value || "";
   const memberPlan = elements.memberPlanFilter?.value || "";
-  const memberSubscriptionStatus = elements.memberSubscriptionStatusFilter?.value || "";
   const memberExpiryFrom = elements.memberExpiryFrom?.value || "";
   const memberExpiryTo = elements.memberExpiryTo?.value || "";
   const planKeyword = elements.planSearch?.value.trim().toLowerCase() || "";
@@ -683,7 +621,6 @@ function applyFilters() {
   const memberRows = getMemberRows();
   const filteredUsers = memberRows.filter((user) => {
     const subscription = user.subscription || null;
-    const subscriptionStatus = subscription?.status || "none";
     const planText = formatPlanLabel(user.plan).toLowerCase();
     const subscriptionPlanText = formatPlanLabel(subscription?.planCode).toLowerCase();
     const matchesKeyword =
@@ -692,21 +629,18 @@ function applyFilters() {
       String(user.plan || "").toLowerCase().includes(memberKeyword) ||
       planText.includes(memberKeyword) ||
       String(subscription?.planCode || "").toLowerCase().includes(memberKeyword) ||
-      subscriptionPlanText.includes(memberKeyword) ||
-      formatStatusLabel(subscriptionStatus).toLowerCase().includes(memberKeyword);
+      subscriptionPlanText.includes(memberKeyword);
     const matchesRole = !memberRole || String(user.role || "") === memberRole;
     const matchesPlan =
       !memberPlan ||
       String(user.plan || "") === memberPlan ||
       String(subscription?.planCode || "") === memberPlan;
-    const matchesSubscriptionStatus =
-      !memberSubscriptionStatus || subscriptionStatus === memberSubscriptionStatus;
     const matchesExpiry =
       (!memberExpiryFrom && !memberExpiryTo) ||
       (subscription?.periodEnd &&
         isSameOrAfterDate(subscription.periodEnd, memberExpiryFrom) &&
         isSameOrBeforeDate(subscription.periodEnd, memberExpiryTo));
-    return matchesKeyword && matchesRole && matchesPlan && matchesSubscriptionStatus && matchesExpiry;
+    return matchesKeyword && matchesRole && matchesPlan && matchesExpiry;
   });
 
   const filteredPlans = state.plans.filter((plan) => {
@@ -884,7 +818,6 @@ elements.checkUpdateBtn?.addEventListener("click", async () => {
   elements.memberSearch,
   elements.memberRoleFilter,
   elements.memberPlanFilter,
-  elements.memberSubscriptionStatusFilter,
   elements.memberExpiryFrom,
   elements.memberExpiryTo,
   elements.planSearch,
