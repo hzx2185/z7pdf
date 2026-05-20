@@ -202,6 +202,15 @@
   .stats-grid {
     grid-template-columns: 1fr;
   }
+
+  .version-panel-head {
+    align-items: flex-start;
+    flex-direction: column;
+  }
+
+  .version-panel-head .btn {
+    width: 100%;
+  }
   
   .field-row {
     grid-template-columns: 1fr;

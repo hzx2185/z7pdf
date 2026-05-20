@@ -19,6 +19,16 @@ const elements = {
   settingSmtpFromEmail: document.querySelector("#settingSmtpFromEmail"),
   settingSmtpFromName: document.querySelector("#settingSmtpFromName"),
   settingSmtpSecure: document.querySelector("#settingSmtpSecure"),
+  currentVersionValue: document.querySelector("#currentVersionValue"),
+  currentVersionMeta: document.querySelector("#currentVersionMeta"),
+  currentBuildTimeValue: document.querySelector("#currentBuildTimeValue"),
+  currentRevisionValue: document.querySelector("#currentRevisionValue"),
+  latestVersionValue: document.querySelector("#latestVersionValue"),
+  latestVersionMeta: document.querySelector("#latestVersionMeta"),
+  latestUpdatedAtValue: document.querySelector("#latestUpdatedAtValue"),
+  latestCheckedAtValue: document.querySelector("#latestCheckedAtValue"),
+  checkUpdateBtn: document.querySelector("#checkUpdateBtn"),
+  versionUpdateResult: document.querySelector("#versionUpdateResult"),
   memberSearch: document.querySelector("#memberSearch"),
   memberRoleFilter: document.querySelector("#memberRoleFilter"),
   planSearch: document.querySelector("#planSearch"),
@@ -40,7 +50,9 @@ const elements = {
 const state = {
   users: [],
   plans: [],
-  subscriptions: []
+  subscriptions: [],
+  version: null,
+  versionCheck: null
 };
 
 function setResult(message, isError = false) {
@@ -77,6 +89,40 @@ function formatStatusLabel(status) {
   return labels[status] || status;
 }
 
+function formatDateTime(value, fallback = "暂无") {
+  if (!value) {
+    return fallback;
+  }
+
+  const date = new Date(value);
+  if (Number.isNaN(date.getTime())) {
+    return value;
+  }
+
+  return date.toLocaleString("zh-CN", {
+    year: "numeric",
+    month: "2-digit",
+    day: "2-digit",
+    hour: "2-digit",
+    minute: "2-digit"
+  });
+}
+
+function formatVersion(value) {
+  const version = String(value || "").trim().replace(/^v/i, "");
+  return version ? `v${version}` : "未知版本";
+}
+
+function formatVersionSource(value) {
+  const labels = {
+    env: "环境变量",
+    package: "package.json",
+    "github-release": "GitHub Release",
+    "github-tag": "GitHub Tag"
+  };
+  return labels[value] || value || "未知来源";
+}
+
 function formatPlanLabel(planCode) {
   const code = String(planCode || "").trim();
   const matchedPlan = state.plans.find((plan) => String(plan.code || "") === code);
@@ -91,6 +137,57 @@ function formatPlanLabel(planCode) {
     guest: "游客版"
   };
   return labels[code] || code || "未设置";
+}
+
+function renderVersionInfo(version = state.version, check = state.versionCheck) {
+  const current = check?.current || version || {};
+  const latest = check?.latest || {};
+  const hasLatest = Boolean(latest.version);
+  const releaseTime = latest.publishedAt || latest.updatedAt;
+  const revision = current.revision ? current.revision.slice(0, 12) : "";
+
+  if (elements.currentVersionValue) {
+    elements.currentVersionValue.textContent = formatVersion(current.version);
+  }
+  if (elements.currentVersionMeta) {
+    elements.currentVersionMeta.textContent = `${formatVersionSource(current.source)} · ${current.repository || "仓库未设置"}`;
+  }
+  if (elements.currentBuildTimeValue) {
+    elements.currentBuildTimeValue.textContent = formatDateTime(current.buildTime, "未提供");
+  }
+  if (elements.currentRevisionValue) {
+    elements.currentRevisionValue.textContent = revision ? `提交 ${revision}` : "未提供提交号";
+  }
+  if (elements.latestVersionValue) {
+    elements.latestVersionValue.textContent = hasLatest
+      ? formatVersion(latest.version)
+      : check
+        ? "未发布"
+        : "待检查";
+  }
+  if (elements.latestVersionMeta) {
+    const latestSource = formatVersionSource(latest.source);
+    if (latest.url) {
+      elements.latestVersionMeta.innerHTML = `<a href="${escapeHtml(latest.url)}" target="_blank" rel="noopener">${escapeHtml(latestSource)}</a>`;
+    } else {
+      elements.latestVersionMeta.textContent = hasLatest
+        ? latestSource
+        : check
+          ? "GitHub 暂无 Release/Tag"
+          : "点击检查更新";
+    }
+  }
+  if (elements.latestUpdatedAtValue) {
+    elements.latestUpdatedAtValue.textContent = formatDateTime(
+      releaseTime,
+      hasLatest ? "GitHub 未提供" : check ? "无记录" : "待检查"
+    );
+  }
+  if (elements.latestCheckedAtValue) {
+    elements.latestCheckedAtValue.textContent = check?.checkedAt
+      ? `检查时间 ${formatDateTime(check.checkedAt)}`
+      : "尚未检查";
+  }
 }
 
 function buildBillingIntervalOptions(selectedValue) {
@@ -231,6 +328,10 @@ function renderOverview(data) {
     `;
     elements.overviewCards.appendChild(item);
   });
+
+  state.version = data.version || null;
+  state.versionCheck = null;
+  renderVersionInfo();
 
   elements.settingAppName.value = data.settings?.app_name || "";
   populatePlanSettingOptions(data.settings?.default_member_plan || "member", data.settings?.guest_plan || "member");
@@ -683,6 +784,35 @@ elements.settingsForm?.addEventListener("submit", async (event) => {
     await loadAdminData();
   } catch (error) {
     setResult(error.message || "配置保存失败", true);
+  }
+});
+
+elements.checkUpdateBtn?.addEventListener("click", async () => {
+  elements.checkUpdateBtn.disabled = true;
+  elements.checkUpdateBtn.textContent = "检查中...";
+  setElementResult(elements.versionUpdateResult, "", false, { visibleClass: "is-visible" });
+
+  try {
+    const response = await requestJson("/api/admin/version/check", {
+      method: "POST"
+    });
+    state.version = response.current || state.version;
+    state.versionCheck = response;
+    renderVersionInfo();
+
+    const message = response.message
+      || (response.updateAvailable
+        ? `发现新版本 ${formatVersion(response.latest?.version)}，当前为 ${formatVersion(response.current?.version)}。`
+        : `当前已是最新版本 ${formatVersion(response.current?.version)}。`);
+    setElementResult(elements.versionUpdateResult, message, false, { visibleClass: "is-visible" });
+    setResult(message);
+  } catch (error) {
+    const message = error.message || "检查更新失败";
+    setElementResult(elements.versionUpdateResult, message, true, { visibleClass: "is-visible" });
+    setResult(message, true);
+  } finally {
+    elements.checkUpdateBtn.disabled = false;
+    elements.checkUpdateBtn.textContent = "检查更新";
   }
 });
 

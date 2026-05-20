@@ -26,7 +26,23 @@ RUN --mount=type=cache,target=/root/.npm \
   npm ci --omit=dev --no-audit --no-fund
 
 FROM base AS runtime
+ARG Z7PDF_VERSION
+ARG Z7PDF_BUILD_TIME
+ARG Z7PDF_REVISION
+
+LABEL org.opencontainers.image.title="Z7 PDF" \
+      org.opencontainers.image.description="Self-hosted PDF editor and workspace" \
+      org.opencontainers.image.source="https://github.com/hzx2185/z7pdf" \
+      org.opencontainers.image.version="${Z7PDF_VERSION}" \
+      org.opencontainers.image.revision="${Z7PDF_REVISION}" \
+      org.opencontainers.image.created="${Z7PDF_BUILD_TIME}"
+
+ENV Z7PDF_VERSION=${Z7PDF_VERSION} \
+    Z7PDF_BUILD_TIME=${Z7PDF_BUILD_TIME} \
+    Z7PDF_REVISION=${Z7PDF_REVISION}
+
 COPY --from=deps --chown=node:node /app/node_modules ./node_modules
+COPY --chown=node:node package.json ./package.json
 COPY --chown=node:node public ./public
 COPY --chown=node:node src ./src
 COPY docker/entrypoint.sh /usr/local/bin/z7pdf-entrypoint.sh

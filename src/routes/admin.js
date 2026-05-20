@@ -10,6 +10,10 @@ const {
   getPlanByCode
 } = require('../services/plan-service');
 const { createRedemptionCodes } = require('../services/billing-service');
+const {
+  checkLatestVersion,
+  getCurrentVersionInfo
+} = require('../services/version-service');
 
 const router = express.Router();
 
@@ -31,8 +35,22 @@ router.get('/api/admin/overview', requireAdmin, (_req, res) => {
       shares: Number(stmts.stats.shares.get().total || 0),
       activeMemberships: Number(stmts.stats.activeMemberships.get().total || 0)
     },
-    settings: getSafeSettingsObject()
+    settings: getSafeSettingsObject(),
+    version: getCurrentVersionInfo()
   });
+});
+
+router.post('/api/admin/version/check', requireAdmin, async (_req, res) => {
+  try {
+    const result = await checkLatestVersion();
+    return res.json(result);
+  } catch (error) {
+    return res.status(502).json({
+      error: error.message || '检查更新失败。',
+      current: getCurrentVersionInfo(),
+      checkedAt: new Date().toISOString()
+    });
+  }
 });
 
 router.get('/api/admin/users', requireAdmin, async (_req, res) => {

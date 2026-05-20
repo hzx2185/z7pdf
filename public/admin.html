@@ -36,6 +36,38 @@
             <p>统一维护站点配置、会员套餐、兑换码和会员有效期</p>
           </div>
           <div id="overviewCards" class="stats-grid"></div>
+          <section class="version-panel" aria-labelledby="versionPanelTitle">
+            <div class="version-panel-head">
+              <div>
+                <span class="kicker">版本更新</span>
+                <h2 id="versionPanelTitle">版本信息</h2>
+              </div>
+              <button type="button" id="checkUpdateBtn" class="btn btn-outline">检查更新</button>
+            </div>
+            <div class="version-grid">
+              <article class="version-card">
+                <span>当前版本</span>
+                <strong id="currentVersionValue">读取中</strong>
+                <small id="currentVersionMeta">等待后台数据</small>
+              </article>
+              <article class="version-card">
+                <span>构建时间</span>
+                <strong id="currentBuildTimeValue">读取中</strong>
+                <small id="currentRevisionValue">源码版本待读取</small>
+              </article>
+              <article class="version-card">
+                <span>最新版本</span>
+                <strong id="latestVersionValue">待检查</strong>
+                <small id="latestVersionMeta">点击检查更新</small>
+              </article>
+              <article class="version-card">
+                <span>更新时间</span>
+                <strong id="latestUpdatedAtValue">待检查</strong>
+                <small id="latestCheckedAtValue">尚未检查</small>
+              </article>
+            </div>
+            <p id="versionUpdateResult" class="result-message" aria-live="polite"></p>
+          </section>
         </div>
       </section>
 
@@ -331,6 +363,6 @@
       window.addEventListener('hashchange', handleHash);
       handleHash();
     </script>
-    <script type="module" src="/admin.js?v=0415"></script>
+    <script type="module" src="/admin.js?v=130"></script>
   </body>
 </html>

@@ -62,6 +62,66 @@
   color: var(--muted);
 }
 
+.version-panel {
+  margin-top: 18px;
+  padding: 20px;
+  border: 1px solid rgba(65, 49, 35, 0.1);
+  border-radius: 16px;
+  background: rgba(255, 252, 248, 0.9);
+}
+
+.version-panel-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  margin-bottom: 16px;
+}
+
+.version-panel-head h2 {
+  margin: 4px 0 0;
+  font-size: 22px;
+}
+
+.version-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+  gap: 12px;
+}
+
+.version-card {
+  display: grid;
+  gap: 6px;
+  min-width: 0;
+  padding: 16px;
+  border: 1px solid rgba(65, 49, 35, 0.08);
+  border-radius: 14px;
+  background: rgba(255, 255, 255, 0.64);
+}
+
+.version-card span,
+.version-card small {
+  color: var(--muted);
+  font-size: 12px;
+}
+
+.version-card strong {
+  min-width: 0;
+  overflow-wrap: anywhere;
+  color: var(--accent-strong);
+  font-size: 20px;
+}
+
+.version-card a {
+  color: var(--accent-strong);
+  font-weight: 700;
+  text-decoration: none;
+}
+
+.version-panel .result-message {
+  margin-top: 14px;
+}
+
 /* 配置表单 */
 .settings-form {
   display: flex;
@@ -474,4 +534,3 @@
   display: grid;
   gap: 12px;
 }
-
