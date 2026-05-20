@@ -6,6 +6,8 @@
 hzx2185/z7pdf:latest
 ```
 
+后台“版本”页会从 Docker Hub 读取 `hzx2185/z7pdf` 的完整版本号标签（例如 `1.3.0`）来检查更新；仅发布 `latest` 时无法判断最新版本。
+
 Z7 PDF 是一个自部署 PDF 在线编辑工作台，支持页面整理、合并、拆分、旋转、压缩、加密、水印、页码、OCR、PDF/A、会员空间、文件分享、兑换码会员和后台管理。
 
 ## 快速部署
@@ -88,6 +90,9 @@ docker compose up -d
 ```bash
 # 查看日志和首次管理员密码
 docker logs z7pdf
+
+# 查看当前镜像标签
+docker image inspect z7pdf --format '{{json .RepoTags}}'
 
 # 停止服务
 docker compose down

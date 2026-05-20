@@ -14,6 +14,7 @@
         <a href="/" class="brand">Z7 PDF</a>
         <nav class="main-nav" id="mainNav">
           <a href="#overview" class="nav-link" data-page="overview">概览</a>
+          <a href="#version" class="nav-link" data-page="version">版本</a>
           <a href="#settings" class="nav-link" data-page="settings">配置</a>
           <a href="#members" class="nav-link" data-page="members">会员</a>
           <a href="#plans" class="nav-link" data-page="plans">套餐</a>
@@ -36,11 +37,22 @@
             <p>统一维护站点配置、会员套餐、兑换码和会员有效期</p>
           </div>
           <div id="overviewCards" class="stats-grid"></div>
-          <section class="version-panel" aria-labelledby="versionPanelTitle">
+        </div>
+      </section>
+
+      <!-- 版本更新 -->
+      <section id="version" class="page-section">
+        <div class="section-container">
+          <div class="section-header">
+            <span class="kicker">Docker 版本</span>
+            <h2>版本更新</h2>
+            <p class="section-desc">从 Docker Hub 镜像版本号标签检查最新版本</p>
+          </div>
+          <div class="version-panel" aria-labelledby="versionPanelTitle">
             <div class="version-panel-head">
               <div>
-                <span class="kicker">版本更新</span>
-                <h2 id="versionPanelTitle">版本信息</h2>
+                <span class="kicker">镜像标签</span>
+                <h3 id="versionPanelTitle">版本信息</h3>
               </div>
               <button type="button" id="checkUpdateBtn" class="btn btn-outline">检查更新</button>
             </div>
@@ -56,18 +68,18 @@
                 <small id="currentRevisionValue">源码版本待读取</small>
               </article>
               <article class="version-card">
-                <span>最新版本</span>
+                <span>最新 Docker 版本</span>
                 <strong id="latestVersionValue">待检查</strong>
                 <small id="latestVersionMeta">点击检查更新</small>
               </article>
               <article class="version-card">
-                <span>更新时间</span>
+                <span>镜像更新时间</span>
                 <strong id="latestUpdatedAtValue">待检查</strong>
                 <small id="latestCheckedAtValue">尚未检查</small>
               </article>
             </div>
             <p id="versionUpdateResult" class="result-message" aria-live="polite"></p>
-          </section>
+          </div>
         </div>
       </section>
 

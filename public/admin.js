@@ -117,8 +117,7 @@ function formatVersionSource(value) {
   const labels = {
     env: "环境变量",
     package: "package.json",
-    "github-release": "GitHub Release",
-    "github-tag": "GitHub Tag"
+    "docker-hub": "Docker Hub"
   };
   return labels[value] || value || "未知来源";
 }
@@ -150,7 +149,7 @@ function renderVersionInfo(version = state.version, check = state.versionCheck) 
     elements.currentVersionValue.textContent = formatVersion(current.version);
   }
   if (elements.currentVersionMeta) {
-    elements.currentVersionMeta.textContent = `${formatVersionSource(current.source)} · ${current.repository || "仓库未设置"}`;
+    elements.currentVersionMeta.textContent = `${formatVersionSource(current.source)} · ${current.dockerImage || current.repository || "镜像未设置"}`;
   }
   if (elements.currentBuildTimeValue) {
     elements.currentBuildTimeValue.textContent = formatDateTime(current.buildTime, "未提供");
@@ -173,14 +172,14 @@ function renderVersionInfo(version = state.version, check = state.versionCheck) 
       elements.latestVersionMeta.textContent = hasLatest
         ? latestSource
         : check
-          ? "GitHub 暂无 Release/Tag"
+          ? "Docker Hub 暂无版本标签"
           : "点击检查更新";
     }
   }
   if (elements.latestUpdatedAtValue) {
     elements.latestUpdatedAtValue.textContent = formatDateTime(
       releaseTime,
-      hasLatest ? "GitHub 未提供" : check ? "无记录" : "待检查"
+      hasLatest ? "Docker Hub 未提供" : check ? "无记录" : "待检查"
     );
   }
   if (elements.latestCheckedAtValue) {
