@@ -479,6 +479,10 @@
   margin-bottom: 16px;
 }
 
+.member-filter-bar {
+  grid-template-columns: minmax(220px, 1fr) repeat(5, minmax(130px, auto)) auto;
+}
+
 .filter-bar .field {
   display: flex;
   flex-direction: column;
@@ -486,6 +490,7 @@
 }
 
 .filter-bar input[type="search"],
+.filter-bar input[type="date"],
 .filter-bar select {
   min-height: 46px;
 }
@@ -503,6 +508,7 @@
   font-size: 13px;
   color: var(--muted);
   text-align: right;
+  white-space: nowrap;
 }
 
 .table-wrapper {

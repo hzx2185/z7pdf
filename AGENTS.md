@@ -17,6 +17,7 @@
 ## Docker Version Rules
 
 - Public image name: `hzx2185/z7pdf`.
+- After code changes, rebuild and restart the existing Docker Compose service with `docker compose up -d --build`; do not leave a separate long-running Node/dev server process for verification.
 - Publish immutable patch tags for every release, for example `hzx2185/z7pdf:1.3.0`.
 - Publish a full SemVer patch tag such as `1.3.0` for every public version. The admin update checker ignores `latest` and rolling minor tags because they are not precise versions.
 - Move `latest` only after the matching versioned image is ready and the image has passed smoke checks.

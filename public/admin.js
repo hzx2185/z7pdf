@@ -3,7 +3,6 @@ import { escapeHtml, requestJson, setResult as setElementResult } from "./common
 const elements = {
   overviewCards: document.querySelector("#overviewCards"),
   usersTableBody: document.querySelector("#usersTableBody"),
-  subscriptionsTableBody: document.querySelector("#subscriptionsTableBody"),
   plansList: document.querySelector("#plansList"),
   settingsForm: document.querySelector("#settingsForm"),
   settingAppName: document.querySelector("#settingAppName"),
@@ -31,10 +30,14 @@ const elements = {
   versionUpdateResult: document.querySelector("#versionUpdateResult"),
   memberSearch: document.querySelector("#memberSearch"),
   memberRoleFilter: document.querySelector("#memberRoleFilter"),
+  memberPlanFilter: document.querySelector("#memberPlanFilter"),
+  memberSubscriptionStatusFilter: document.querySelector("#memberSubscriptionStatusFilter"),
+  memberExpiryFrom: document.querySelector("#memberExpiryFrom"),
+  memberExpiryTo: document.querySelector("#memberExpiryTo"),
+  memberFilterSummary: document.querySelector("#memberFilterSummary"),
   planSearch: document.querySelector("#planSearch"),
   planStatusFilter: document.querySelector("#planStatusFilter"),
-  subscriptionSearch: document.querySelector("#subscriptionSearch"),
-  subscriptionStatusFilter: document.querySelector("#subscriptionStatusFilter"),
+  planFilterSummary: document.querySelector("#planFilterSummary"),
   adminResult: document.querySelector("#adminResult"),
   navLinks: Array.from(document.querySelectorAll(".nav-link[data-page]")),
   // 兑换码
@@ -84,7 +87,8 @@ function formatStatusLabel(status) {
     admin: "管理员",
     cancelled: "已取消",
     active: "生效中",
-    expired: "已过期"
+    expired: "已过期",
+    none: "无有效期"
   };
   return labels[status] || status;
 }
@@ -136,6 +140,54 @@ function formatPlanLabel(planCode) {
     guest: "游客版"
   };
   return labels[code] || code || "未设置";
+}
+
+function getDateTime(value) {
+  const time = new Date(value || 0).getTime();
+  return Number.isNaN(time) ? 0 : time;
+}
+
+function isSameOrAfterDate(value, dateText) {
+  if (!dateText) return true;
+  const valueTime = getDateTime(value);
+  const minTime = new Date(`${dateText}T00:00:00`).getTime();
+  return valueTime >= minTime;
+}
+
+function isSameOrBeforeDate(value, dateText) {
+  if (!dateText) return true;
+  const valueTime = getDateTime(value);
+  const maxTime = new Date(`${dateText}T23:59:59`).getTime();
+  return valueTime <= maxTime;
+}
+
+function getSubscriptionSortScore(subscription) {
+  if (!subscription) return 0;
+  if (subscription.status === "active") return 3;
+  if (subscription.status === "expired") return 2;
+  if (subscription.status === "cancelled") return 1;
+  return 0;
+}
+
+function getLatestSubscriptionForUser(userId) {
+  return state.subscriptions
+    .filter((subscription) => Number(subscription.userId) === Number(userId))
+    .sort((first, second) => {
+      const scoreDiff = getSubscriptionSortScore(second) - getSubscriptionSortScore(first);
+      if (scoreDiff !== 0) return scoreDiff;
+      const endDiff = getDateTime(second.periodEnd) - getDateTime(first.periodEnd);
+      if (endDiff !== 0) return endDiff;
+      const updatedDiff = getDateTime(second.updatedAt) - getDateTime(first.updatedAt);
+      if (updatedDiff !== 0) return updatedDiff;
+      return Number(second.id || 0) - Number(first.id || 0);
+    })[0] || null;
+}
+
+function getMemberRows() {
+  return state.users.map((user) => ({
+    ...user,
+    subscription: getLatestSubscriptionForUser(user.id)
+  }));
 }
 
 function renderVersionInfo(version = state.version, check = state.versionCheck) {
@@ -307,13 +359,29 @@ function populatePlanSettingOptions(selectedDefaultPlan = "", selectedGuestPlan 
   }
 }
 
+function populateMemberPlanFilterOptions() {
+  if (!elements.memberPlanFilter) {
+    return;
+  }
+
+  const selectedValue = elements.memberPlanFilter.value;
+  elements.memberPlanFilter.innerHTML = '<option value="">全部</option>';
+  state.plans.forEach((plan) => {
+    const option = document.createElement("option");
+    option.value = plan.code;
+    option.textContent = `${plan.name} (${plan.code})`;
+    option.selected = plan.code === selectedValue;
+    elements.memberPlanFilter.appendChild(option);
+  });
+}
+
 function renderOverview(data) {
   const cards = [
-    { label: "会员数", value: Number(data.stats?.users || 0) },
-    { label: "文件数", value: Number(data.stats?.files || 0) },
-    { label: "总占用", value: formatBytes(data.stats?.storageBytes || 0) },
-    { label: "有效分享", value: Number(data.stats?.shares || 0) },
-    { label: "有效会员", value: Number(data.stats?.activeMemberships || 0) }
+    { label: "会员数", value: Number(data.stats?.users || 0), note: "注册账号总数" },
+    { label: "文件数", value: Number(data.stats?.files || 0), note: "未删除文件" },
+    { label: "总占用", value: formatBytes(data.stats?.storageBytes || 0), note: "当前存储占用" },
+    { label: "有效分享", value: Number(data.stats?.shares || 0), note: "已启用分享链接" },
+    { label: "生效有效期", value: Number(data.stats?.activeMemberships || 0), note: "active 且未到期" }
   ];
 
   elements.overviewCards.innerHTML = "";
@@ -323,7 +391,7 @@ function renderOverview(data) {
     item.innerHTML = `
       <span>${card.label}</span>
       <strong>${card.value}</strong>
-      <small>后台实时统计</small>
+      <small>${card.note}</small>
     `;
     elements.overviewCards.appendChild(item);
   });
@@ -380,15 +448,29 @@ function createPlanSelect(value) {
 function renderUsers(users = []) {
   elements.usersTableBody.innerHTML = "";
   if (!users.length) {
-    renderEmptyRow(elements.usersTableBody, 7, "还没有会员数据", "新用户注册后会出现在这里，可直接调整角色和套餐。");
+    renderEmptyRow(elements.usersTableBody, 9, "没有匹配的会员数据", "调整搜索、角色、套餐或有效期筛选条件后再试。");
     return;
   }
   users.forEach((user) => {
     const row = document.createElement("tr");
+    const subscription = user.subscription || null;
     const roleSelect = createRoleSelect(user.role);
     roleSelect.className = "admin-select";
     const planSelect = createPlanSelect(user.plan);
     planSelect.className = "admin-select";
+    const statusSelect = document.createElement("select");
+    ["active", "expired", "cancelled"].forEach((status) => {
+      const option = document.createElement("option");
+      option.value = status;
+      option.textContent = formatStatusLabel(status);
+      option.selected = status === subscription?.status;
+      statusSelect.appendChild(option);
+    });
+    statusSelect.className = "admin-select";
+    const endInput = document.createElement("input");
+    endInput.type = "text";
+    endInput.value = subscription?.periodEnd || "";
+    endInput.className = "compact-input admin-input";
 
     const saveButton = document.createElement("button");
     saveButton.type = "button";
@@ -396,20 +478,38 @@ function renderUsers(users = []) {
     saveButton.textContent = "保存";
     saveButton.addEventListener("click", async () => {
       try {
-        await requestJson(`/api/admin/users/${user.id}`, {
-          method: "PATCH",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({
-            role: roleSelect.value,
-            plan: planSelect.value
+        const requests = [
+          requestJson(`/api/admin/users/${user.id}`, {
+            method: "PATCH",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({
+              role: roleSelect.value,
+              plan: planSelect.value
+            })
           })
-        });
-        setResult(`已更新用户：${user.email}`);
+        ];
+        if (subscription?.id) {
+          requests.push(requestJson(`/api/admin/subscriptions/${subscription.id}`, {
+            method: "PATCH",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({
+              status: statusSelect.value,
+              periodEnd: endInput.value
+            })
+          }));
+        }
+        await Promise.all(requests);
+        setResult(`已更新会员：${user.email}`);
         await loadAdminData();
       } catch (error) {
-        setResult(error.message || "用户更新失败", true);
+        setResult(error.message || "会员更新失败", true);
       }
     });
+
+    const subscriptionStatusCell = subscription?.id
+      ? ""
+      : createBadge(formatStatusLabel("none"), "warn");
+    const subscriptionEndCell = subscription?.id ? "" : "无记录";
 
     row.innerHTML = `
       <td>${user.id}</td>
@@ -422,11 +522,17 @@ function renderUsers(users = []) {
       <td class="admin-cell-role"></td>
       <td class="admin-cell-plan"></td>
       <td>${formatBytes(user.usedBytes)}</td>
+      <td class="admin-cell-subscription-status">${subscriptionStatusCell}</td>
+      <td class="admin-cell-subscription-end">${subscriptionEndCell}</td>
       <td>${new Date(user.createdAt).toLocaleString("zh-CN")}</td>
       <td class="admin-cell-action"></td>
     `;
     row.querySelector(".admin-cell-role").appendChild(roleSelect);
     row.querySelector(".admin-cell-plan").appendChild(planSelect);
+    if (subscription?.id) {
+      row.querySelector(".admin-cell-subscription-status").appendChild(statusSelect);
+      row.querySelector(".admin-cell-subscription-end").appendChild(endInput);
+    }
     row.querySelector(".admin-cell-action").appendChild(saveButton);
     elements.usersTableBody.appendChild(row);
   });
@@ -564,81 +670,43 @@ function renderPlans(plans = []) {
   });
 }
 
-function renderSubscriptions(subscriptions = []) {
-  elements.subscriptionsTableBody.innerHTML = "";
-  if (!subscriptions.length) {
-    renderEmptyRow(elements.subscriptionsTableBody, 7, "当前没有会员有效期记录", "会员兑换成功或后台手动调整后，会在这里显示当前状态和到期时间。");
-    return;
-  }
-  subscriptions.forEach((subscription) => {
-    const row = document.createElement("tr");
-    const statusSelect = document.createElement("select");
-    ["active", "expired", "cancelled"].forEach((status) => {
-      const option = document.createElement("option");
-      option.value = status;
-      option.textContent = formatStatusLabel(status);
-      option.selected = status === subscription.status;
-      statusSelect.appendChild(option);
-    });
-    const endInput = document.createElement("input");
-    endInput.type = "text";
-    endInput.value = subscription.periodEnd;
-    endInput.className = "compact-input";
-    const saveButton = document.createElement("button");
-    saveButton.type = "button";
-    saveButton.className = "ghost-button";
-    saveButton.textContent = "保存";
-    saveButton.addEventListener("click", async () => {
-      try {
-        await requestJson(`/api/admin/subscriptions/${subscription.id}`, {
-          method: "PATCH",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({
-            status: statusSelect.value,
-            periodEnd: endInput.value
-          })
-        });
-        setResult(`已更新会员有效期 #${subscription.id}`);
-        await loadAdminData();
-      } catch (error) {
-        setResult(error.message || "会员有效期更新失败", true);
-      }
-    });
-
-    row.innerHTML = `
-      <td>${subscription.id}</td>
-      <td><strong>${escapeHtml(subscription.userEmail || "")}</strong></td>
-      <td>${createBadge(formatPlanLabel(subscription.planCode), "neutral")}</td>
-      <td class="admin-cell-role"></td>
-      <td>${new Date(subscription.periodStart).toLocaleString("zh-CN")}</td>
-      <td class="admin-cell-plan"></td>
-      <td class="admin-cell-action"></td>
-    `;
-    statusSelect.className = "admin-select";
-    endInput.classList.add("admin-input");
-    saveButton.classList.add("admin-action-button");
-    row.querySelector(".admin-cell-role").appendChild(statusSelect);
-    row.querySelector(".admin-cell-plan").appendChild(endInput);
-    row.querySelector(".admin-cell-action").appendChild(saveButton);
-    elements.subscriptionsTableBody.appendChild(row);
-  });
-}
-
 function applyFilters() {
   const memberKeyword = elements.memberSearch?.value.trim().toLowerCase() || "";
   const memberRole = elements.memberRoleFilter?.value || "";
+  const memberPlan = elements.memberPlanFilter?.value || "";
+  const memberSubscriptionStatus = elements.memberSubscriptionStatusFilter?.value || "";
+  const memberExpiryFrom = elements.memberExpiryFrom?.value || "";
+  const memberExpiryTo = elements.memberExpiryTo?.value || "";
   const planKeyword = elements.planSearch?.value.trim().toLowerCase() || "";
   const planStatus = elements.planStatusFilter?.value || "";
-  const subscriptionKeyword = elements.subscriptionSearch?.value.trim().toLowerCase() || "";
-  const subscriptionStatus = elements.subscriptionStatusFilter?.value || "";
 
-  const filteredUsers = state.users.filter((user) => {
+  const memberRows = getMemberRows();
+  const filteredUsers = memberRows.filter((user) => {
+    const subscription = user.subscription || null;
+    const subscriptionStatus = subscription?.status || "none";
+    const planText = formatPlanLabel(user.plan).toLowerCase();
+    const subscriptionPlanText = formatPlanLabel(subscription?.planCode).toLowerCase();
     const matchesKeyword =
       !memberKeyword ||
       String(user.email || "").toLowerCase().includes(memberKeyword) ||
-      String(user.plan || "").toLowerCase().includes(memberKeyword);
+      String(user.plan || "").toLowerCase().includes(memberKeyword) ||
+      planText.includes(memberKeyword) ||
+      String(subscription?.planCode || "").toLowerCase().includes(memberKeyword) ||
+      subscriptionPlanText.includes(memberKeyword) ||
+      formatStatusLabel(subscriptionStatus).toLowerCase().includes(memberKeyword);
     const matchesRole = !memberRole || String(user.role || "") === memberRole;
-    return matchesKeyword && matchesRole;
+    const matchesPlan =
+      !memberPlan ||
+      String(user.plan || "") === memberPlan ||
+      String(subscription?.planCode || "") === memberPlan;
+    const matchesSubscriptionStatus =
+      !memberSubscriptionStatus || subscriptionStatus === memberSubscriptionStatus;
+    const matchesExpiry =
+      (!memberExpiryFrom && !memberExpiryTo) ||
+      (subscription?.periodEnd &&
+        isSameOrAfterDate(subscription.periodEnd, memberExpiryFrom) &&
+        isSameOrBeforeDate(subscription.periodEnd, memberExpiryTo));
+    return matchesKeyword && matchesRole && matchesPlan && matchesSubscriptionStatus && matchesExpiry;
   });
 
   const filteredPlans = state.plans.filter((plan) => {
@@ -652,18 +720,14 @@ function applyFilters() {
     return matchesKeyword && matchesStatus;
   });
 
-  const filteredSubscriptions = state.subscriptions.filter((subscription) => {
-    const matchesKeyword =
-      !subscriptionKeyword ||
-      String(subscription.userEmail || "").toLowerCase().includes(subscriptionKeyword) ||
-      String(subscription.planCode || "").toLowerCase().includes(subscriptionKeyword);
-    const matchesStatus = !subscriptionStatus || String(subscription.status || "") === subscriptionStatus;
-    return matchesKeyword && matchesStatus;
-  });
-
   renderUsers(filteredUsers);
   renderPlans(filteredPlans);
-  renderSubscriptions(filteredSubscriptions);
+  if (elements.memberFilterSummary) {
+    elements.memberFilterSummary.textContent = `${filteredUsers.length} / ${memberRows.length}`;
+  }
+  if (elements.planFilterSummary) {
+    elements.planFilterSummary.textContent = `${filteredPlans.length} / ${state.plans.length}`;
+  }
 }
 
 async function loadAdminData() {
@@ -680,6 +744,7 @@ async function loadAdminData() {
     state.subscriptions = subscriptions.subscriptions || [];
     state.redeemCodes = redeemCodes.codes || [];
     renderOverview(overview);
+    populateMemberPlanFilterOptions();
     applyFilters();
     
     // 填充套餐下拉框
@@ -818,10 +883,12 @@ elements.checkUpdateBtn?.addEventListener("click", async () => {
 [
   elements.memberSearch,
   elements.memberRoleFilter,
+  elements.memberPlanFilter,
+  elements.memberSubscriptionStatusFilter,
+  elements.memberExpiryFrom,
+  elements.memberExpiryTo,
   elements.planSearch,
-  elements.planStatusFilter,
-  elements.subscriptionSearch,
-  elements.subscriptionStatusFilter
+  elements.planStatusFilter
 ].forEach((control) => {
   control?.addEventListener("input", applyFilters);
   control?.addEventListener("change", applyFilters);

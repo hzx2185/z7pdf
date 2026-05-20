@@ -198,6 +198,10 @@
   .filter-bar {
     grid-template-columns: 1fr;
   }
+
+  .member-filter-bar {
+    grid-template-columns: 1fr;
+  }
   
   .stats-grid {
     grid-template-columns: 1fr;

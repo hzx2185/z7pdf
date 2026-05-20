@@ -16,10 +16,9 @@
           <a href="#overview" class="nav-link" data-page="overview">概览</a>
           <a href="#version" class="nav-link" data-page="version">版本</a>
           <a href="#settings" class="nav-link" data-page="settings">配置</a>
-          <a href="#members" class="nav-link" data-page="members">会员</a>
+          <a href="#members" class="nav-link" data-page="members">会员有效期</a>
           <a href="#plans" class="nav-link" data-page="plans">套餐</a>
           <a href="#redeem" class="nav-link" data-page="redeem">兑换码</a>
-          <a href="#subscriptions" class="nav-link" data-page="subscriptions">有效期</a>
         </nav>
         <div class="header-actions">
           <a href="/" class="btn btn-outline">返回工作台</a>
@@ -187,15 +186,15 @@
         <div class="section-container">
           <div class="section-header">
             <span class="kicker">会员管理</span>
-            <h2>会员列表</h2>
-            <p class="section-desc">管理会员角色和套餐</p>
+            <h2>会员与有效期</h2>
+            <p class="section-desc">统一管理会员角色、套餐、空间占用和会员有效期</p>
           </div>
 
           <div class="card">
-            <div class="filter-bar">
+            <div class="filter-bar member-filter-bar">
               <label class="field">
                 <span>搜索</span>
-                <input type="search" id="memberSearch" placeholder="按邮箱或套餐搜索" />
+                <input type="search" id="memberSearch" placeholder="按邮箱、套餐或有效期状态搜索" />
               </label>
               <label class="field compact">
                 <span>角色</span>
@@ -204,6 +203,30 @@
                   <option value="member">会员</option>
                   <option value="admin">管理员</option>
                 </select>
+              </label>
+              <label class="field compact">
+                <span>套餐</span>
+                <select id="memberPlanFilter">
+                  <option value="">全部</option>
+                </select>
+              </label>
+              <label class="field compact">
+                <span>有效期状态</span>
+                <select id="memberSubscriptionStatusFilter">
+                  <option value="">全部</option>
+                  <option value="active">生效中</option>
+                  <option value="expired">已过期</option>
+                  <option value="cancelled">已取消</option>
+                  <option value="none">无有效期</option>
+                </select>
+              </label>
+              <label class="field compact">
+                <span>到期起始</span>
+                <input type="date" id="memberExpiryFrom" />
+              </label>
+              <label class="field compact">
+                <span>到期结束</span>
+                <input type="date" id="memberExpiryTo" />
               </label>
               <p id="memberFilterSummary" class="filter-summary">0 / 0</p>
             </div>
@@ -216,6 +239,8 @@
                     <th>角色</th>
                     <th>套餐</th>
                     <th>空间</th>
+                    <th>有效期</th>
+                    <th>到期时间</th>
                     <th>注册时间</th>
                     <th>操作</th>
                   </tr>
@@ -296,51 +321,6 @@
           </div>
         </div>
       </section>
-
-      <!-- 会员有效期 -->
-      <section id="subscriptions" class="page-section">
-        <div class="section-container">
-          <div class="section-header">
-            <span class="kicker">会员有效期</span>
-            <h2>会员有效期</h2>
-            <p class="section-desc">管理会员当前套餐、生效状态和到期时间</p>
-          </div>
-
-          <div class="card">
-            <div class="filter-bar">
-              <label class="field">
-                <span>搜索</span>
-                <input type="search" id="subscriptionSearch" placeholder="按邮箱或套餐搜索" />
-              </label>
-              <label class="field compact">
-                <span>状态</span>
-                <select id="subscriptionStatusFilter">
-                  <option value="">全部</option>
-                  <option value="active">生效中</option>
-                  <option value="expired">已过期</option>
-                </select>
-              </label>
-              <p id="subscriptionFilterSummary" class="filter-summary">0 / 0</p>
-            </div>
-            <div class="table-wrapper">
-              <table class="data-table">
-                <thead>
-                  <tr>
-                    <th>ID</th>
-                    <th>会员</th>
-                    <th>套餐</th>
-                    <th>状态</th>
-                    <th>开始</th>
-                    <th>结束</th>
-                    <th>操作</th>
-                  </tr>
-                </thead>
-                <tbody id="subscriptionsTableBody"></tbody>
-              </table>
-            </div>
-          </div>
-        </div>
-      </section>
     </main>
 
     <script>
@@ -365,7 +345,10 @@
 
       function handleHash() {
         const hash = window.location.hash.slice(1);
-        if (hash) {
+        if (hash === 'subscriptions') {
+          showPage('members');
+          history.replaceState(null, '', '#members');
+        } else if (hash && document.getElementById(hash)) {
           showPage(hash);
         } else {
           showPage('overview');
@@ -375,6 +358,6 @@
       window.addEventListener('hashchange', handleHash);
       handleHash();
     </script>
-    <script type="module" src="/admin.js?v=130"></script>
+    <script type="module" src="/admin.js?v=131"></script>
   </body>
 </html>
