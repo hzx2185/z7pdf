@@ -181,11 +181,11 @@ function renderVersionInfo(version = state.version, check = state.versionCheck) 
     elements.currentVersionValue.textContent = formatVersion(current.version);
   }
   if (elements.latestVersionValue) {
-    elements.latestVersionValue.textContent = hasLatest
-      ? formatVersion(latest.version)
-      : check
-        ? "未发布"
-        : "待检查";
+    if (hasLatest) {
+      elements.latestVersionValue.textContent = formatVersion(latest.version);
+    } else if (check) {
+      elements.latestVersionValue.textContent = "未发布";
+    }
   }
   if (elements.latestUpdatedAtValue) {
     elements.latestUpdatedAtValue.textContent = formatDateTime(
@@ -338,7 +338,12 @@ function renderOverview(data) {
     { label: "未到期会员", value: Number(data.stats?.activeMemberships || 0), note: "按到期时间统计" }
   ];
 
-  elements.overviewCards.innerHTML = "";
+  // Remove any existing dynamic cards (overview-card) that are NOT the version card
+  const existingCards = elements.overviewCards.querySelectorAll(".overview-card:not(.version-card-unified)");
+  existingCards.forEach((card) => card.remove());
+
+  // Insert the dynamic cards BEFORE the version card
+  const versionCard = elements.overviewCards.querySelector(".version-card-unified");
   cards.forEach((card) => {
     const item = document.createElement("article");
     item.className = "overview-card";
@@ -347,7 +352,11 @@ function renderOverview(data) {
       <strong>${card.value}</strong>
       <small>${card.note}</small>
     `;
-    elements.overviewCards.appendChild(item);
+    if (versionCard) {
+      elements.overviewCards.insertBefore(item, versionCard);
+    } else {
+      elements.overviewCards.appendChild(item);
+    }
   });
 
   state.version = data.version || null;
@@ -798,12 +807,18 @@ elements.checkUpdateBtn?.addEventListener("click", async () => {
     state.versionCheck = response;
     renderVersionInfo();
 
-    const message = response.message
-      || (response.updateAvailable
-        ? `发现新版本 ${formatVersion(response.latest?.version)}，当前为 ${formatVersion(response.current?.version)}。`
-        : `当前已是最新版本 ${formatVersion(response.current?.version)}。`);
-    setElementResult(elements.versionUpdateResult, message, false, { visibleClass: "is-visible" });
-    setResult(message);
+    if (response.updateAvailable) {
+      const message = response.message
+        || `发现新版本 ${formatVersion(response.latest?.version)}，当前为 ${formatVersion(response.current?.version)}。`;
+      setElementResult(elements.versionUpdateResult, message, false, { visibleClass: "is-visible" });
+      setResult(message);
+    } else if (response.message) {
+      // If there's an explicit custom message from backend (e.g. no tag in Docker Hub), show it
+      setElementResult(elements.versionUpdateResult, response.message, false, { visibleClass: "is-visible" });
+      setResult(response.message);
+    } else {
+      setElementResult(elements.versionUpdateResult, "", false, { visibleClass: "is-visible" });
+    }
   } catch (error) {
     const message = error.message || "检查更新失败";
     setElementResult(elements.versionUpdateResult, message, true, { visibleClass: "is-visible" });

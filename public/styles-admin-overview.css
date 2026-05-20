@@ -31,7 +31,7 @@
 /* 统计卡片网格 */
 .stats-grid {
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
   gap: 16px;
 }
 
@@ -62,64 +62,68 @@
   color: var(--muted);
 }
 
-.version-panel {
-  margin-top: 18px;
-  padding: 20px;
+.version-card-unified {
+  padding: 16px 20px;
+  background: rgba(255, 252, 248, 0.9);
   border: 1px solid rgba(65, 49, 35, 0.1);
   border-radius: 16px;
-  background: rgba(255, 252, 248, 0.9);
-}
-
-.version-panel-head {
+  text-align: left;
   display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: 16px;
-  margin-bottom: 16px;
+  flex-direction: column;
+  justify-content: center;
+  box-sizing: border-box;
 }
 
-.version-panel-head h2 {
-  margin: 4px 0 0;
-  font-size: 22px;
+.version-card-unified table {
+  width: 100%;
+  border-collapse: collapse;
+  margin: 0;
 }
 
-.version-grid {
-  display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
-  gap: 12px;
+.version-card-unified tr {
+  border-bottom: 1px solid rgba(65, 49, 35, 0.06);
 }
 
-.version-card {
-  display: grid;
-  gap: 6px;
-  min-width: 0;
-  padding: 16px;
-  border: 1px solid rgba(65, 49, 35, 0.08);
-  border-radius: 14px;
-  background: rgba(255, 255, 255, 0.64);
+.version-card-unified tr:last-child {
+  border-bottom: none;
 }
 
-.version-card span,
-.version-card small {
+.version-card-unified td {
+  padding: 6px 0;
+  vertical-align: middle;
+}
+
+.version-card-unified td:first-child {
   color: var(--muted);
   font-size: 12px;
+  font-weight: 600;
 }
 
-.version-card strong {
-  min-width: 0;
-  overflow-wrap: anywhere;
+.version-card-unified td:last-child {
+  text-align: right;
+  font-size: 14px;
+  font-weight: bold;
   color: var(--accent-strong);
-  font-size: 20px;
 }
 
-.version-card a {
-  color: var(--accent-strong);
-  font-weight: 700;
-  text-decoration: none;
+.version-card-unified td#latestUpdatedAtValue {
+  font-size: 11px;
+  font-weight: normal;
+  color: var(--muted);
+  white-space: nowrap;
 }
 
-.version-panel .result-message {
-  margin-top: 14px;
+.version-card-unified td:last-child button {
+  min-height: 28px;
+  padding: 2px 12px;
+  font-size: 11px;
+  margin: 0;
+}
+
+.version-card-unified .result-message {
+  margin-top: 8px;
+  font-size: 11px;
+  text-align: center;
 }
 
 /* 配置表单 */
@@ -443,7 +447,7 @@
   margin: 0 0 6px;
 }
 
-.stats-grid {
+.section-divider .stats-grid {
   display: grid;
   grid-template-columns: repeat(2, 1fr);
   gap: 12px;
