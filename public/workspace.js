@@ -1,6 +1,6 @@
-import { requestJson, setResult as setElementResult, showToast } from "./common.js?v=0414c";
+import { requestJson, setResult as setElementResult, showToast } from "./common.js?v=0414d";
 import { createWorkspaceAuthRuntime } from "./workspace-auth-runtime.js?v=0414b";
-import { setupWorkspaceBindings } from "./workspace-bindings-runtime.js?v=0414c";
+import { setupWorkspaceBindings } from "./workspace-bindings-runtime.js?v=0414d";
 import { createWorkspaceFilesRuntime } from "./workspace-files-runtime.js?v=0414b";
 
 function showPage(...args) {

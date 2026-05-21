@@ -1,4 +1,4 @@
-import { escapeHtml, requestJson, setResult as setElementResult } from "./common.js?v=0414c";
+import { escapeHtml, requestJson, setResult as setElementResult } from "./common.js?v=0414d";
 
 const elements = {
   overviewCards: document.querySelector("#overviewCards"),
@@ -32,6 +32,7 @@ const elements = {
   memberExpiryFrom: document.querySelector("#memberExpiryFrom"),
   memberExpiryTo: document.querySelector("#memberExpiryTo"),
   memberFilterSummary: document.querySelector("#memberFilterSummary"),
+  memberActionResult: document.querySelector("#memberActionResult"),
   planSearch: document.querySelector("#planSearch"),
   planStatusFilter: document.querySelector("#planStatusFilter"),
   planFilterSummary: document.querySelector("#planFilterSummary"),
@@ -489,10 +490,14 @@ function renderUsers(users = []) {
           }));
         }
         await Promise.all(requests);
-        setResult(`已更新会员：${user.email}`);
+        setElementResult(elements.memberActionResult, `已更新会员：${user.email}`, false, {
+          visibleClass: "is-visible"
+        });
         await loadAdminData();
       } catch (error) {
-        setResult(error.message || "会员更新失败", true);
+        setElementResult(elements.memberActionResult, error.message || "会员更新失败", true, {
+          visibleClass: "is-visible"
+        });
       }
     });
 
@@ -627,7 +632,6 @@ function renderPlans(plans = []) {
         const savedPlan = response?.plan || {};
         const savedName = savedPlan.name || payload.name || plan.name;
         setElementResult(cardResult, `已保存套餐：${savedName}`, false, { visibleClass: "is-visible" });
-        setResult(`已保存套餐：${savedName}`);
         Object.assign(plan, savedPlan);
         titleText.textContent = savedName;
         subtitle.textContent = formatPlanLabel(savedPlan.code || plan.code);
@@ -643,7 +647,6 @@ function renderPlans(plans = []) {
         });
       } catch (error) {
         setElementResult(cardResult, error.message || "套餐保存失败", true, { visibleClass: "is-visible" });
-        setResult(error.message || "套餐保存失败", true);
       } finally {
         saveButton.disabled = false;
         saveButton.textContent = "保存套餐";
@@ -844,11 +847,9 @@ elements.testSmtpBtn?.addEventListener("click", async () => {
     });
     const message = formatSmtpTestSuccess(response);
     setElementResult(elements.smtpTestResult, message, false, { visibleClass: "is-visible" });
-    setResult(response?.message || "SMTP 测试成功。");
   } catch (error) {
     const message = formatResponseMessage(error, "SMTP 测试失败");
     setElementResult(elements.smtpTestResult, message, true, { visibleClass: "is-visible" });
-    setResult(message, true);
   } finally {
     elements.testSmtpBtn.disabled = false;
     elements.testSmtpBtn.textContent = "发送测试邮件";
@@ -872,18 +873,15 @@ elements.checkUpdateBtn?.addEventListener("click", async () => {
       const message = response.message
         || `发现新版本 ${formatVersion(response.latest?.version)}，当前为 ${formatVersion(response.current?.version)}。`;
       setElementResult(elements.versionUpdateResult, message, false, { visibleClass: "is-visible" });
-      setResult(message);
     } else if (response.message) {
       // If there's an explicit custom message from backend (e.g. no tag in Docker Hub), show it
       setElementResult(elements.versionUpdateResult, response.message, false, { visibleClass: "is-visible" });
-      setResult(response.message);
     } else {
       setElementResult(elements.versionUpdateResult, "", false, { visibleClass: "is-visible" });
     }
   } catch (error) {
     const message = error.message || "检查更新失败";
     setElementResult(elements.versionUpdateResult, message, true, { visibleClass: "is-visible" });
-    setResult(message, true);
   } finally {
     elements.checkUpdateBtn.disabled = false;
     elements.checkUpdateBtn.textContent = "检查更新";
@@ -927,9 +925,12 @@ window.addEventListener("load", () => {
         })
       });
       
-      setResult(`成功生成 ${res.codes.length} 个兑换码`, false);
-      elements.redeemCodesResult.textContent = `生成成功：${res.codes.join(' ')}`;
-      elements.redeemCodesResult.classList.remove("error");
+      setElementResult(
+        elements.redeemCodesResult,
+        `成功生成 ${res.codes.length} 个兑换码：${res.codes.join(' ')}`,
+        false,
+        { visibleClass: "is-visible" }
+      );
       
       // 刷新列表
       const redeemRes = await requestJson("/api/admin/redeem-codes");
@@ -937,7 +938,9 @@ window.addEventListener("load", () => {
       renderRedeemCodes();
       elements.redeemCodeForm.reset();
     } catch (error) {
-      setResult(error.message || "生成失败", true);
+      setElementResult(elements.redeemCodesResult, error.message || "生成失败", true, {
+        visibleClass: "is-visible"
+      });
     }
   });
 });

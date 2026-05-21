@@ -7,7 +7,7 @@ export function setResult(target, message, isError = false, options = {}) {
       target.classList.toggle(visibleClass, Boolean(message));
     }
   }
-  if (message) {
+  if (message && (options.toast || !target)) {
     showToast(message, isError);
   }
 }

@@ -1,4 +1,4 @@
-import { requestJson, requestJsonWithProgress } from "./common.js?v=0414c";
+import { requestJson, requestJsonWithProgress } from "./common.js?v=0414d";
 
 function formatResponseMessage(error, fallback = "请求失败") {
   const detailText = Array.isArray(error?.details) && error.details.length
@@ -162,7 +162,6 @@ export function setupWorkspaceBindings({
       const code = String(elements.authCode?.value || "").trim();
       const password = String(elements.authRegisterPassword?.value || "");
       if (!isValidEmail(email)) {
-        updateAuthEmailStatus("请输入正确的邮箱格式。", true);
         setResult(elements.authResult, "请输入正确的邮箱地址。", true);
         elements.authEmail?.focus();
         return;
@@ -203,7 +202,6 @@ export function setupWorkspaceBindings({
         return;
       }
       if (!isValidEmail(email)) {
-        updateAuthEmailStatus("请输入正确的邮箱格式。", true);
         setResult(elements.authResult, "请输入正确的邮箱地址。", true);
         elements.authEmail?.focus();
         return;
@@ -220,7 +218,6 @@ export function setupWorkspaceBindings({
       appState.codeFlowExistingUser = Boolean(data.existingUser);
       updateAuthModeHint();
       updateAuthPanels();
-      updateAuthEmailStatus(data.existingUser ? "登录验证码已发送，请查看邮箱。" : "注册验证码已发送，验证时请填写注册密码。");
       setResult(
         elements.authResult,
         data.existingUser ? "验证码已发送到邮箱，请尽快填写 6 位验证码完成登录。" : "注册验证码已发送到邮箱，请填写验证码并设置注册密码完成注册。"
