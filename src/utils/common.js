@@ -66,22 +66,247 @@ function isRegistrationEnabled() {
   return String(getSettingValue("allow_registration", "true")).toLowerCase() === "true";
 }
 
-function getSmtpConfig() {
-  const port = Number(getSettingValue("smtp_port", "465") || 465);
+function getSmtpConfig(overrides = {}) {
+  const hasOverride = (key) => Object.prototype.hasOwnProperty.call(overrides || {}, key);
+  const readValue = (settingKey, configKey, fallback = "") => {
+    if (hasOverride(settingKey)) return overrides[settingKey];
+    if (hasOverride(configKey)) return overrides[configKey];
+    return getSettingValue(settingKey, fallback);
+  };
+  const readPassword = () => {
+    if (hasOverride("smtp_pass") || hasOverride("pass")) {
+      const value = readValue("smtp_pass", "pass", "");
+      if (String(value ?? "") !== "") {
+        return String(value ?? "");
+      }
+    }
+    return String(getSettingValue("smtp_pass", "") || "");
+  };
+  const port = Number(readValue("smtp_port", "port", "465") || 465);
+  const secureValue = readValue("smtp_secure", "secure", "true");
   return {
-    host: String(getSettingValue("smtp_host", "") || "").trim(),
+    host: String(readValue("smtp_host", "host", "") || "").trim(),
     port: Number.isFinite(port) ? port : 465,
-    secure: String(getSettingValue("smtp_secure", "true")).toLowerCase() === "true",
-    user: String(getSettingValue("smtp_user", "") || "").trim(),
-    pass: String(getSettingValue("smtp_pass", "") || ""),
-    fromEmail: String(getSettingValue("smtp_from_email", "") || "").trim(),
-    fromName: String(getSettingValue("smtp_from_name", "Z7 PDF 工作台") || "").trim() || "Z7 PDF 工作台"
+    secure:
+      typeof secureValue === "boolean"
+        ? secureValue
+        : String(secureValue ?? "true").toLowerCase() === "true",
+    user: String(readValue("smtp_user", "user", "") || "").trim(),
+    pass: readPassword(),
+    fromEmail: String(readValue("smtp_from_email", "fromEmail", "") || "").trim(),
+    fromName:
+      String(readValue("smtp_from_name", "fromName", "Z7 PDF 工作台") || "").trim() ||
+      "Z7 PDF 工作台"
   };
 }
 
-function isSmtpConfigured() {
-  const config = getSmtpConfig();
+function isSmtpConfigured(config = getSmtpConfig()) {
   return Boolean(config.host && config.user && config.pass && config.fromEmail);
+}
+
+function getSafeSmtpConfig(config = getSmtpConfig()) {
+  return {
+    host: config.host,
+    port: config.port,
+    secure: Boolean(config.secure),
+    user: config.user,
+    fromEmail: config.fromEmail,
+    fromName: config.fromName
+  };
+}
+
+function getMissingSmtpFields(config = getSmtpConfig()) {
+  const fields = [];
+  if (!config.host) fields.push("SMTP 服务器");
+  if (!config.port) fields.push("SMTP 端口");
+  if (!config.user) fields.push("SMTP 用户名");
+  if (!config.pass) fields.push("SMTP 密码/授权码");
+  if (!config.fromEmail) fields.push("发件邮箱");
+  return fields;
+}
+
+function createSmtpDiagnostic(message, details = [], extra = {}) {
+  return {
+    message,
+    details: details.filter(Boolean).map((detail) => String(detail)),
+    ...extra
+  };
+}
+
+function formatSmtpError(error, fallback = "SMTP 发信失败。") {
+  const rawMessage = String(error?.message || "").trim();
+  const response = String(error?.response || "").trim();
+  const code = String(error?.code || "").trim();
+  const command = String(error?.command || "").trim();
+  const responseCode = Number(error?.responseCode || 0);
+  const searchable = [rawMessage, response, code, command].join(" ");
+  let message = fallback;
+
+  if (
+    responseCode === 535 ||
+    code === "EAUTH" ||
+    /ERR\.LOGIN\.REQCODE|Invalid login|535|authentication|authenticate|auth failed|login/i.test(searchable)
+  ) {
+    message =
+      "SMTP 登录失败：邮箱服务商拒绝认证。请确认 SMTP 用户名是完整邮箱地址，并使用邮箱服务商生成的授权码/应用专用密码。";
+  } else if (/ENOTFOUND|EAI_AGAIN|getaddrinfo/i.test(searchable)) {
+    message = "SMTP 连接失败：无法解析 SMTP 服务器地址，请检查服务器域名。";
+  } else if (/ECONNREFUSED|ECONNECTION/i.test(searchable)) {
+    message = "SMTP 连接失败：服务器或端口拒绝连接，请检查 SMTP 地址、端口和 SSL/TLS 设置。";
+  } else if (/ETIMEDOUT|timeout|Greeting never received/i.test(searchable)) {
+    message = "SMTP 连接超时：请检查端口、网络、防火墙或服务商是否允许 SMTP 登录。";
+  } else if (/certificate|self signed|TLS|SSL/i.test(searchable)) {
+    message = "SMTP TLS/SSL 握手失败：请检查端口和“使用 SSL / TLS”设置是否匹配。";
+  } else if (rawMessage) {
+    message = `${fallback}${rawMessage}`;
+  }
+
+  return createSmtpDiagnostic(
+    message,
+    [
+      rawMessage ? `原始错误：${rawMessage}` : "",
+      response ? `SMTP 返回：${response}` : "",
+      responseCode ? `响应码：${responseCode}` : "",
+      code ? `错误代码：${code}` : "",
+      command ? `SMTP 阶段：${command}` : ""
+    ],
+    {
+      code: code || undefined,
+      command: command || undefined,
+      response: response || undefined,
+      responseCode: responseCode || undefined
+    }
+  );
+}
+
+function createSmtpDiagnosticError(error, fallback = "SMTP 发信失败。") {
+  const diagnostic = error?.smtpDiagnostic || formatSmtpError(error, fallback);
+  const wrapped = new Error(diagnostic.message);
+  wrapped.smtpDiagnostic = diagnostic;
+  return wrapped;
+}
+
+function createSmtpConfigError(config = getSmtpConfig()) {
+  const missingFields = getMissingSmtpFields(config);
+  const diagnostic = createSmtpDiagnostic(
+    `SMTP 配置不完整：缺少 ${missingFields.join("、")}。`,
+    [
+      "请在后台配置 SMTP 服务器、端口、用户名、授权码、发件邮箱和 SSL/TLS 设置后再发送邮件。"
+    ],
+    {
+      missingFields
+    }
+  );
+  const error = new Error(diagnostic.message);
+  error.smtpDiagnostic = diagnostic;
+  return error;
+}
+
+function createSmtpTransporter(config = getSmtpConfig()) {
+  return nodemailer.createTransport({
+    host: config.host,
+    port: config.port,
+    secure: config.secure,
+    auth: {
+      user: config.user,
+      pass: config.pass
+    }
+  });
+}
+
+async function sendMailWithSmtpConfig(config, mailOptions, fallback = "SMTP 发信失败。") {
+  if (!isSmtpConfigured(config)) {
+    throw createSmtpConfigError(config);
+  }
+
+  const transporter = createSmtpTransporter(config);
+  try {
+    return await transporter.sendMail({
+      from: `"${config.fromName}" <${config.fromEmail}>`,
+      ...mailOptions
+    });
+  } catch (error) {
+    throw createSmtpDiagnosticError(error, fallback);
+  } finally {
+    if (typeof transporter.close === "function") {
+      transporter.close();
+    }
+  }
+}
+
+async function sendSmtpTestEmail(recipient, config = getSmtpConfig()) {
+  const target = String(recipient || "").trim().toLowerCase();
+  if (!target || !target.includes("@")) {
+    throw new Error("请输入有效的测试收件邮箱。");
+  }
+
+  const info = await sendMailWithSmtpConfig(
+    config,
+    {
+      to: target,
+      subject: "Z7 PDF SMTP 测试邮件",
+      text: [
+        "这是一封 Z7 PDF 后台 SMTP 配置测试邮件。",
+        `发送时间：${nowIso()}`,
+        "如果你收到这封邮件，说明当前 SMTP 配置可以正常发信。"
+      ].join("\n"),
+      html: `
+        <div style="font-family: Arial, sans-serif; line-height: 1.7; color: #1f2a37;">
+          <p>这是一封 Z7 PDF 后台 SMTP 配置测试邮件。</p>
+          <p>发送时间：${nowIso()}</p>
+          <p>如果你收到这封邮件，说明当前 SMTP 配置可以正常发信。</p>
+        </div>
+      `
+    },
+    "SMTP 测试邮件发送失败。"
+  );
+
+  const accepted = Array.isArray(info.accepted) ? info.accepted.map(String) : [];
+  const rejected = Array.isArray(info.rejected) ? info.rejected.map(String) : [];
+  if (accepted.length === 0) {
+    const diagnostic = createSmtpDiagnostic(
+      "SMTP 已连接，但测试收件人未被服务器接受。",
+      [
+        rejected.length ? `被拒绝收件人：${rejected.join("、")}` : "",
+        info.response ? `SMTP 返回：${info.response}` : ""
+      ],
+      {
+        accepted,
+        rejected,
+        response: info.response
+      }
+    );
+    const error = new Error(diagnostic.message);
+    error.smtpDiagnostic = diagnostic;
+    throw error;
+  }
+
+  return {
+    ok: true,
+    message: `测试邮件已发送到 ${target}。`,
+    config: getSafeSmtpConfig(config),
+    result: {
+      accepted,
+      rejected,
+      response: info.response || "",
+      messageId: info.messageId || "",
+      envelopeTimeMs: info.envelopeTime,
+      messageTimeMs: info.messageTime,
+      messageSize: info.messageSize
+    }
+  };
+}
+
+function createErrorResponse(error, fallback = "请求失败。") {
+  const diagnostic = error?.smtpDiagnostic;
+  if (diagnostic) {
+    return {
+      error: diagnostic.message || fallback,
+      details: diagnostic.details || [],
+      smtp: diagnostic
+    };
+  }
+  return { error: error?.message || fallback };
 }
 
 function createAccessCode() {
@@ -99,23 +324,8 @@ function generateRedeemCode() {
 }
 
 async function sendVerificationEmail(email, code) {
-  if (!isSmtpConfigured()) {
-    throw new Error("后台尚未配置 SMTP 发信参数，请稍后再试或联系管理员。");
-  }
-
   const smtp = getSmtpConfig();
-  const transporter = nodemailer.createTransport({
-    host: smtp.host,
-    port: smtp.port,
-    secure: smtp.secure,
-    auth: {
-      user: smtp.user,
-      pass: smtp.pass
-    }
-  });
-
-  await transporter.sendMail({
-    from: `"${smtp.fromName}" <${smtp.fromEmail}>`,
+  await sendMailWithSmtpConfig(smtp, {
     to: email,
     subject: "Z7 PDF 登录验证码",
     text: [
@@ -133,7 +343,7 @@ async function sendVerificationEmail(email, code) {
         <p>如果不是你本人操作，请忽略本邮件。</p>
       </div>
     `
-  });
+  }, "验证码发送失败。");
 }
 
 async function hashPassword(password) {
@@ -205,8 +415,12 @@ module.exports = {
   isRegistrationEnabled,
   getSmtpConfig,
   isSmtpConfigured,
+  getSafeSmtpConfig,
+  formatSmtpError,
+  createErrorResponse,
   createAccessCode,
   generateRedeemCode,
+  sendSmtpTestEmail,
   sendVerificationEmail,
   hashPassword,
   verifyPassword,

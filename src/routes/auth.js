@@ -14,7 +14,8 @@ const {
   sendVerificationEmail,
   isRegistrationEnabled,
   getSettingValue,
-  isSmtpConfigured
+  isSmtpConfigured,
+  createErrorResponse
 } = require('../utils/common');
 const { createSession, publicUser } = require('../services/session-service');
 const {
@@ -116,7 +117,7 @@ router.post('/api/auth/send-code', verificationCodeLimiter, async (req, res) => 
       existingUser: Boolean(existingUser)
     });
   } catch (error) {
-    return res.status(400).json({ error: error.message || '验证码发送失败。' });
+    return res.status(400).json(createErrorResponse(error, '验证码发送失败。'));
   }
 });
 
@@ -320,7 +321,7 @@ router.post('/api/auth/code', verificationCodeLimiter, async (req, res) => {
       expiresInSeconds: 600
     });
   } catch (error) {
-    return res.status(400).json({ error: error.message || '验证码发送失败。' });
+    return res.status(400).json(createErrorResponse(error, '验证码发送失败。'));
   }
 });
 

@@ -8,6 +8,8 @@ const test = require('node:test');
 const PORT = 39192;
 const TEST_EMAIL = 'member-security@example.com';
 const TEST_PASSWORD = 'old-password';
+const ADMIN_EMAIL = 'admin-security@example.com';
+const ADMIN_PASSWORD = 'admin-password';
 
 function onceProcessEvent(child, eventName) {
   return new Promise((resolve) => {
@@ -94,6 +96,8 @@ async function runChildTests() {
     await seedTestUser(stmts, helpers);
 
     await assertMalformedPasswordHashIsRejected(helpers);
+    await assertSmtpAuthErrorKeepsProviderDetails(helpers);
+    await assertAdminSmtpTestRejectsMissingConfig();
     await assertResetPasswordRejectsIncorrectCode(stmts, helpers);
     await assertChangeEmailRejectsIncorrectCode(stmts, helpers);
     await assertExpiredSessionIsRejected(stmts, helpers);
@@ -110,6 +114,54 @@ async function runChildTests() {
 async function assertMalformedPasswordHashIsRejected(helpers) {
   assert.equal(await helpers.verifyPassword('anything', 'salt:not-hex'), false);
   assert.equal(await helpers.verifyPassword('anything', 'salt:abcd'), false);
+}
+
+async function assertSmtpAuthErrorKeepsProviderDetails(helpers) {
+  const diagnostic = helpers.formatSmtpError({
+    message: 'Invalid login: 535 5.7.0 ERR.LOGIN.REQCODE',
+    response: '535 5.7.0 ERR.LOGIN.REQCODE',
+    responseCode: 535,
+    code: 'EAUTH',
+    command: 'AUTH PLAIN'
+  }, '验证码发送失败。');
+  const response = helpers.createErrorResponse({ smtpDiagnostic: diagnostic }, '验证码发送失败。');
+
+  assert.match(response.error, /授权码|应用专用密码/);
+  assert.ok(response.details.some((detail) => detail.includes('ERR.LOGIN.REQCODE')));
+  assert.equal(response.smtp.responseCode, 535);
+}
+
+async function assertAdminSmtpTestRejectsMissingConfig() {
+  const login = await requestJson(process.env.TEST_BASE_URL, '/api/auth/login', {
+    method: 'POST',
+    body: JSON.stringify({
+      email: ADMIN_EMAIL,
+      password: ADMIN_PASSWORD
+    })
+  });
+  assert.equal(login.response.status, 200, JSON.stringify(login.body));
+
+  const { response, body } = await requestJson(process.env.TEST_BASE_URL, '/api/admin/smtp/test', {
+    method: 'POST',
+    headers: {
+      Cookie: login.response.headers.get('set-cookie')
+    },
+    body: JSON.stringify({
+      email: 'admin-security@example.com',
+      settings: {
+        smtp_host: '',
+        smtp_port: '465',
+        smtp_secure: 'true',
+        smtp_user: '',
+        smtp_pass: '',
+        smtp_from_email: ''
+      }
+    })
+  });
+
+  assert.equal(response.status, 400, JSON.stringify(body));
+  assert.match(body.error, /SMTP 配置不完整/);
+  assert.ok(body.details.some((detail) => detail.includes('后台配置 SMTP')));
 }
 
 async function assertResetPasswordRejectsIncorrectCode(stmts, helpers) {
@@ -324,8 +376,8 @@ function runParentSuite() {
     DATA_DIR: dataDir,
     HOST: '127.0.0.1',
     PORT: String(PORT),
-    ADMIN_EMAIL: 'admin-security@example.com',
-    ADMIN_PASSWORD: 'admin-password'
+    ADMIN_EMAIL,
+    ADMIN_PASSWORD
   };
 
   const server = spawn(process.execPath, ['src/server.js'], {

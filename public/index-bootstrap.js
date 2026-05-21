@@ -23,7 +23,7 @@ async function bootstrapIndexPage() {
   }
 
   await import("/editor.js?v=0456");
-  await import("/workspace.js?v=0417");
+  await import("/workspace.js?v=0418");
   await import("/index-page.js?v=0415");
 }
 

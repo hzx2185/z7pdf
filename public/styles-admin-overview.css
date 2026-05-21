@@ -137,6 +137,20 @@
   padding: 24px;
 }
 
+.smtp-test-row {
+  align-items: end;
+}
+
+.smtp-test-row .btn {
+  margin-bottom: 0;
+  white-space: nowrap;
+}
+
+.smtp-test-result,
+#adminResult {
+  white-space: pre-line;
+}
+
 /* 套餐卡片网格 */
 .plan-admin-grid {
   display: grid;

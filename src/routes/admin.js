@@ -2,7 +2,13 @@ const express = require('express');
 
 const { stmts } = require('../db');
 const { requireAdmin } = require('../middleware/auth');
-const { nowIso, getSettingsObject } = require('../utils/common');
+const {
+  nowIso,
+  getSettingsObject,
+  getSmtpConfig,
+  sendSmtpTestEmail,
+  createErrorResponse
+} = require('../utils/common');
 const { publicUser } = require('../services/session-service');
 const {
   formatPlan,
@@ -184,6 +190,19 @@ router.patch('/api/admin/users/:id', requireAdmin, express.json({ limit: '512kb'
 
 router.get('/api/admin/settings', requireAdmin, (_req, res) => {
   res.json({ settings: getSafeSettingsObject() });
+});
+
+router.post('/api/admin/smtp/test', requireAdmin, express.json({ limit: '256kb' }), async (req, res) => {
+  try {
+    const recipient = String(req.body.email || '').trim().toLowerCase();
+    const settings =
+      req.body.settings && typeof req.body.settings === 'object' ? req.body.settings : {};
+    const config = getSmtpConfig(settings);
+    const result = await sendSmtpTestEmail(recipient || config.fromEmail || config.user, config);
+    return res.json(result);
+  } catch (error) {
+    return res.status(400).json(createErrorResponse(error, 'SMTP 测试失败。'));
+  }
 });
 
 router.post('/api/admin/settings', requireAdmin, express.json({ limit: '1mb' }), async (req, res) => {

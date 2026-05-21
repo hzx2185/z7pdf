@@ -150,6 +150,14 @@
                   <input type="checkbox" id="settingSmtpSecure" />
                   <span>使用 SSL / TLS</span>
                 </label>
+                <div class="field-row smtp-test-row">
+                  <label class="field">
+                    <span>测试收件邮箱</span>
+                    <input type="email" id="settingSmtpTestEmail" placeholder="admin@example.com" />
+                  </label>
+                  <button type="button" class="btn btn-outline btn-sm" id="testSmtpBtn">发送测试邮件</button>
+                </div>
+                <p id="smtpTestResult" class="result-message smtp-test-result" aria-live="polite"></p>
               </div>
             </div>
 
@@ -326,6 +334,6 @@
       window.addEventListener('hashchange', handleHash);
       handleHash();
     </script>
-    <script type="module" src="/admin.js?v=132"></script>
+    <script type="module" src="/admin.js?v=133"></script>
   </body>
 </html>

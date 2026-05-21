@@ -44,7 +44,12 @@ export async function requestJson(url, options = {}) {
   }
   const data = await response.json().catch(() => ({}));
   if (!response.ok) {
-    throw new Error(data.error || "请求失败");
+    const error = new Error(data.error || "请求失败");
+    error.status = response.status;
+    error.details = Array.isArray(data.details) ? data.details : [];
+    error.smtp = data.smtp || null;
+    error.data = data;
+    throw error;
   }
   return data;
 }
@@ -90,7 +95,12 @@ export async function requestJsonWithProgress(url, options = {}, onProgress = nu
       })();
 
       if (xhr.status < 200 || xhr.status >= 300) {
-        reject(new Error(data.error || "请求失败"));
+        const error = new Error(data.error || "请求失败");
+        error.status = xhr.status;
+        error.details = Array.isArray(data.details) ? data.details : [];
+        error.smtp = data.smtp || null;
+        error.data = data;
+        reject(error);
         return;
       }
 

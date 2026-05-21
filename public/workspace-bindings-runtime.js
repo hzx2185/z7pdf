@@ -1,4 +1,11 @@
-import { requestJson, requestJsonWithProgress } from "./common.js?v=0414b";
+import { requestJson, requestJsonWithProgress } from "./common.js?v=0414c";
+
+function formatResponseMessage(error, fallback = "请求失败") {
+  const detailText = Array.isArray(error?.details) && error.details.length
+    ? `\n${error.details.join("\n")}`
+    : "";
+  return `${error?.message || fallback}${detailText}`;
+}
 
 function getWorkspaceUsageMetrics(elements) {
   return {
@@ -183,7 +190,7 @@ export function setupWorkspaceBindings({
       setResult(elements.authResult, data.created ? "注册成功，已进入你的会员空间。" : "登录成功，已进入你的会员空间。");
       await syncSession();
     } catch (error) {
-      setResult(elements.authResult, error.message || "登录失败", true);
+      setResult(elements.authResult, formatResponseMessage(error, "登录失败"), true);
     }
   });
 
@@ -220,7 +227,7 @@ export function setupWorkspaceBindings({
       );
       elements.authCode?.focus();
     } catch (error) {
-      setResult(elements.authResult, error.message || "验证码发送失败", true);
+      setResult(elements.authResult, formatResponseMessage(error, "验证码发送失败"), true);
     } finally {
       window.setTimeout(() => {
         if (elements.sendCodeBtn) {
@@ -246,7 +253,7 @@ export function setupWorkspaceBindings({
       setResult(elements.authResult, "登录成功，已进入你的会员空间。");
       await syncSession();
     } catch (error) {
-      setResult(elements.authResult, error.message || "登录失败", true);
+      setResult(elements.authResult, formatResponseMessage(error, "登录失败"), true);
     }
   });
 
@@ -661,7 +668,7 @@ export function setupWorkspaceBindings({
       setResult(elements.authResult, "验证码已发送到您的邮箱");
       startCountdown(elements.forgotSendCodeBtn, 60, "发送验证码");
     } catch (error) {
-      setResult(elements.authResult, error.message || "发送失败", true);
+      setResult(elements.authResult, formatResponseMessage(error, "发送失败"), true);
     }
   });
 
@@ -697,7 +704,7 @@ export function setupWorkspaceBindings({
         elements.loginPassword.value = "";
       }
     } catch (error) {
-      setResult(elements.authResult, error.message || "重置失败", true);
+      setResult(elements.authResult, formatResponseMessage(error, "重置失败"), true);
     }
   });
 
@@ -716,7 +723,7 @@ export function setupWorkspaceBindings({
       setResult(elements.authResult, "验证码已发送到您的新邮箱");
       startCountdown(elements.changeEmailSendCodeBtn, 60, "发送验证码");
     } catch (error) {
-      setResult(elements.authResult, error.message || "发送失败", true);
+      setResult(elements.authResult, formatResponseMessage(error, "发送失败"), true);
     }
   });
 
@@ -744,7 +751,7 @@ export function setupWorkspaceBindings({
       elements.changeEmailForm?.reset();
       await syncSession();
     } catch (error) {
-      setResult(elements.authResult, error.message || "修改失败", true);
+      setResult(elements.authResult, formatResponseMessage(error, "修改失败"), true);
     }
   });
 
@@ -780,7 +787,7 @@ export function setupWorkspaceBindings({
       setResult(elements.authResult, "密码修改成功");
       elements.changePasswordForm?.reset();
     } catch (error) {
-      setResult(elements.authResult, error.message || "修改失败", true);
+      setResult(elements.authResult, formatResponseMessage(error, "修改失败"), true);
     }
   });
 

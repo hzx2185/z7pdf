@@ -178,6 +178,10 @@
   border-left-color: #ad2e24;
 }
 
+#authResult {
+  white-space: pre-line;
+}
+
 .result-message.success {
   background: rgba(46, 117, 78, 0.1);
   color: #1e5035;

@@ -1,4 +1,4 @@
-import { escapeHtml, requestJson, setResult as setElementResult } from "./common.js?v=0414b";
+import { escapeHtml, requestJson, setResult as setElementResult } from "./common.js?v=0414c";
 
 const elements = {
   overviewCards: document.querySelector("#overviewCards"),
@@ -18,6 +18,9 @@ const elements = {
   settingSmtpFromEmail: document.querySelector("#settingSmtpFromEmail"),
   settingSmtpFromName: document.querySelector("#settingSmtpFromName"),
   settingSmtpSecure: document.querySelector("#settingSmtpSecure"),
+  settingSmtpTestEmail: document.querySelector("#settingSmtpTestEmail"),
+  testSmtpBtn: document.querySelector("#testSmtpBtn"),
+  smtpTestResult: document.querySelector("#smtpTestResult"),
   currentVersionValue: document.querySelector("#currentVersionValue"),
   latestVersionValue: document.querySelector("#latestVersionValue"),
   latestUpdatedAtValue: document.querySelector("#latestUpdatedAtValue"),
@@ -54,6 +57,37 @@ const state = {
 
 function setResult(message, isError = false) {
   setElementResult(elements.adminResult, message, isError);
+}
+
+function formatResponseMessage(error, fallback = "请求失败") {
+  const detailText = Array.isArray(error?.details) && error.details.length
+    ? `\n${error.details.join("\n")}`
+    : "";
+  return `${error?.message || fallback}${detailText}`;
+}
+
+function getSmtpSettingsPayload() {
+  return {
+    smtp_host: elements.settingSmtpHost.value.trim(),
+    smtp_port: String(elements.settingSmtpPort.value || 465),
+    smtp_user: elements.settingSmtpUser.value.trim(),
+    smtp_pass: elements.settingSmtpPass.value,
+    smtp_from_email: elements.settingSmtpFromEmail.value.trim(),
+    smtp_from_name: elements.settingSmtpFromName.value.trim(),
+    smtp_secure: elements.settingSmtpSecure.checked ? "true" : "false"
+  };
+}
+
+function formatSmtpTestSuccess(response) {
+  const result = response?.result || {};
+  const lines = [
+    response?.message || "测试邮件已发送。",
+    result.accepted?.length ? `服务器接受：${result.accepted.join("、")}` : "",
+    result.rejected?.length ? `服务器拒绝：${result.rejected.join("、")}` : "",
+    result.response ? `SMTP 返回：${result.response}` : "",
+    result.messageId ? `邮件 ID：${result.messageId}` : ""
+  ].filter(Boolean);
+  return lines.join("\n");
 }
 
 function formatBytes(bytes) {
@@ -377,6 +411,9 @@ function renderOverview(data) {
     data.settings?.smtp_pass_configured === "true" ? "留空则保留已保存密码" : "邮箱授权码";
   elements.settingSmtpFromEmail.value = data.settings?.smtp_from_email || "";
   elements.settingSmtpFromName.value = data.settings?.smtp_from_name || "Z7 PDF 工作台";
+  if (elements.settingSmtpTestEmail && !elements.settingSmtpTestEmail.value) {
+    elements.settingSmtpTestEmail.value = data.settings?.smtp_from_email || data.settings?.smtp_user || "";
+  }
   elements.settingSmtpSecure.checked =
     String(data.settings?.smtp_secure || "true").toLowerCase() === "true";
 }
@@ -777,20 +814,44 @@ elements.settingsForm?.addEventListener("submit", async (event) => {
           workspace_quota_mb: String(elements.settingQuota.value || 512),
           guest_daily_exports: String(elements.settingGuestDailyExports.value || 0),
           allow_registration: elements.settingAllowRegistration.checked ? "true" : "false",
-          smtp_host: elements.settingSmtpHost.value.trim(),
-          smtp_port: String(elements.settingSmtpPort.value || 465),
-          smtp_user: elements.settingSmtpUser.value.trim(),
-          smtp_pass: elements.settingSmtpPass.value,
-          smtp_from_email: elements.settingSmtpFromEmail.value.trim(),
-          smtp_from_name: elements.settingSmtpFromName.value.trim(),
-          smtp_secure: elements.settingSmtpSecure.checked ? "true" : "false"
+          ...getSmtpSettingsPayload()
         }
       })
     });
     setResult("后台配置已保存到数据库。");
     await loadAdminData();
   } catch (error) {
-    setResult(error.message || "配置保存失败", true);
+    setResult(formatResponseMessage(error, "配置保存失败"), true);
+  }
+});
+
+elements.testSmtpBtn?.addEventListener("click", async () => {
+  const testEmail = String(elements.settingSmtpTestEmail?.value || "").trim();
+  elements.testSmtpBtn.disabled = true;
+  elements.testSmtpBtn.textContent = "测试中...";
+  setElementResult(elements.smtpTestResult, "正在连接 SMTP 并发送测试邮件...", false, {
+    visibleClass: "is-visible"
+  });
+
+  try {
+    const response = await requestJson("/api/admin/smtp/test", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        email: testEmail,
+        settings: getSmtpSettingsPayload()
+      })
+    });
+    const message = formatSmtpTestSuccess(response);
+    setElementResult(elements.smtpTestResult, message, false, { visibleClass: "is-visible" });
+    setResult(response?.message || "SMTP 测试成功。");
+  } catch (error) {
+    const message = formatResponseMessage(error, "SMTP 测试失败");
+    setElementResult(elements.smtpTestResult, message, true, { visibleClass: "is-visible" });
+    setResult(message, true);
+  } finally {
+    elements.testSmtpBtn.disabled = false;
+    elements.testSmtpBtn.textContent = "发送测试邮件";
   }
 });
 
