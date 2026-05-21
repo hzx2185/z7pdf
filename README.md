@@ -131,7 +131,8 @@ services:
 - 分享页面：http://127.0.0.1:39010/share.html?token=...
 
 首次初始化说明：
-- 如果数据库里还没有管理员账号，系统会自动创建一个管理员。
+- 管理员不是第一个注册用户；普通注册账号默认都是会员。
+- 首次启动且数据库里还没有指定管理员邮箱时，系统会自动创建一个管理员。
 - 管理员邮箱默认是 `admin@z7pdf.local`。
 - 如果未设置 `ADMIN_PASSWORD`，系统会在首次启动时生成随机密码、写入数据库，并打印到启动日志。
 - 使用源码构建模板后台启动时，可通过 `docker compose logs --tail=50 z7pdf` 查看这组初始账号信息。
@@ -151,7 +152,9 @@ docker compose down
 - 如果设置了 `ADMIN_PASSWORD`，会按该密码创建管理员
 - 如果没有设置 `ADMIN_PASSWORD`，系统会自动生成随机密码并打印到启动日志
 
-管理员账号只会在首次写库时自动创建一次。后续重启不会重复生成，也不会覆盖你已存在的管理员密码。
+管理员不是第一个注册用户。普通注册和邮箱验证码自动注册创建的都是 `member` 账号，不会自动获得后台权限。
+
+系统只会自动创建当前 `ADMIN_EMAIL` 对应的管理员邮箱；如果该邮箱已存在，后续重启不会覆盖它的密码。不要通过修改 `ADMIN_PASSWORD` 尝试重置已存在账号；如果把 `ADMIN_EMAIL` 改成数据库中不存在的新邮箱，启动时会创建这个新邮箱的管理员账号。
 
 源码运行时可通过环境变量覆盖。使用 Docker Compose 时，保持仓库模板精简；如确需固定首次管理员账号，创建本地的 `docker-compose.override.yml`（已被 `.gitignore` 和 `.dockerignore` 忽略）：
 
@@ -169,6 +172,28 @@ services:
 
 ```bash
 ADMIN_EMAIL=your-admin@example.com ADMIN_PASSWORD='your-secure-password' npm start
+```
+
+### 忘记管理员密码
+
+优先检查首次启动日志。如果管理员密码是系统随机生成的，日志中会显示初始账号：
+
+```bash
+docker compose logs --tail=100 z7pdf
+```
+
+如果已在后台配置 SMTP，并且管理员邮箱是真实可收信邮箱，可以在登录窗口使用“忘记密码”通过邮箱验证码重置。
+
+如果日志找不到、也无法收取验证码，先备份 `data/`，再在容器内直接重置 SQLite 里的管理员密码。下面命令会把指定邮箱设为管理员、更新密码哈希，并清理该账号已登录会话：
+
+```bash
+docker compose exec z7pdf node -e 'const crypto=require("crypto");const {DatabaseSync}=require("node:sqlite");const email=process.argv[1];const pass=process.argv[2];if(!email||!pass){console.error("Usage: node -e <script> <email> <new-password>");process.exit(1)}const db=new DatabaseSync("/app/data/app.db");const user=db.prepare("SELECT id,email FROM users WHERE email=?").get(email);if(!user){console.error("user not found:",email);process.exit(1)}const salt=crypto.randomBytes(16).toString("hex");const hash=salt+":"+crypto.scryptSync(pass,salt,64).toString("hex");db.prepare("UPDATE users SET password_hash=?, role=? WHERE id=?").run(hash,"admin",user.id);db.prepare("DELETE FROM sessions WHERE user_id=?").run(user.id);console.log("admin password reset:",user.email);' admin@z7pdf.local 'NewStrongPassword123'
+```
+
+如果忘记管理员邮箱，可先列出现有管理员：
+
+```bash
+docker compose exec z7pdf node -e 'const {DatabaseSync}=require("node:sqlite");const db=new DatabaseSync("/app/data/app.db");console.table(db.prepare("SELECT id,email,role,created_at FROM users WHERE role=? ORDER BY id").all("admin"));'
 ```
 
 ## 隐私与安全边界
@@ -194,6 +219,7 @@ ADMIN_EMAIL=your-admin@example.com ADMIN_PASSWORD='your-secure-password' npm sta
 ### 公网部署建议
 
 - 放到公网前建议使用 HTTPS 反向代理，并限制代理层和应用层的上传体积。
+- 如果反向代理会传入 `X-Forwarded-For`，请给容器设置 `Z7PDF_TRUST_PROXY=1`，避免登录和验证码限流组件把代理头识别为配置错误。只有一层可信反向代理时使用 `1`；多层代理按实际跳数填写。
 - 定期备份 `data/`，同时限制该目录的宿主机访问权限。
 - 公开分享链接应视为访问凭证，敏感文件建议使用密码分享、到期时间和下载次数限制。
 - 管理员可以访问用户、文件、套餐和分享记录，请只给可信人员管理员权限。

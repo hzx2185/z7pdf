@@ -41,10 +41,12 @@ docker compose up -d
 
 ## 首次管理员
 
-首次启动且数据库中还没有管理员账号时，系统会自动创建管理员：
+首次启动且数据库中还没有当前管理员邮箱时，系统会自动创建管理员：
 - 默认邮箱：`admin@z7pdf.local`
 - 默认密码：未设置 `ADMIN_PASSWORD` 时自动生成随机密码
 - 查看密码：`docker logs z7pdf`
+
+管理员不是第一个注册用户。普通注册和邮箱验证码自动注册创建的都是会员账号，不会自动获得后台权限。
 
 登录后台后建议立即修改管理员密码，并控制容器日志访问权限。
 
@@ -64,7 +66,63 @@ services:
       ADMIN_PASSWORD: "replace-with-a-long-random-password"
 ```
 
-管理员账号只会在首次写库时自动创建一次。后续重启不会覆盖已存在的管理员密码。
+系统只会自动创建当前 `ADMIN_EMAIL` 对应的管理员邮箱；如果该邮箱已存在，后续重启不会覆盖它的密码。不要通过修改 `ADMIN_PASSWORD` 尝试重置已存在账号；如果把 `ADMIN_EMAIL` 改成数据库中不存在的新邮箱，启动时会创建这个新邮箱的管理员账号。
+
+## 忘记管理员密码
+
+优先检查首次启动日志。如果管理员密码是系统随机生成的，日志中会显示初始账号：
+
+```bash
+docker logs z7pdf
+```
+
+如果已在后台配置 SMTP，并且管理员邮箱是真实可收信邮箱，可以在登录窗口使用“忘记密码”通过邮箱验证码重置。
+
+如果日志找不到、也无法收取验证码，先备份 `data/`，再在容器内直接重置 SQLite 里的管理员密码。下面命令会把指定邮箱设为管理员、更新密码哈希，并清理该账号已登录会话：
+
+```bash
+docker exec z7pdf node -e 'const crypto=require("crypto");const {DatabaseSync}=require("node:sqlite");const email=process.argv[1];const pass=process.argv[2];if(!email||!pass){console.error("Usage: node -e <script> <email> <new-password>");process.exit(1)}const db=new DatabaseSync("/app/data/app.db");const user=db.prepare("SELECT id,email FROM users WHERE email=?").get(email);if(!user){console.error("user not found:",email);process.exit(1)}const salt=crypto.randomBytes(16).toString("hex");const hash=salt+":"+crypto.scryptSync(pass,salt,64).toString("hex");db.prepare("UPDATE users SET password_hash=?, role=? WHERE id=?").run(hash,"admin",user.id);db.prepare("DELETE FROM sessions WHERE user_id=?").run(user.id);console.log("admin password reset:",user.email);' admin@z7pdf.local 'NewStrongPassword123'
+```
+
+如果忘记管理员邮箱，可先列出现有管理员：
+
+```bash
+docker exec z7pdf node -e 'const {DatabaseSync}=require("node:sqlite");const db=new DatabaseSync("/app/data/app.db");console.table(db.prepare("SELECT id,email,role,created_at FROM users WHERE role=? ORDER BY id").all("admin"));'
+```
+
+## 反向代理部署
+
+如果通过 Nginx、Caddy、宝塔、1Panel、Cloudflare Tunnel 等反向代理访问，代理通常会带上 `X-Forwarded-For`。请在 Compose 中启用可信代理跳数，否则登录、验证码等限流组件会输出 `ERR_ERL_UNEXPECTED_X_FORWARDED_FOR` 提示。
+
+只有一层可信反向代理时：
+
+```yaml
+services:
+  z7pdf:
+    image: hzx2185/z7pdf:latest
+    container_name: z7pdf
+    ports:
+      - "39010:80"
+    volumes:
+      - ./data:/app/data
+    environment:
+      Z7PDF_TRUST_PROXY: "1"
+```
+
+多层反向代理时，把 `1` 改成实际可信代理跳数。不要在不可信网络直连容器时设置过大的值或 `true`，否则客户端可以伪造来源 IP，影响限流准确性。
+
+Nginx upstream 可指向宿主机映射端口：
+
+```nginx
+location / {
+  proxy_pass http://127.0.0.1:39010;
+  proxy_set_header Host $host;
+  proxy_set_header X-Real-IP $remote_addr;
+  proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+  proxy_set_header X-Forwarded-Proto $scheme;
+  client_max_body_size 200m;
+}
+```
 
 ## 数据持久化
 

@@ -4,6 +4,7 @@ const path = require('path');
 
 const { stmts, DATA_DIR, STORAGE_DIR } = require('./db');
 const { nowIso, ensureDefaultSettings } = require('./utils/common');
+const { formatTrustProxySetting, parseTrustProxySetting } = require('./utils/trust-proxy');
 const { authenticateSession } = require('./middleware/auth');
 const { cleanStaleTempFiles } = require('./middleware/upload');
 
@@ -15,6 +16,10 @@ const toolsRoutes = require('./routes/tools');
 const visualRoutes = require('./routes/visual');
 
 const app = express();
+const trustProxySetting = parseTrustProxySetting(process.env.Z7PDF_TRUST_PROXY || process.env.TRUST_PROXY);
+if (trustProxySetting !== false) {
+  app.set('trust proxy', trustProxySetting);
+}
 
 // 安全中间件
 app.use(helmet({
@@ -133,6 +138,9 @@ async function startServer() {
     console.log(`Z7 PDF 工作台已启动: http://${HOST}:${PORT}`);
     console.log(`数据目录: ${DATA_DIR}`);
     console.log(`存储目录: ${STORAGE_DIR}`);
+    if (trustProxySetting !== false) {
+      console.log(`反向代理信任配置: ${formatTrustProxySetting(trustProxySetting)}`);
+    }
 
     if (bootstrapResult?.removedSettingsCount) {
       console.log(`已清理 ${bootstrapResult.removedSettingsCount} 个废弃配置项。`);
