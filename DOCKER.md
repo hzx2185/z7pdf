@@ -19,6 +19,7 @@ services:
   z7pdf:
     image: hzx2185/z7pdf:latest
     container_name: z7pdf
+    restart: unless-stopped
     ports:
       - "39010:80"
     volumes:
@@ -57,6 +58,7 @@ services:
   z7pdf:
     image: hzx2185/z7pdf:latest
     container_name: z7pdf
+    restart: unless-stopped
     ports:
       - "39010:80"
     volumes:
@@ -101,6 +103,7 @@ services:
   z7pdf:
     image: hzx2185/z7pdf:latest
     container_name: z7pdf
+    restart: unless-stopped
     ports:
       - "39010:80"
     volumes:
