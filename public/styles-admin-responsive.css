@@ -403,6 +403,13 @@
 
 /* --- Print Support --- */
 @media print {
+  html, body {
+    background: white !important;
+    margin: 0;
+    padding: 0;
+    height: auto;
+  }
+
   /* Hide everything except the print container */
   body > *:not(#print-container) {
     display: none !important;
@@ -416,13 +423,16 @@
   }
 
   .print-page {
-    page-break-after: always;
-    break-after: page;
     width: 100%;
     height: auto;
     display: flex;
     align-items: center;
     justify-content: center;
+  }
+
+  .print-page:not(:last-child) {
+    page-break-after: always;
+    break-after: page;
   }
 
   .print-page img {

@@ -254,6 +254,40 @@ export function setupWorkspaceBindings({
     }
   });
 
+  elements.registerForm?.addEventListener("submit", async (event) => {
+    event.preventDefault();
+    const email = elements.registerEmail?.value?.trim();
+    const password = elements.registerPassword?.value;
+    const confirmPassword = elements.registerConfirmPassword?.value;
+
+    if (!email || !password || !confirmPassword) {
+      setResult(elements.authResult, "请填写完整信息", true);
+      return;
+    }
+    if (password !== confirmPassword) {
+      setResult(elements.authResult, "两次输入的密码不一致", true);
+      return;
+    }
+    if (password.length < 6) {
+      setResult(elements.authResult, "密码至少6位", true);
+      return;
+    }
+
+    try {
+      const data = await requestJson("/api/auth/register", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ email, password })
+      });
+      appState.user = data.user;
+      appState.authPanelVisible = false;
+      setResult(elements.authResult, "注册成功，已进入你的会员空间。");
+      await syncSession();
+    } catch (error) {
+      setResult(elements.authResult, formatResponseMessage(error, "注册失败"), true);
+    }
+  });
+
   elements.logoutBtn?.addEventListener("click", async () => {
     await logoutAndReset();
     setResult(elements.workspaceResult, "");
@@ -275,6 +309,15 @@ export function setupWorkspaceBindings({
       return;
     }
     setAuthView("code");
+    setResult(elements.authResult, "");
+  });
+
+  elements.showRegisterFormBtn?.addEventListener("click", () => {
+    if (!appState.allowRegistration) {
+      setResult(elements.authResult, "当前站点暂未开放新用户注册，请先使用已有账号登录。", true);
+      return;
+    }
+    setAuthView("register");
     setResult(elements.authResult, "");
   });
 

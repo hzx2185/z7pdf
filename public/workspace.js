@@ -48,6 +48,12 @@ const elements = {
   authCloseBtn: document.querySelector("#authCloseBtn"),
   logoutBtn: document.querySelector("#logoutBtn"),
   adminLink: document.querySelector("#adminLink"),
+  // 立即注册
+  registerForm: document.querySelector("#registerForm"),
+  registerEmail: document.querySelector("#registerEmail"),
+  registerPassword: document.querySelector("#registerPassword"),
+  registerConfirmPassword: document.querySelector("#registerConfirmPassword"),
+  showRegisterFormBtn: document.querySelector('[data-form="register"]'),
   // 忘记密码
   showForgotPassword: document.querySelector("#showForgotPassword"),
   forgotPasswordForm: document.querySelector("#forgotPasswordForm"),

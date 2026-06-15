@@ -44,3 +44,7 @@ docker push hzx2185/z7pdf:latest
 ```
 
 - Do not publish Docker version tags that do not have a matching `package.json` version and GitHub tag.
+
+## Language Rules
+
+- Always communicate with the user in Chinese (始终使用中文与用户沟通).

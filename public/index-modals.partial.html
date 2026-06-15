@@ -15,6 +15,7 @@
             <div class="auth-tabs">
               <button type="button" class="tab-btn active" data-form="password">密码登录</button>
               <button type="button" class="tab-btn" data-form="code">验证码登录</button>
+              <button type="button" class="tab-btn" data-form="register">立即注册</button>
             </div>
 
             <form id="passwordLoginForm" class="auth-form">
@@ -51,6 +52,22 @@
               </label>
               <p id="authModeHint" class="hint">已注册邮箱可直接用验证码登录；未注册邮箱需要同时填写注册密码，验证成功后才会创建账号。</p>
               <button type="submit" class="btn btn-primary" id="authSubmitBtn">继续</button>
+            </form>
+
+            <form id="registerForm" class="auth-form hidden">
+              <label class="field">
+                <span>邮箱</span>
+                <input type="email" id="registerEmail" autocomplete="username" required />
+              </label>
+              <label class="field">
+                <span>密码</span>
+                <input type="password" id="registerPassword" autocomplete="new-password" minlength="6" placeholder="至少 6 位" required />
+              </label>
+              <label class="field">
+                <span>确认密码</span>
+                <input type="password" id="registerConfirmPassword" autocomplete="new-password" minlength="6" placeholder="请再次输入新密码" required />
+              </label>
+              <button type="submit" class="btn btn-primary">注册</button>
             </form>
           </div>
 

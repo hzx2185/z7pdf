@@ -98,10 +98,16 @@ export function createWorkspaceAuthRuntime({
 
   function updateAuthPanels() {
     const isPasswordView = appState.authView === "password";
+    const isCodeView = appState.authView === "code";
+    const isRegisterView = appState.authView === "register";
+
     elements.passwordLoginForm?.classList.toggle("hidden", !isPasswordView);
-    elements.authForm?.classList.toggle("hidden", isPasswordView);
+    elements.authForm?.classList.toggle("hidden", !isCodeView);
+    elements.registerForm?.classList.toggle("hidden", !isRegisterView);
+
     elements.showPasswordLoginBtn?.classList.toggle("active", isPasswordView);
-    elements.showCodeLoginBtn?.classList.toggle("active", !isPasswordView);
+    elements.showCodeLoginBtn?.classList.toggle("active", isCodeView);
+    elements.showRegisterFormBtn?.classList.toggle("active", isRegisterView);
     if (elements.sendCodeBtn) {
       elements.sendCodeBtn.disabled = !appState.smtpConfigured;
       elements.sendCodeBtn.textContent = appState.codeFlowExistingUser === false
@@ -216,13 +222,21 @@ export function createWorkspaceAuthRuntime({
       setResult(elements.authResult, "");
       resetCodeFlowState();
     }
-    const target = appState.authView === "code" ? elements.authEmail : elements.loginEmail;
+    const target = appState.authView === "code"
+      ? elements.authEmail
+      : (appState.authView === "register" ? elements.registerEmail : elements.loginEmail);
     window.setTimeout(() => target?.focus(), 180);
     setTopbarMenuOpen(false);
   }
 
   function setAuthView(view = "password") {
-    appState.authView = view === "code" ? "code" : "password";
+    if (view === "code") {
+      appState.authView = "code";
+    } else if (view === "register") {
+      appState.authView = "register";
+    } else {
+      appState.authView = "password";
+    }
     updateAuthPanels();
   }
 
@@ -305,7 +319,7 @@ export function createWorkspaceAuthRuntime({
       openPasswordAuth("当前站点暂未开放新用户注册，请先使用已有账号登录。");
       return;
     }
-    setAuthView("code");
+    setAuthView("register");
     revealAuthPanel();
   }
 
