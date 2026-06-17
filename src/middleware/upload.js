@@ -5,9 +5,11 @@ const { TEMP_DIR } = require('../db');
 
 const DEFAULT_TEMP_FILE_MAX_AGE_MS = 24 * 60 * 60 * 1000;
 
+const MAX_FILE_SIZE_MB = Number(process.env.Z7PDF_MAX_FILE_SIZE_MB || 500);
+
 const upload = multer({
   dest: TEMP_DIR,
-  limits: { fileSize: 100 * 1024 * 1024 }
+  limits: { fileSize: MAX_FILE_SIZE_MB * 1024 * 1024 }
 });
 
 function flattenUploadedFiles(req) {

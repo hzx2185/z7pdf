@@ -542,6 +542,7 @@ async function applyVisualPostProcessing(bytes, filename, normalized) {
       vertical: normalized.pageNumbers ? normalized.pageNumbers.vertical : 'bottom',
       pageNumberFontSize: normalized.pageNumbers?.fontSize || 12,
       margin: normalized.pageNumbers?.margin || normalized.resize?.margin || 24,
+      pageNumbersFormat: normalized.pageNumbers?.format || 'style1',
       batesPrefix: normalized.bates?.prefix || '',
       batesStart: normalized.bates?.start || 1,
       batesDigits: normalized.bates?.digits || 6,

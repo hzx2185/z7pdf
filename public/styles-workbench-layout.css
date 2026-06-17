@@ -193,10 +193,10 @@
 .sidebar .workspace-file {
   display: flex;
   flex-direction: row;
-  align-items: flex-start;
+  align-items: center;
   gap: 8px;
-  padding: 8px;
-  border-radius: 8px;
+  padding: 4px 8px;
+  border-radius: 6px;
   background: rgba(255, 255, 255, 0.6);
   border: 1px solid rgba(65, 49, 35, 0.08);
 }
@@ -205,7 +205,7 @@
   display: flex;
   align-items: center;
   flex-shrink: 0;
-  margin-top: 2px;
+  margin-top: 0;
 }
 
 .sidebar .workspace-select input {
@@ -218,11 +218,12 @@
   min-width: 0;
   display: flex;
   flex-direction: column;
-  gap: 2px;
+  gap: 1px;
 }
 
 .sidebar .workspace-file-meta strong {
   font-size: 12px;
+  line-height: 1.15;
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
@@ -230,6 +231,7 @@
 
 .sidebar .workspace-file-meta span {
   font-size: 10px;
+  line-height: 1.15;
   color: var(--muted);
   white-space: nowrap;
   overflow: hidden;
@@ -273,10 +275,10 @@
 .workspace-file {
   display: grid;
   grid-template-columns: auto 1fr;
-  gap: 8px 16px;
-  align-items: start;
-  padding: 14px 18px;
-  border-radius: 20px;
+  gap: 6px 12px;
+  align-items: center;
+  padding: 8px 14px;
+  border-radius: 12px;
   background: rgba(255, 252, 248, 0.82);
   border: 1px solid rgba(65, 49, 35, 0.1);
   box-shadow: var(--shadow-soft);
@@ -293,7 +295,7 @@
 
 .workspace-file-meta {
   display: grid;
-  gap: 6px;
+  gap: 3px;
   min-width: 0;
 }
 
@@ -306,7 +308,26 @@
 
 .workspace-file-meta span {
   color: var(--muted);
-  font-size: 13px;
+  font-size: 12px;
+}
+
+/* 快速重命名铅笔按钮的悬浮隐藏和大小优化 */
+.workspace-file .workspace-file-rename-btn {
+  opacity: 0;
+  visibility: hidden;
+  transition: opacity 0.15s ease, visibility 0.15s ease;
+  font-size: 10px !important;
+  padding: 1px 3px !important;
+  margin-left: 2px;
+}
+
+.workspace-file:hover .workspace-file-rename-btn {
+  opacity: 0.7;
+  visibility: visible;
+}
+
+.workspace-file .workspace-file-rename-btn:hover {
+  opacity: 1;
 }
 
 .ghost-accent {

@@ -504,7 +504,8 @@ export function buildManagedEditorRecipe({
       align: controls.pageNumbersAlign.value,
       vertical: controls.pageNumbersVertical.value,
       fontSize: Number(controls.pageNumbersFontSize.value || 12),
-      margin: controls.pageNumbersMargin.value || 24
+      margin: controls.pageNumbersMargin.value || 24,
+      format: controls.pageNumbersFormat?.value || "style1"
     },
     bates: {
       enabled: controls.batesEnabled.checked,

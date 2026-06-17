@@ -115,6 +115,7 @@ const EDITOR_CONTROL_SELECTORS = {
   pageNumbersVertical: "#pageNumbersVertical",
   pageNumbersFontSize: "#pageNumbersFontSize",
   pageNumbersMargin: "#pageNumbersMargin",
+  pageNumbersFormat: "#pageNumbersFormat",
   batesEnabled: "#batesEnabled",
   batesPrefix: "#batesPrefix",
   batesStart: "#batesStart",

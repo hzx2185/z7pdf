@@ -431,22 +431,67 @@ export function createWorkspaceFilesRuntime({
 
     const nameEl = document.createElement("strong");
     nameEl.className = "file-name-clickable";
-    nameEl.textContent = file.originalName;
+
+    const nameText = document.createElement("span");
+    nameText.textContent = file.originalName;
+    if (file.kind === "pdf") {
+      nameText.style.cursor = "pointer";
+      nameText.style.color = "var(--accent-strong)";
+      nameText.addEventListener("click", () => openFilesInEditor([file]));
+    }
+    nameEl.appendChild(nameText);
+
+    // 只有在非回收站视图时，才渲染单文件快速重命名按钮
+    if (appState.currentView !== "trash") {
+      const editBtn = document.createElement("button");
+      editBtn.type = "button";
+      editBtn.className = "ghost-button icon-only workspace-file-rename-btn";
+      editBtn.style.padding = "2px 4px";
+      editBtn.style.fontSize = "12px";
+      editBtn.style.border = "none";
+      editBtn.style.background = "none";
+      editBtn.style.cursor = "pointer";
+      editBtn.style.marginLeft = "4px";
+      editBtn.textContent = "✏️";
+      editBtn.title = "修改文件名";
+
+      editBtn.addEventListener("click", async (event) => {
+        event.stopPropagation();
+        event.preventDefault();
+        const ext = file.kind === "zip" ? ".zip" : ".pdf";
+        const currentNameWithoutExt = file.originalName.replace(new RegExp(`${ext}$`, "i"), "");
+        const newName = prompt("请输入新的文件名（不需要输入后缀）:", currentNameWithoutExt);
+        if (newName === null) return; // 取消
+        const trimmed = newName.trim();
+        if (!trimmed) {
+          setResult(elements.workspaceResult, "文件名不能为空。", true);
+          return;
+        }
+        try {
+          setResult(elements.workspaceResult, `正在重命名为 "${trimmed}"...`);
+          await requestJson(`/api/workspace/files/${file.id}`, {
+            method: "PATCH",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ originalName: trimmed })
+          });
+          setResult(elements.workspaceResult, "重命名成功。");
+          await refreshWorkspace();
+        } catch (error) {
+          setResult(elements.workspaceResult, error.message || "重命名失败。", true);
+        }
+      });
+      nameEl.appendChild(editBtn);
+    }
 
     const detail = document.createElement("span");
+    const dateObj = new Date(file.deletedAt || file.createdAt);
+    const dateStr = `${dateObj.getMonth() + 1}-${dateObj.getDate()} ${String(dateObj.getHours()).padStart(2, "0")}:${String(dateObj.getMinutes()).padStart(2, "0")}`;
+    const actionLabel = appState.currentView === "trash" ? "删" : "建";
     detail.textContent = `${file.folderPath || "根目录"} / ${
-      file.kind === "zip" ? "ZIP 结果包" : `${file.pageCount || 0} 页 PDF`
-    } / ${formatBytes(file.sizeBytes)}`;
+      file.kind === "zip" ? "ZIP" : `${file.pageCount || 0}页`
+    } / ${formatBytes(file.sizeBytes)} · ${actionLabel} ${dateStr}`;
 
-    const timestamp = document.createElement("span");
-    timestamp.textContent = `${appState.currentView === "trash" ? "删除于" : "创建于"} ${new Date(file.deletedAt || file.createdAt).toLocaleString("zh-CN")}`;
-
-    meta.append(nameEl, detail, timestamp);
-    if (file.kind === "pdf") {
-      nameEl.style.cursor = "pointer";
-      nameEl.style.color = "var(--accent-strong)";
-      nameEl.addEventListener("click", () => openFilesInEditor([file]));
-    }
+    meta.append(nameEl, detail);
 
     article.append(select, meta);
     return article;

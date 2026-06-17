@@ -8,8 +8,24 @@ const {
   PDFDocument,
   degrees,
   PageSizes,
-  rgb
+  rgb,
+  PDFName,
+  PDFNumber
 } = require('pdf-lib');
+
+function getPageRotation(page) {
+  try {
+    const rotateAttr = page.node.getInheritedAttribute(PDFName.of('Rotate'));
+    if (rotateAttr instanceof PDFNumber) {
+      return rotateAttr.asNumber();
+    }
+  } catch (_e) {}
+  try {
+    return page.getRotation().angle || 0;
+  } catch (_e) {
+    return 0;
+  }
+}
 
 const { pdfColorFromHex } = require('../utils/color');
 const { sanitizeFilename, getDisplayFilename } = require('./workspace-service');
@@ -227,8 +243,13 @@ async function mergePdfs(files) {
 
   for (const file of files) {
     const source = await loadPdf(file.buffer, file.originalname);
+    const sourcePages = source.getPages();
     const pages = await merged.copyPages(source, source.getPageIndices());
-    pages.forEach((page) => merged.addPage(page));
+    pages.forEach((page, idx) => {
+      const rotation = getPageRotation(sourcePages[idx]);
+      page.setRotation(degrees(rotation));
+      merged.addPage(page);
+    });
   }
 
   return merged.save({ useObjectStreams: true, addDefaultPage: false });
@@ -333,8 +354,14 @@ async function organizePdf(file, options) {
     keptPages = [...keptPages].reverse();
   }
 
+  const srcPages = src.getPages();
   const copied = await out.copyPages(src, keptPages);
-  copied.forEach((page) => out.addPage(page));
+  copied.forEach((page, idx) => {
+    const srcIdx = keptPages[idx];
+    const rotation = getPageRotation(srcPages[srcIdx]);
+    page.setRotation(degrees(rotation));
+    out.addPage(page);
+  });
 
   return out.save({ useObjectStreams: true, addDefaultPage: false });
 }
@@ -503,10 +530,16 @@ async function splitPdf(file, options) {
     throw new Error('不支持的拆分模式。');
   }
 
+  const srcPages = src.getPages();
   for (const [groupIndex, pageIndices] of groups.entries()) {
     const part = await PDFDocument.create();
     const pages = await part.copyPages(src, pageIndices);
-    pages.forEach((page) => part.addPage(page));
+    pages.forEach((page, idx) => {
+      const srcIdx = pageIndices[idx];
+      const rotation = getPageRotation(srcPages[srcIdx]);
+      page.setRotation(degrees(rotation));
+      part.addPage(page);
+    });
     const bytes = await part.save({ useObjectStreams: true, addDefaultPage: false });
     zip.file(
       `${baseName}_part_${String(groupIndex + 1).padStart(2, '0')}.pdf`,

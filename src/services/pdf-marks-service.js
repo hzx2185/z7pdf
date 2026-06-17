@@ -1,5 +1,19 @@
-const { PDFDocument, degrees, StandardFonts, rgb } = require('pdf-lib');
+const { PDFDocument, degrees, StandardFonts, rgb, PDFName, PDFNumber } = require('pdf-lib');
 const { pdfColorFromHex } = require('../utils/color');
+
+function getPageRotation(page) {
+  try {
+    const rotateAttr = page.node.getInheritedAttribute(PDFName.of('Rotate'));
+    if (rotateAttr instanceof PDFNumber) {
+      return rotateAttr.asNumber();
+    }
+  } catch (_e) {}
+  try {
+    return page.getRotation().angle || 0;
+  } catch (_e) {
+    return 0;
+  }
+}
 
 const WATERMARK_COLOR_MAP = {
   orange: rgb(0.75, 0.35, 0.14),
@@ -16,34 +30,87 @@ function normalizePosition(position) {
 }
 
 function drawPageNumber(page, currentPage, totalPages, options, font) {
-  const width = page.getWidth();
-  const height = page.getHeight();
+  const cropBox = typeof page.getCropBox === 'function' ? page.getCropBox() : null;
+  const left = cropBox ? cropBox.x : 0;
+  const bottom = cropBox ? cropBox.y : 0;
+  const pageWidth = cropBox && cropBox.width > 0 ? cropBox.width : page.getWidth();
+  const pageHeight = cropBox && cropBox.height > 0 ? cropBox.height : page.getHeight();
+
   const size = Math.max(8, Number(options.pageNumberFontSize || options.fontSize || 12));
   const margin = Math.max(12, Number(options.margin || 24));
-  const text = `${currentPage} / ${totalPages}`;
-  const textWidth = font.widthOfTextAtSize(text, size);
-
-  let x = margin;
-  if (options.align === 'center') {
-    x = (width - textWidth) / 2;
-  } else if (options.align === 'right') {
-    x = width - textWidth - margin;
+  
+  let text = `${currentPage} / ${totalPages}`;
+  const format = options.pageNumbersFormat || options.format || 'style1';
+  if (format === 'style2') {
+    text = `- ${currentPage} -`;
+  } else if (format === 'style3') {
+    text = `Page ${currentPage}`;
+  } else if (format === 'style4') {
+    text = `Page ${currentPage} of ${totalPages}`;
+  } else if (format === 'style5') {
+    text = `${currentPage}`;
   }
 
-  const y = options.vertical === 'top' ? height - margin - size : margin;
-  page.drawText(text, {
+  const textWidth = font.widthOfTextAtSize(text, size);
+
+  let x = left + margin;
+  if (options.align === 'center') {
+    x = left + (pageWidth - textWidth) / 2;
+  } else if (options.align === 'right') {
+    x = left + pageWidth - textWidth - margin;
+  }
+
+  let y = options.vertical === 'top' ? bottom + pageHeight - margin - size : bottom + margin;
+
+  const rotation = getPageRotation(page);
+  const drawOptions = {
     x,
     y,
     size,
     font,
     color: rgb(0.22, 0.22, 0.24),
     opacity: 0.78
-  });
+  };
+
+  if (rotation !== 0) {
+    drawOptions.rotate = degrees(rotation);
+    if (rotation === 90) {
+      drawOptions.x = left + pageWidth - margin;
+      drawOptions.y = bottom + margin;
+      if (options.align === 'center') {
+        drawOptions.y = bottom + (pageHeight - textWidth) / 2;
+      } else if (options.align === 'right') {
+        drawOptions.y = bottom + pageHeight - textWidth - margin;
+      }
+    } else if (rotation === 180) {
+      drawOptions.x = left + pageWidth - margin;
+      drawOptions.y = bottom + pageHeight - margin;
+      if (options.align === 'center') {
+        drawOptions.x = left + (pageWidth + textWidth) / 2;
+      } else if (options.align === 'right') {
+        drawOptions.x = left + textWidth + margin;
+      }
+    } else if (rotation === 270) {
+      drawOptions.x = left + margin;
+      drawOptions.y = bottom + pageHeight - margin;
+      if (options.align === 'center') {
+        drawOptions.y = bottom + (pageHeight + textWidth) / 2;
+      } else if (options.align === 'right') {
+        drawOptions.y = bottom + textWidth + margin;
+      }
+    }
+  }
+
+  page.drawText(text, drawOptions);
 }
 
 function drawBatesNumber(page, currentPage, options, font) {
-  const width = page.getWidth();
-  const height = page.getHeight();
+  const cropBox = typeof page.getCropBox === 'function' ? page.getCropBox() : null;
+  const left = cropBox ? cropBox.x : 0;
+  const bottom = cropBox ? cropBox.y : 0;
+  const pageWidth = cropBox && cropBox.width > 0 ? cropBox.width : page.getWidth();
+  const pageHeight = cropBox && cropBox.height > 0 ? cropBox.height : page.getHeight();
+
   const size = Math.max(8, Number(options.batesFontSize || options.fontSize || 12));
   const margin = Math.max(12, Number(options.batesMargin || options.margin || 24));
   const prefix = String(options.batesPrefix || '').trim();
@@ -52,22 +119,55 @@ function drawBatesNumber(page, currentPage, options, font) {
   const text = `${prefix}${String(start + currentPage - 1).padStart(digits, '0')}`;
   const textWidth = font.widthOfTextAtSize(text, size);
 
-  let x = margin;
+  let x = left + margin;
   if (options.batesAlign === 'center') {
-    x = (width - textWidth) / 2;
+    x = left + (pageWidth - textWidth) / 2;
   } else if (options.batesAlign === 'right') {
-    x = width - textWidth - margin;
+    x = left + pageWidth - textWidth - margin;
   }
 
-  const y = options.batesVertical === 'top' ? height - margin - size : margin;
-  page.drawText(text, {
+  let y = options.batesVertical === 'top' ? bottom + pageHeight - margin - size : bottom + margin;
+
+  const rotation = getPageRotation(page);
+  const drawOptions = {
     x,
     y,
     size,
     font,
     color: rgb(0.22, 0.22, 0.24),
     opacity: 0.88
-  });
+  };
+
+  if (rotation !== 0) {
+    drawOptions.rotate = degrees(rotation);
+    if (rotation === 90) {
+      drawOptions.x = left + pageWidth - margin;
+      drawOptions.y = bottom + margin;
+      if (options.batesAlign === 'center') {
+        drawOptions.y = bottom + (pageHeight - textWidth) / 2;
+      } else if (options.batesAlign === 'right') {
+        drawOptions.y = bottom + pageHeight - textWidth - margin;
+      }
+    } else if (rotation === 180) {
+      drawOptions.x = left + pageWidth - margin;
+      drawOptions.y = bottom + pageHeight - margin;
+      if (options.batesAlign === 'center') {
+        drawOptions.x = left + (pageWidth + textWidth) / 2;
+      } else if (options.batesAlign === 'right') {
+        drawOptions.x = left + textWidth + margin;
+      }
+    } else if (rotation === 270) {
+      drawOptions.x = left + margin;
+      drawOptions.y = bottom + pageHeight - margin;
+      if (options.batesAlign === 'center') {
+        drawOptions.y = bottom + (pageHeight + textWidth) / 2;
+      } else if (options.batesAlign === 'right') {
+        drawOptions.y = bottom + textWidth + margin;
+      }
+    }
+  }
+
+  page.drawText(text, drawOptions);
 }
 
 function drawWatermark(page, text, options, font) {
@@ -236,13 +336,11 @@ async function addMarksPdfBuffer(buffer, filename, options, { loadPdf, parsePage
   const includeWatermark =
     options.watermarkEnabled === true ||
     options.watermarkEnabled === 'true' ||
-    markMode === 'watermark' ||
-    markMode === 'both';
+    (options.watermarkEnabled === undefined && (markMode === 'watermark' || markMode === 'both'));
   const includePageNumbers =
     options.pageNumbersEnabled === true ||
     options.pageNumbersEnabled === 'true' ||
-    markMode === 'pageNumber' ||
-    markMode === 'both';
+    (options.pageNumbersEnabled === undefined && (markMode === 'pageNumber' || markMode === 'both'));
   const includeBates = options.batesEnabled === true || options.batesEnabled === 'true';
   const includeStamp = options.stampEnabled === true || options.stampEnabled === 'true';
   const needsTextWatermark =

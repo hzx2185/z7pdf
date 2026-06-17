@@ -526,7 +526,7 @@ export function setupWorkspaceBindings({
   });
 
   elements.workspaceMergeSelectedBtn?.addEventListener("click", async () => {
-    const files = appState.workspace.filter((file) => appState.selectedFileIds.has(file.id) && file.kind === "pdf");
+    const files = appState.lastRenderedVisibleFiles.filter((file) => appState.selectedFileIds.has(file.id) && file.kind === "pdf");
     if (files.length < 2) {
       setResult(elements.workspaceResult, "请至少选择2个PDF文件进行合并。", true);
       return;

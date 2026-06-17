@@ -75,6 +75,22 @@ app.use(adminRoutes);
 app.use(toolsRoutes);
 app.use(visualRoutes);
 
+// 全局错误处理中间件，确保所有异常都返回 JSON 格式的响应
+app.use((err, req, res, next) => {
+  console.error('Unhandled Server Error:', err);
+  
+  if (err.name === 'MulterError') {
+    if (err.code === 'LIMIT_FILE_SIZE') {
+      return res.status(400).json({ error: '上传的文件体积过大，已超过单文件限制。' });
+    }
+    return res.status(400).json({ error: `文件上传失败: ${err.message}` });
+  }
+
+  res.status(err.status || 500).json({
+    error: err.message || '服务器发生内部错误，请稍后再试。'
+  });
+});
+
 // Session 清理定时任务
 setInterval(() => {
   try {

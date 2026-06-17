@@ -146,11 +146,24 @@ async function replaceWorkspaceFileContent(file, originalName, bytes, options = 
 
 function countPdfPages(buffer) {
   try {
-    const text = Buffer.isBuffer(buffer)
-      ? buffer.toString('latin1')
-      : Buffer.from(buffer).toString('latin1');
-    const matches = text.match(/\/Type\s*\/Page\b/g);
-    return matches ? matches.length : 0;
+    const buf = Buffer.isBuffer(buffer) ? buffer : Buffer.from(buffer);
+    let count = 0;
+    const chunkSize = 1024 * 1024; // 1MB 块大小
+    const overlap = 100; // 跨块重叠量，确保边界处的标记不会被斩断
+
+    for (let offset = 0; offset < buf.length; offset += chunkSize) {
+      const end = Math.min(offset + chunkSize + overlap, buf.length);
+      const chunk = buf.subarray(offset, end);
+      const text = chunk.toString('ascii');
+      const matches = text.match(/\/Type\s*\/Page\b/g);
+      if (matches) {
+        count += matches.length;
+      }
+      if (end === buf.length) {
+        break;
+      }
+    }
+    return count;
   } catch (_error) {
     return 0;
   }
